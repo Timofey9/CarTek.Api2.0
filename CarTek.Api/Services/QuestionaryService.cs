@@ -2,7 +2,9 @@
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Quetionary;
+using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace CarTek.Api.Services
@@ -12,14 +14,56 @@ namespace CarTek.Api.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IUserService _userService;
         private readonly ICarService _carService;
+        private readonly IDriverService _driverService;
         private readonly ILogger<QuestionaryService> _logger;
 
-        public QuestionaryService(ApplicationDbContext dbContext, IUserService userService, ICarService carService, ILogger<QuestionaryService> logger)
+        public QuestionaryService(ApplicationDbContext dbContext, IUserService userService, ICarService carService, IDriverService driverService, ILogger<QuestionaryService> logger)
         {
             _dbContext = dbContext;
+            _driverService = driverService;
             _userService = userService; 
             _carService = carService;
             _logger = logger;
+        }
+
+        public async Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                _logger.LogInformation($"Подтверждение анкеты: {uniqueId}");
+
+                var driver = _driverService.GetById(driverId);
+                if(driver.Password.Equals(driverPass))
+                {
+                    response.IsSuccess = true;
+                    response.Message = "Пароль принят анкета отправлена";
+
+                    var questionary = GetByUniqueId(uniqueId);
+
+                    questionary.ApprovedAt = DateTime.UtcNow;
+                    questionary.WasApproved= true;
+
+                    await _dbContext.SaveChangesAsync();
+
+                    return response;
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.Message = "Пароль не совпадает. Попробуйте еще раз";
+
+                    return response;
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка подтверждения пароля: {ex.Message}");
+                response.IsSuccess = false;
+                response.Message = $"Ошибка подтверждения пароля: {ex.Message}";
+
+                return response;
+            }
         }
 
         public async Task<Questionary> CreateQuestionary(CreateQuestionaryModel model)
@@ -38,9 +82,12 @@ namespace CarTek.Api.Services
                 // создаем папку для хранения файлов
                 Directory.CreateDirectory(imagesPath);
 
-                foreach (var image in model.Images)
+                if(model.Images != null)
                 {
-                    await SaveImage(image, imagesPath);
+                    foreach (var image in model.Images)
+                    {
+                        await SaveImage(image, imagesPath);
+                    }
                 }
 
                 var user = _userService.GetByLogin(model.CreatedBy);
@@ -66,6 +113,7 @@ namespace CarTek.Api.Services
                     LastUpdated = timeCreated,
                     DriverId = model.DriverId,
                     UserId = user.Id,
+                    TrailerId = model.TrailerId,
                     CarId = model.CarId
                 };
 
@@ -99,6 +147,34 @@ namespace CarTek.Api.Services
             catch(Exception ex)
             {
                 _logger.LogError($"Ошибка сохранения опросника: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Task<ICollection<Questionary>> GetByCarId(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<Questionary>> GetByCarPlate(string plate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Questionary GetByUniqueId(Guid id)
+        {
+            try
+            {
+                var questionary = _dbContext.Questionaries
+                    .Include(t => t.Driver)
+                    .Include(t => t.Car)
+                    .FirstOrDefault(t => t.UniqueId == id && t.CarId != null);
+
+                return questionary;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка получения опросника {ex.Message}", ex);
                 return null;
             }
         }
