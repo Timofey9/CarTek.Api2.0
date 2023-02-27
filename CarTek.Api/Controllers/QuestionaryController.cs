@@ -2,6 +2,7 @@
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Quetionary;
 using CarTek.Api.Model.Response;
+using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +60,25 @@ namespace CarTek.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+               
+        
+        [HttpGet("getunit/{id}")]
+        public IActionResult GetQuestionaryUnit(Guid id)
+        {
+            try
+            {
+                var res = _questionaryService.GetUnitByUniqueId(id);
+
+                if (res != null)
+                    return Ok(res);
+                else
+                    return BadRequest("Ошибка создания опросника. Повторите запрос");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost("acceptquestionary")]
         public async Task<IActionResult> AcceptQuestionary([FromBody] ApproveQuestionaryModel approveQuestionaryModel)
@@ -79,6 +99,29 @@ namespace CarTek.Api.Controllers
                     IsSuccess = false
                 });
             }
+        }
+
+        [HttpGet("all")]
+        public IActionResult GetCarQuestionaries(long carId, string? sortColumn, string? sortDirection, int pageNumber, int pageSize)
+        {
+            var list = _questionaryService.GetListByCarId(carId, sortColumn, sortDirection, pageNumber, pageSize);
+
+            var totalNumber = _questionaryService.GetAll(carId).Count();
+
+            return Ok(new PagedResult<QuestionaryModel>()
+            {
+                TotalNumber = totalNumber,
+                List = _mapper.Map<List<QuestionaryModel>>(list)
+            });
+        }       
+        
+        
+        [HttpGet("getImages/{questionaryGuid}")]
+        public async Task<IActionResult>GetQuestionaryImages(Guid questionaryGuid)
+        {
+            var list = await _questionaryService.GetImages(questionaryGuid);
+
+            return Ok(list);
         }
     }
 }

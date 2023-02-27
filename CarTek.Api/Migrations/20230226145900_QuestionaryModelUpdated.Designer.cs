@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230226145900_QuestionaryModelUpdated")]
+    partial class QuestionaryModelUpdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,10 +106,6 @@ namespace CarTek.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -131,12 +130,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("FrontSuspension")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("GeneralCondition")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("HydroEq")
                         .HasColumnType("boolean");
 
                     b.Property<string>("ImagesPath")
@@ -166,10 +159,6 @@ namespace CarTek.Api.Migrations
 
                     b.Property<long?>("TrailerId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<Guid>("UniqueId")
                         .HasColumnType("uuid");

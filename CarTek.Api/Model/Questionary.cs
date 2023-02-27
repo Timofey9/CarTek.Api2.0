@@ -11,8 +11,16 @@
     {
         public long Id { get; set; }
 
+        //car or trailer
+        public string Type { get; set; }
+
+        //по приезду или отъезду
+        public string Action { get; set; }
+
         //Id для хранения изображений + связующие элемент для осмотра тягача + прицепа
         public Guid UniqueId { get; set; }
+
+        public bool GeneralCondition { get; set; }
 
         public string? ImagesPath { get; set; }
 
@@ -46,6 +54,8 @@
 
         public bool BackSuspension { get; set; }
 
+        public bool HydroEq { get; set; }
+
 
         //Nav properties
         public long? CarId { get; set; }
@@ -55,7 +65,7 @@
         public Driver Driver { get; set; }
 
         public long UserId { get; set; }
-        public User UpdatedBy { get; set; }
+        public User User { get; set; }
 
         public long? TrailerId { get; set; } 
         public Trailer? Trailer { get; set; }

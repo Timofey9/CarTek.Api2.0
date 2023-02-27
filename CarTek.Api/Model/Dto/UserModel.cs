@@ -19,6 +19,6 @@
 
         public string Phone { get; set; }
 
-        public string FullName => $"{LastName} {FirstName}";
+        public string FullName => $"{LastName} {FirstName} {MiddleName}";
     }
 }

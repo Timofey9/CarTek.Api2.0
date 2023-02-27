@@ -1,11 +1,14 @@
-﻿using CarTek.Api.DBContext;
+﻿using AutoMapper;
+using CarTek.Api.DBContext;
 using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Quetionary;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
 {
@@ -16,14 +19,17 @@ namespace CarTek.Api.Services
         private readonly ICarService _carService;
         private readonly IDriverService _driverService;
         private readonly ILogger<QuestionaryService> _logger;
+        private readonly IMapper _mapper;
 
-        public QuestionaryService(ApplicationDbContext dbContext, IUserService userService, ICarService carService, IDriverService driverService, ILogger<QuestionaryService> logger)
+        public QuestionaryService(ApplicationDbContext dbContext, IUserService userService, ICarService carService, 
+            IDriverService driverService, ILogger<QuestionaryService> logger, IMapper mapper)
         {
             _dbContext = dbContext;
             _driverService = driverService;
             _userService = userService; 
             _carService = carService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public async Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId)
@@ -90,6 +96,20 @@ namespace CarTek.Api.Services
                     }
                 }
 
+                string action = "";
+
+                if(car.State == TransportState.Base)
+                {
+                    action = "departure";
+                    car.State = TransportState.Line;
+                }
+
+                if (car.State == TransportState.Line)
+                {
+                    action = "arrival";
+                    car.State = TransportState.Base;
+                }
+
                 var user = _userService.GetByLogin(model.CreatedBy);
 
                 var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == model.DriverId);
@@ -100,8 +120,11 @@ namespace CarTek.Api.Services
                 {
                     UniqueId = uniqueId,
                     ImagesPath = imagesPath,
+                    Action = action,
+                    Type = "car",
                     Mileage = carQuestionary.Mileage,
-                    UpdatedBy = user,
+                    GeneralCondition = carQuestionary.GeneralCondition,
+                    User = user,
                     WheelsJsonObject = JsonConvert.SerializeObject(carQuestionary.WheelsJsonObject),
                     LightsJsonObject = JsonConvert.SerializeObject(carQuestionary.LightsJsonObject),
                     FendersJsonObject = JsonConvert.SerializeObject(new FendersJsonObject
@@ -110,31 +133,42 @@ namespace CarTek.Api.Services
                         FendersOk = !carQuestionary.FendersOk
                     }),
                     Comment = model.Comment,
+                    Rack = carQuestionary.Rack,
+                    FrontSuspension = carQuestionary.FrontSuspension,
+                    BackSuspension = carQuestionary.BackSuspension,
+                    IsCabinClean = carQuestionary.IsCabinClean,
+                    PlatonInPlace = carQuestionary.PlatonInPlace,
+                    PlatonSwitchedOn = carQuestionary.PlatonSwitchedOn,
+                    CabinCushion = carQuestionary.CabinCushion,
+                    HydroEq = carQuestionary.HydroEq,
                     LastUpdated = timeCreated,
                     DriverId = model.DriverId,
                     UserId = user.Id,
-                    TrailerId = model.TrailerId,
-                    CarId = model.CarId
+                    TrailerId = trailerQuestionary.TransportId,
+                    CarId = model.CarId                    
                 };
 
                 var trailerQuestionaryEntity = new Questionary
                 {
                     UniqueId = uniqueId,
                     ImagesPath = imagesPath,
+                    Type = "trailer",
+                    Action = action,
+                    GeneralCondition = trailerQuestionary.GeneralCondition,
                     Mileage = 0,
-                    UpdatedBy = user,
+                    User = user,
                     Comment = model.Comment,
-                    WheelsJsonObject = JsonConvert.SerializeObject(carQuestionary.WheelsJsonObject),
-                    LightsJsonObject = JsonConvert.SerializeObject(carQuestionary.LightsJsonObject),
+                    WheelsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.WheelsJsonObject),
+                    LightsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.LightsJsonObject),
                     FendersJsonObject = JsonConvert.SerializeObject(new FendersJsonObject
                     {
-                        MountState = carQuestionary.FendersMountState,
-                        FendersOk = !carQuestionary.FendersOk
+                        MountState = trailerQuestionary.FendersMountState,
+                        FendersOk = !trailerQuestionary.FendersOk
                     }),
                     LastUpdated = timeCreated,
                     DriverId = model.DriverId,
                     UserId = user.Id,
-                    CarId = model.CarId
+                    TrailerId = trailerQuestionary.TransportId
                 };
 
                 _dbContext.Questionaries.Add(carQuestionaryEntity);
@@ -156,9 +190,60 @@ namespace CarTek.Api.Services
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<Questionary>> GetByCarPlate(string plate)
+        public ICollection<Questionary> GetListByCarId(long carId, string sortColumn, string sortDirection, int pageNumber, int pageSize)
         {
-            throw new NotImplementedException();
+            pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize >= 0 ? pageSize : 10;
+
+            var result = new List<Questionary>();
+
+            try
+            {
+                Expression<Func<Questionary, object>> orderBy = x => x.ApprovedAt;
+
+                if (sortColumn != null)
+                {
+                    switch (sortColumn)
+                    {
+                        case "date":
+                            orderBy = x => x.LastUpdated;
+                            break;
+                        case "driver":
+                            orderBy = x => x.Driver.LastName;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                var tresult = _dbContext.Questionaries
+                    .Include(t => t.User)
+                    .Include(t => t.Driver)
+                    .Where(t => t.CarId == carId);
+
+                if (sortDirection == "asc")
+                {
+                    tresult = tresult.OrderBy(orderBy);
+                }
+                else
+                {
+                    tresult = tresult.OrderByDescending(orderBy);
+                }
+
+                if (pageSize > 0)
+                {
+                    tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+                }
+
+                result = tresult.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список опросников");
+            }
+
+            return result;
         }
 
         public Questionary GetByUniqueId(Guid id)
@@ -168,7 +253,7 @@ namespace CarTek.Api.Services
                 var questionary = _dbContext.Questionaries
                     .Include(t => t.Driver)
                     .Include(t => t.Car)
-                    .FirstOrDefault(t => t.UniqueId == id && t.CarId != null);
+                    .FirstOrDefault(t => t.UniqueId == id && t.Type.Equals("car"));
 
                 return questionary;
             }
@@ -191,5 +276,124 @@ namespace CarTek.Api.Services
 
             return fullPath;
         }
+
+        public ICollection<Questionary> GetAll(long carId)
+        {
+            return GetListByCarId(carId, null, null, 0, 0);
+        }
+
+        public async Task<ICollection<ImageModel>> GetImages(Guid uniqueId)
+        {
+            var questionary = _dbContext.Questionaries.FirstOrDefault(t => t.UniqueId == uniqueId);
+
+            var result = new List<ImageModel>();
+
+            var filesPath = questionary.ImagesPath;
+
+            foreach (var file in Directory.GetFiles(filesPath))
+            {
+                var bytes = await File.ReadAllBytesAsync(file);
+
+                var imageModel = new ImageModel
+                {
+                    ImageName = Path.GetFileName(file),
+                    Extension = Path.GetExtension(file).Replace(".", ""),
+                    BinaryData = bytes
+                };
+
+                result.Add(imageModel);
+            };
+
+            return result;
+        }
+
+        public UnitQuestionaryModel GetUnitByUniqueId(Guid id)
+        {
+            var transportModel = new UnitQuestionaryModel();
+
+            try
+            {
+                var carQuestionary = _dbContext.Questionaries
+                    .Include(t => t.Driver)
+                    .Include(t => t.User)
+                    .Include(t => t.Car)
+                    .Include(t => t.Trailer)
+                    .FirstOrDefault(t => t.UniqueId == id && t.Type == "car");
+
+                var trailerQuestionary = _dbContext.Questionaries
+                    .Include(t => t.Driver)
+                    .Include(t => t.Car)
+                    .FirstOrDefault(t => t.UniqueId == id && t.Type == "trailer");
+
+                var trailerQuestionaryModel = new TrailerQuestionaryModel();
+                var carQuestionaryModel = new CarQuestionaryModel();
+
+                if (trailerQuestionary != null )
+                {
+                    trailerQuestionaryModel = new TrailerQuestionaryModel
+                    {
+                        TransportId = trailerQuestionary.TrailerId ?? 0,
+                        WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(trailerQuestionary.WheelsJsonObject),
+                        LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(trailerQuestionary.LightsJsonObject),
+                        FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).MountState,
+                        FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).FendersOk,
+                    };
+                }
+
+
+                if (carQuestionary != null)
+                {
+                    carQuestionaryModel = new CarQuestionaryModel
+                    {
+                        TransportId = (long)carQuestionary.CarId,
+                        Mileage = carQuestionary.Mileage,
+                        WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(carQuestionary.WheelsJsonObject),
+                        LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(carQuestionary.LightsJsonObject),
+                        FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).MountState,
+                        FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).FendersOk,
+                        Rack = carQuestionary.Rack,
+                        FrontSuspension = carQuestionary.FrontSuspension,
+                        BackSuspension = carQuestionary.BackSuspension,
+                        IsCabinClean = carQuestionary.IsCabinClean,
+                        PlatonInPlace = carQuestionary.PlatonInPlace,
+                        PlatonSwitchedOn = carQuestionary.PlatonSwitchedOn,
+                        CabinCushion = carQuestionary.CabinCushion,
+                        HydroEq = carQuestionary.HydroEq,
+                    };
+
+                    transportModel = new UnitQuestionaryModel
+                    {
+                        UniqueId = carQuestionary.UniqueId,
+                        Type = carQuestionary.Type,
+                        Action = carQuestionary.Action,
+                        LastUpdated = carQuestionary.LastUpdated,
+                        ApprovedAt = carQuestionary.ApprovedAt,
+                        Comment = carQuestionary.Comment,
+                        WasApproved = carQuestionary.WasApproved,
+                        Mileage = carQuestionary.Mileage,
+                        User = _mapper.Map<UserModel>(carQuestionary.User),
+                        Driver = _mapper.Map<DriverModel>(carQuestionary.Driver),
+                        Car = _mapper.Map<CarModel>(carQuestionary.Car),
+                        Trailer = _mapper.Map<TrailerModel>(carQuestionary.Trailer),
+                        CarQuestionaryModel = carQuestionaryModel,
+                        TrailerQuestionaryModel = trailerQuestionaryModel
+                    };
+                }
+
+                return transportModel;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка получения опросника {ex.Message}", ex);
+                return null;
+            }
+        }
+    }
+
+    public class ImageModel
+    {
+        public string ImageName { get; set; }
+        public string Extension { get; set; }
+        public byte[] BinaryData { get; set; }
     }
 }

@@ -155,6 +155,7 @@ namespace CarTek.Api.Services
         public Car GetByPlate(string plate)
         {
             var car = _dbContext.Cars
+                .Include(q => q.Questionaries)
                 .Include(t => t.Driver)
                 .Include(t => t.Trailer)
                 .FirstOrDefault(car => car.Plate.ToLower().Equals(plate.ToLower()));

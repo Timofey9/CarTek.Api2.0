@@ -1,6 +1,8 @@
-﻿namespace CarTek.Api.Model.Dto
+﻿using CarTek.Api.Model.Dto;
+
+namespace CarTek.Api.Model
 {
-    public class QuestionaryModel
+    public class QuestionaryCarModel
     {
         public long Id { get; set; }
 
@@ -9,6 +11,8 @@
         public string ImagesPath { get; set; }
 
         public bool IsOk { get; set; }
+
+        public TransportState State { get; set; }
 
         public DateTime LastUpdated { get; set; }
 
@@ -19,8 +23,6 @@
         //Пробег
         public int Mileage { get; set; }
 
-        //Nav properties
-        public CarModel Car { get; set; }
         public DriverModel Driver { get; set; }
 
         public long UserId { get; set; }

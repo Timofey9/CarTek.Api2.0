@@ -10,7 +10,13 @@ namespace CarTek.Api.Services.Interfaces
 
         Questionary GetByUniqueId(Guid id);
 
-        Task<ICollection<Questionary>> GetByCarPlate(string plate);
+        UnitQuestionaryModel GetUnitByUniqueId(Guid id);
+
+        ICollection<Questionary> GetListByCarId(long carId, string sortColumn, string sortDirection, int pageNumber, int pageSize);
+
+        ICollection<Questionary> GetAll(long carId);
+
+        Task<ICollection<ImageModel>> GetImages(Guid uniqueId);
 
         Task<ICollection<Questionary>> GetByCarId(string id);
 

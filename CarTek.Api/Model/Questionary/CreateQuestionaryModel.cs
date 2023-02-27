@@ -7,6 +7,8 @@ namespace CarTek.Api.Model.Quetionary
     {
         public long TransportId { get; set; }
 
+        public bool GeneralCondition { get; set; }
+
         public WheelsJson WheelsJsonObject { get; set; }
 
         public LightsJsonObject LightsJsonObject { get; set; }
@@ -40,6 +42,8 @@ namespace CarTek.Api.Model.Quetionary
         public bool FrontSuspension { get; set; }
 
         public bool BackSuspension { get; set; }
+
+        public bool HydroEq { get; set; }
     }
 
 

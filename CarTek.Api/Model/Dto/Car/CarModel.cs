@@ -1,4 +1,6 @@
-﻿namespace CarTek.Api.Model.Dto
+﻿using CarTek.Api.Model.Quetionary;
+
+namespace CarTek.Api.Model.Dto
 {
     public class CarModel
     {
