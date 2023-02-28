@@ -1,5 +1,7 @@
 ﻿using CarTek.Api.Model;
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CarTek.Api.DBContext
 {
@@ -26,10 +28,10 @@ namespace CarTek.Api.DBContext
         {
             var students = new User[]
             {
-                new User{FirstName="Тимофей", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb"},
-                new User{FirstName="Полина", LastName="Щербакова", MiddleName="Вячеславовна", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="polina"},
-                new User{FirstName="Попик", LastName="Попугов", MiddleName="Попугаевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="popugai"},
-                new User{FirstName="Фил", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb"},
+                new User{FirstName="Тимофей", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("07Jan1995")},
+                new User{FirstName="Полина", LastName="Щербакова", MiddleName="Вячеславовна", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="polina", Password=GetHash("07Jan1995")},
+                new User{FirstName="Попик", LastName="Попугов", MiddleName="Попугаевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="popugai", Password=GetHash("07Jan1995")},
+                new User{FirstName="Фил", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("07Jan1995")},
             };
 
             context.Users.AddRange(students);
@@ -41,10 +43,10 @@ namespace CarTek.Api.DBContext
         {
             var drivers = new Driver[]
             {
-                new Driver{FirstName="Тимофей1", LastName="Щербаков", MiddleName="Валерьевич", Email="1shcherbakov.t@gmail.com", Phone="79110109825", Password="asdas"},
-                new Driver{FirstName="Тимофей2", LastName="Щербаков", MiddleName="Валерьевич", Email="2shcherbakov.t@gmail.com", Phone="79110109826", Password="test5"},
-                new Driver{FirstName="Тимофей3", LastName="Щербаков", MiddleName="Валерьевич", Email="3shcherbakov.t@gmail.com", Phone="79110109827", Password = "test4"},
-                new Driver{FirstName="Тимофей4", LastName="Щербаков", MiddleName="Валерьевич", Email="4shcherbakov.t@gmail.com", Phone="79110109828", Password = "test1"}
+                new Driver{FirstName="Тимофей1", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109825", Password="asdas"},
+                new Driver{FirstName="Тимофей2", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109826", Password="test5"},
+                new Driver{FirstName="Тимофей3", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109827", Password = "test4"},
+                new Driver{FirstName="Тимофей4", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109828", Password = "test1"}
             };
 
             context.Drivers.AddRange(drivers);
@@ -78,7 +80,7 @@ namespace CarTek.Api.DBContext
             var cars = new Car[]
             {
                 new Car{Brand = "BMW", Model="X1", Plate="H257MC198", State = TransportState.Base, Driver = driver1, Trailer = trailer1},
-                new Car{Brand = "BMW", Model = "X2", Plate = "H357MC198", State = TransportState.Line, Driver = driver2, Trailer = trailer2},
+                new Car{Brand = "BMW", Model = "X2", Plate = "H357MC198", State = TransportState.Line, Trailer = trailer2},
                 new Car{Brand = "BMW", Model = "X3", Plate = "H457MC198", State = TransportState.Base, Driver = driver3, Trailer = trailer3}
             };
 
@@ -86,5 +88,20 @@ namespace CarTek.Api.DBContext
 
             context.SaveChanges();
         }
+
+        private static string GetHash(string input)
+        {
+            using (SHA256 hashFunction = SHA256.Create())
+            {
+                byte[] inputBytes = new ASCIIEncoding().GetBytes(input);
+
+                byte[] hashInput = hashFunction.ComputeHash(inputBytes);
+
+                String.Concat(Array.ConvertAll(hashInput, x => x.ToString("x2")));
+
+                return Convert.ToBase64String(hashInput);
+            }
+        }
+
     }
 }

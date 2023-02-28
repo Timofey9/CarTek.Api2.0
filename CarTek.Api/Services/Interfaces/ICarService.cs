@@ -10,6 +10,8 @@ namespace CarTek.Api.Services.Interfaces
 
         public IEnumerable<Car> GetAll();
 
+        public IEnumerable<Car> GetAllWithoutDriver();
+
         public IEnumerable<Car> GetAll(string searchColumn, string search);
 
         public IEnumerable<Car> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,

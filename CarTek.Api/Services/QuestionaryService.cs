@@ -102,7 +102,7 @@ namespace CarTek.Api.Services
                 {
                     action = "departure";
                     car.State = TransportState.Line;
-                }
+                } 
 
                 if (car.State == TransportState.Line)
                 {

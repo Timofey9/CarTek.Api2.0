@@ -88,5 +88,13 @@ namespace CarTek.Api.Controllers
                 List = _mapper.Map<List<CarModel>>(list)
             });
         }
+
+        [HttpGet("getallcars")]
+        public IActionResult GetAllCars()
+        {
+            var list = _carService.GetAll(null, null, 0, 0, null, null);
+
+            return Ok(_mapper.Map<List<CarModel>>(list));            
+        }
     }
 }

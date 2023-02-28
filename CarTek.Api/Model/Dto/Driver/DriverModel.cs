@@ -1,4 +1,6 @@
-﻿namespace CarTek.Api.Model.Dto
+﻿using CarTek.Api.Model.Dto.Driver;
+
+namespace CarTek.Api.Model.Dto
 {
     public class DriverModel
     {
@@ -10,11 +12,13 @@
 
         public string LastName { get; set; }
 
-        public string Email { get; set; }
+        public string Password { get; set; }
 
         public string Phone { get; set; }
 
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
+
+        public DriverCarModel Car { get; set; }
 
         public long? CarId { get; set; }
 

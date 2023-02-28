@@ -28,7 +28,7 @@
 
         public DateTime? ApprovedAt { get; set; }
 
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
 
         public bool? WasApproved { get; set; }
         

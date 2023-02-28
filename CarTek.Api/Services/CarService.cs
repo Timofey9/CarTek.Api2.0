@@ -64,8 +64,22 @@ namespace CarTek.Api.Services
             return GetAll(null, null, 0, 0, null, null);
         }
 
+        public IEnumerable<Car> GetAllWithoutDriver()
+        {
+            var tresult = _dbContext.Cars      
+                .Include(t => t.Trailer)        
+                .Include(x => x.Driver)        
+                .Include(t => t.Questionaries)        
+                .Where(t => t.Driver == null);
+
+            return tresult?.ToList();
+        }
+
+
         public IEnumerable<Car> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
         {
+
+            var a = GetAllWithoutDriver();
             pageNumber = pageNumber > 0 ? pageNumber : 1;
             pageSize = pageSize >= 0 ? pageSize : 10;
 

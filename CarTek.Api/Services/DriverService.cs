@@ -22,6 +22,8 @@ namespace CarTek.Api.Services
         {
             var driverInDb = _dbContext.Drivers.FirstOrDefault(t => t.Phone.Equals(driver.Phone));
 
+            var car = _dbContext.Cars.FirstOrDefault(t => t.Id == driver.CarId);
+
             if (driverInDb != null)
             {
                 var driverModel = new Driver
@@ -30,7 +32,8 @@ namespace CarTek.Api.Services
                     MiddleName = driver.MiddleName,
                     LastName = driver.LastName,
                     Phone = driver.Phone,
-                    Email = driver.Email
+                    Password = driver.Password,
+                    Car = car
                 };
 
                 var driverEntity = _dbContext.Drivers.Add(driverModel);
@@ -146,7 +149,9 @@ namespace CarTek.Api.Services
 
         public Driver GetById(long driverdId)
         {
-            var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == driverdId);
+            var driver = _dbContext.Drivers
+                .Include(d => d.Car)
+                .FirstOrDefault(t => t.Id == driverdId);
 
             return driver;
         }
@@ -169,8 +174,15 @@ namespace CarTek.Api.Services
                     return null;
                 }
 
-
                 driverModel.ApplyTo(existing);
+
+                //Снять текущего водителя с машины
+                var assignedDriver = _dbContext.Drivers.FirstOrDefault(t => t.CarId == existing.CarId);
+
+                if (assignedDriver != null && assignedDriver.Id != driverId)
+                {
+                    assignedDriver.CarId = null;
+                }
 
                 _dbContext.Drivers.Update(existing);
 

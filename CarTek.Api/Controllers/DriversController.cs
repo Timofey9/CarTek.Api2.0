@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarTek.Api.Controllers
@@ -35,18 +37,31 @@ namespace CarTek.Api.Controllers
             return Ok(driverEntity);
         }
 
+        [HttpPatch("updatedriver/{id}")]
+        public IActionResult UpdateDriver(long id, [FromBody] JsonPatchDocument<Driver> patchDoc)
+        {
+            var user = _driverService.UpdateDriver(id, patchDoc);
+
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(user);
+        }
+
 
         [HttpGet("driver/{id}")]
-        public IActionResult GetDriver(long carId)
+        public IActionResult GetDriver(long id)
         {
-            var driver = _driverService.GetById(carId);
+            var driver = _driverService.GetById(id);
 
             if (driver == null)
             {
                 return NotFound();
             }
 
-            return Ok(driver);
+            return Ok(_mapper.Map<DriverModel>(driver));
         }
 
         [HttpDelete("deletedriver/{driverId}")]
