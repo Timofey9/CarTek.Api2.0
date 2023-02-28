@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "_AllowSpecificOrigins",
         builder =>
         {
-            builder.WithOrigins(new string[] { "https://localhost:3000" })
+            builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://localhost:3000", "https://localhost:3000" })
             .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         });
 });
@@ -87,15 +87,15 @@ else
     app.UseMigrationsEndPoint();
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    //context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
-}
+//    var context = services.GetRequiredService<ApplicationDbContext>();
+//    //context.Database.EnsureDeleted();
+//    context.Database.EnsureCreated();
+//    DbInitializer.Initialize(context);
+//}
 
 app.UseRouting();
 app.UseHttpsRedirection();
