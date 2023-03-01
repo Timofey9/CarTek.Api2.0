@@ -116,7 +116,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("DriverId")
@@ -201,6 +200,9 @@ namespace CarTek.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<int>("AxelsCount")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Brand")
                         .HasColumnType("text");
 
@@ -211,9 +213,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Plate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("State")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

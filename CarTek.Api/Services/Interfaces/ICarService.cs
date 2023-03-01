@@ -1,5 +1,6 @@
 ﻿using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Response;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace CarTek.Api.Services.Interfaces
@@ -17,7 +18,7 @@ namespace CarTek.Api.Services.Interfaces
         public IEnumerable<Car> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,
             string searchColumn, string search);
 
-        public Car CreateCar(CreateCarModel car);
+        public ApiResponse CreateCar(CreateCarModel car);
 
         public Car GetById(long carId);
 

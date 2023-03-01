@@ -1,9 +1,11 @@
 ﻿using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
@@ -19,11 +21,11 @@ namespace CarTek.Api.Services
             _dbContext = dbContext;
         }
 
-        public Car CreateCar(CreateCarModel car)
+        public ApiResponse CreateCar(CreateCarModel car)
         {
             var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.Equals(car.Plate.ToLower()));
             
-            if(carInDb != null) { 
+            if(carInDb == null) { 
                 var carModel = new Car
                 {
                     Brand = car.Brand.ToLower(),
@@ -35,10 +37,18 @@ namespace CarTek.Api.Services
 
                 _dbContext.SaveChanges();
 
-                return carEntity.Entity;
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Тягач успешно добавлен"
+                };
             }
 
-            return null;
+            return new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Тягач с таким гос. номером уже существует",
+            };
         }
 
         public Car DeleteCar(long carId)
@@ -78,8 +88,6 @@ namespace CarTek.Api.Services
 
         public IEnumerable<Car> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
         {
-
-            var a = GetAllWithoutDriver();
             pageNumber = pageNumber > 0 ? pageNumber : 1;
             pageSize = pageSize >= 0 ? pageSize : 10;
 
@@ -173,6 +181,9 @@ namespace CarTek.Api.Services
                 .Include(t => t.Driver)
                 .Include(t => t.Trailer)
                 .FirstOrDefault(car => car.Plate.ToLower().Equals(plate.ToLower()));
+           
+            if (car != null)
+                car.Plate = car.Plate.ToUpper();
 
             return car;
         }
@@ -188,8 +199,23 @@ namespace CarTek.Api.Services
                     return null;
                 }
 
+                var trailerId = Convert.ToInt64(patchDoc.Operations[4].value);
+
+                patchDoc.Operations.RemoveAt(4);
 
                 patchDoc.ApplyTo(existing);
+
+                var trailer = _dbContext.Trailers.FirstOrDefault(t => t.Id == trailerId);
+
+                //Снять текущего водителя с машины
+                var attachedTrailer = _dbContext.Trailers.FirstOrDefault(t => t.CarId == existing.Id);
+
+                if (attachedTrailer != null && attachedTrailer.Id != carId)
+                {
+                    attachedTrailer.CarId = null;
+                }
+
+                existing.Trailer = trailer;
 
                 _dbContext.Cars.Update(existing);
 

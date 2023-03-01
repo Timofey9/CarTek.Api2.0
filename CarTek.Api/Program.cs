@@ -22,11 +22,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddAutoMapper(typeof(ModelProfile));
 
-builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<ICarService, CarService>();
-builder.Services.AddTransient<IDriverService, DriverService>();
-builder.Services.AddTransient<IJwtService, JwtService>();
-builder.Services.AddTransient<IQuestionaryService, QuestionaryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITrailerService, TrailerService>();
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddAuthentication(auth =>
 {
@@ -70,7 +72,7 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
-
+app.UseCors("_AllowSpecificOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -87,18 +89,17 @@ else
     app.UseMigrationsEndPoint();
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
 
-//    var context = services.GetRequiredService<ApplicationDbContext>();
-//    //context.Database.EnsureDeleted();
-//    context.Database.EnsureCreated();
-//    DbInitializer.Initialize(context);
-//}
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    //context.Database.EnsureDeleted();
+    context.Database.EnsureCreated();
+    DbInitializer.Initialize(context);
+}
 
 app.UseRouting();
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -12,6 +12,8 @@
 
         public string TrailerQuestionaryModel { get; set; }
 
+        public string Action { get; set; }
+
         public TransportState State { get; set; }
 
         public DateTime LastUpdated { get; set; }

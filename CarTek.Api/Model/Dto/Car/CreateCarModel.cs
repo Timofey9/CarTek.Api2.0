@@ -9,5 +9,8 @@
 
         public string Model { get; set; }
 
+        public long TrailerId { get; set; } 
+
+        public int AxelsCount { get; set; }
     }
 }

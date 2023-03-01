@@ -57,9 +57,9 @@ namespace CarTek.Api.DBContext
         {
             var trailers = new Trailer[]
             {
-                new Trailer{Brand = "Traier1", Model="X4", Plate="H257MC198", State="Base"},
-                new Trailer{Brand = "Traier2", Model = "X5", Plate = "H357MC198", State = "Base"},
-                new Trailer{Brand = "Traier3", Model = "X6", Plate = "H457MC198", State = "Base"}
+                new Trailer{Brand = "Traier1", Model="X4", Plate="H257MC198", AxelsCount=2},
+                new Trailer{Brand = "Traier2", Model = "X5", Plate = "H357MC198", AxelsCount = 2},
+                new Trailer{Brand = "Traier3", Model = "X6", Plate = "H457MC198", AxelsCount = 3}
             };
 
             context.Trailers.AddRange(trailers);

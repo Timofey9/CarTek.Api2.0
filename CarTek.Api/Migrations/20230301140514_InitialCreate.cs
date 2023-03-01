@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,7 +59,6 @@ namespace CarTek.Api.Migrations
                     MiddleName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Password = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     CarId = table.Column<long>(type: "bigint", nullable: true)
                 },
@@ -82,7 +81,7 @@ namespace CarTek.Api.Migrations
                     Plate = table.Column<string>(type: "text", nullable: true),
                     Brand = table.Column<string>(type: "text", nullable: true),
                     Model = table.Column<string>(type: "text", nullable: true),
-                    State = table.Column<string>(type: "text", nullable: true),
+                    AxelsCount = table.Column<int>(type: "integer", nullable: false),
                     CarId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
@@ -101,11 +100,15 @@ namespace CarTek.Api.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Action = table.Column<string>(type: "text", nullable: false),
                     UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    GeneralCondition = table.Column<bool>(type: "boolean", nullable: false),
                     ImagesPath = table.Column<string>(type: "text", nullable: true),
                     LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Comment = table.Column<string>(type: "text", nullable: false),
-                    WasApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    WasApproved = table.Column<bool>(type: "boolean", nullable: true),
                     Mileage = table.Column<int>(type: "integer", nullable: true),
                     IsCabinClean = table.Column<bool>(type: "boolean", nullable: true),
                     PlatonInPlace = table.Column<bool>(type: "boolean", nullable: false),
@@ -117,6 +120,7 @@ namespace CarTek.Api.Migrations
                     Rack = table.Column<bool>(type: "boolean", nullable: false),
                     FrontSuspension = table.Column<bool>(type: "boolean", nullable: false),
                     BackSuspension = table.Column<bool>(type: "boolean", nullable: false),
+                    HydroEq = table.Column<bool>(type: "boolean", nullable: false),
                     CarId = table.Column<long>(type: "bigint", nullable: true),
                     DriverId = table.Column<long>(type: "bigint", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: false),

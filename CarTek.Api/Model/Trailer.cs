@@ -11,8 +11,7 @@
 
         public string Model { get; set; }
 
-        //В пути, на базе, в ремонте
-        public string State { get; set; }
+        public int AxelsCount { get; set; }
 
         public long? CarId { get; set; }
 

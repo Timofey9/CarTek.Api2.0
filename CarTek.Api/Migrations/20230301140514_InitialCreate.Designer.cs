@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230226145900_QuestionaryModelUpdated")]
-    partial class QuestionaryModelUpdated
+    [Migration("20230301140514_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,10 +67,6 @@ namespace CarTek.Api.Migrations
                     b.Property<long?>("CarId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -106,6 +102,10 @@ namespace CarTek.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -119,7 +119,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("DriverId")
@@ -130,6 +129,12 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("FrontSuspension")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("GeneralCondition")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HydroEq")
                         .HasColumnType("boolean");
 
                     b.Property<string>("ImagesPath")
@@ -159,6 +164,10 @@ namespace CarTek.Api.Migrations
 
                     b.Property<long?>("TrailerId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UniqueId")
                         .HasColumnType("uuid");
@@ -194,6 +203,9 @@ namespace CarTek.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<int>("AxelsCount")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Brand")
                         .HasColumnType("text");
 
@@ -204,9 +216,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Plate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("State")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
