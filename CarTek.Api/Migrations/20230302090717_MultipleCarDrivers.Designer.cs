@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230302090717_MultipleCarDrivers")]
+    partial class MultipleCarDrivers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,18 +206,15 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Brand")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long?>("CarId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Model")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Plate")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -222,7 +222,7 @@ namespace CarTek.Api.Migrations
                     b.HasIndex("CarId")
                         .IsUnique();
 
-                    b.ToTable("Trailers", (string)null);
+                    b.ToTable("Trailers");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.User", b =>
@@ -259,7 +259,7 @@ namespace CarTek.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>
@@ -317,7 +317,8 @@ namespace CarTek.Api.Migrations
 
                     b.Navigation("Questionaries");
 
-                    b.Navigation("Trailer");
+                    b.Navigation("Trailer")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>

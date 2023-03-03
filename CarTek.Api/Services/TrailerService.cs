@@ -28,9 +28,9 @@ namespace CarTek.Api.Services
             {
                 var trailerModel = new Trailer
                 {
-                    Brand = model.Brand.ToLower(),
-                    Plate = model.Plate.ToLower(),
-                    Model = model.Model.ToLower(),
+                    Brand = model.Brand,
+                    Plate = model.Plate,
+                    Model = model.Model,
                     CarId = model.CarId,
                     AxelsCount = model.AxelsCount
                 };

@@ -28,9 +28,10 @@ namespace CarTek.Api.Services
             if(carInDb == null) { 
                 var carModel = new Car
                 {
-                    Brand = car.Brand.ToLower(),
-                    Plate = car.Plate.ToLower(),
-                    Model = car.Model.ToLower(),
+                    Brand = car.Brand,
+                    Plate = car.Plate,
+                    Model = car.Model,
+                    AxelsCount = car.AxelsCount
                 };
 
                 var carEntity = _dbContext.Cars.Add(carModel);
@@ -73,18 +74,6 @@ namespace CarTek.Api.Services
         {
             return GetAll(null, null, 0, 0, null, null);
         }
-
-        public IEnumerable<Car> GetAllWithoutDriver()
-        {
-            var tresult = _dbContext.Cars      
-                .Include(t => t.Trailer)        
-                .Include(x => x.Driver)        
-                .Include(t => t.Questionaries)        
-                .Where(t => t.Driver == null);
-
-            return tresult?.ToList();
-        }
-
 
         public IEnumerable<Car> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
         {
@@ -133,7 +122,7 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.Cars
                         .Include(t => t.Trailer)
-                        .Include(x => x.Driver)
+                        .Include(x => x.Drivers)
                         .Include(t => t.Questionaries)
                         .Where(filterBy);
 
@@ -178,7 +167,7 @@ namespace CarTek.Api.Services
         {
             var car = _dbContext.Cars
                 .Include(q => q.Questionaries)
-                .Include(t => t.Driver)
+                .Include(t => t.Drivers)
                 .Include(t => t.Trailer)
                 .FirstOrDefault(car => car.Plate.ToLower().Equals(plate.ToLower()));
            
@@ -207,7 +196,6 @@ namespace CarTek.Api.Services
 
                 var trailer = _dbContext.Trailers.FirstOrDefault(t => t.Id == trailerId);
 
-                //Снять текущего водителя с машины
                 var attachedTrailer = _dbContext.Trailers.FirstOrDefault(t => t.CarId == existing.Id);
 
                 if (attachedTrailer != null && attachedTrailer.Id != carId)

@@ -17,10 +17,10 @@ namespace CarTek.Api.Model.Dto
         public int AxelsCount { get; set; }
 
         //В пути, на базе, в ремонте
-        public string State { get; set; }
+        public TransportState State { get; set; }
 
         public TrailerModel Trailer { get; set; }
 
-        public DriverModel Driver { get; set; }
+        public ICollection<DriverModel> Drivers { get; set; }
     }
 }

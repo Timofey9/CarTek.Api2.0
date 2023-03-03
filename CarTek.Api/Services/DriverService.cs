@@ -176,13 +176,13 @@ namespace CarTek.Api.Services
 
                 driverModel.ApplyTo(existing);
 
-                //Снять текущего водителя с машины
-                var assignedDriver = _dbContext.Drivers.FirstOrDefault(t => t.CarId == existing.CarId);
+                ////Снять текущего водителя с машины
+                //var assignedDriver = _dbContext.Drivers.FirstOrDefault(t => t.CarId == existing.CarId);
 
-                if (assignedDriver != null && assignedDriver.Id != driverId)
-                {
-                    assignedDriver.CarId = null;
-                }
+                //if (assignedDriver != null && assignedDriver.Id != driverId)
+                //{
+                //    assignedDriver.CarId = null;
+                //}
 
                 _dbContext.Drivers.Update(existing);
 

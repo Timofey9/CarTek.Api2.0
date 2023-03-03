@@ -21,7 +21,7 @@ namespace CarTek.Api.Model.Quetionary
 
     public class TrailerQuestionaryModel : TransportQuestionaryModel
     {
-
+        public string TrailerComment { get; set; }  
     }
 
 

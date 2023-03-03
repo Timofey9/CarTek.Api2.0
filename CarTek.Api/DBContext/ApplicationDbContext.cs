@@ -26,10 +26,6 @@ namespace CarTek.Api.DBContext
                 entity.HasOne(e => e.Trailer)
                 .WithOne(e => e.Car)
                 .HasForeignKey<Trailer>(trailer => trailer.CarId);
-
-                entity.HasOne(e => e.Driver)
-                .WithOne(e => e.Car)
-                .HasForeignKey<Driver>(driver => driver.CarId);
             });
 
             modelBuilder.Entity<Questionary>(entity =>
@@ -38,6 +34,14 @@ namespace CarTek.Api.DBContext
 
                 entity.HasOne(e => e.Car)
                 .WithMany(questions => questions.Questionaries);
+            });
+
+            modelBuilder.Entity<Driver>(entity =>
+            {
+                entity.ToTable("drivers");
+
+                entity.HasOne(e => e.Car)
+                .WithMany(car => car.Drivers);
             });
         }
     }

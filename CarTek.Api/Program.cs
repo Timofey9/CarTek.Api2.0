@@ -63,7 +63,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "_AllowSpecificOrigins",
         builder =>
         {
-            builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://localhost:3000", "https://localhost:3000" })
+            builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://cartek-app.ru", "http://cartek-app.ru:3000", "http://localhost:3000", "https://localhost:3000" })
             .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         });
 });

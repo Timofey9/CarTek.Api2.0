@@ -79,9 +79,9 @@ namespace CarTek.Api.DBContext
 
             var cars = new Car[]
             {
-                new Car{Brand = "BMW", Model="X1", Plate="H257MC198", State = TransportState.Base, Driver = driver1, Trailer = trailer1},
+                new Car{Brand = "BMW", Model="X1", Plate="H257MC198", State = TransportState.Base, Drivers = new List<Driver>(){driver1}, Trailer = trailer1},
                 new Car{Brand = "BMW", Model = "X2", Plate = "H357MC198", State = TransportState.Line, Trailer = trailer2},
-                new Car{Brand = "BMW", Model = "X3", Plate = "H457MC198", State = TransportState.Base, Driver = driver3, Trailer = trailer3}
+                new Car{Brand = "BMW", Model = "X3", Plate = "H457MC198", State = TransportState.Base, Drivers = new List<Driver>(){driver3}, Trailer = trailer3}
             };
 
             context.Cars.AddRange(cars);

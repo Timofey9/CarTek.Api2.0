@@ -102,8 +102,7 @@ namespace CarTek.Api.Services
                 {
                     action = "departure";
                     car.State = TransportState.Line;
-                } 
-
+                } else 
                 if (car.State == TransportState.Line)
                 {
                     action = "arrival";
@@ -157,7 +156,7 @@ namespace CarTek.Api.Services
                     GeneralCondition = trailerQuestionary.GeneralCondition,
                     Mileage = 0,
                     User = user,
-                    Comment = model.Comment,
+                    Comment = trailerQuestionary.TrailerComment,
                     WheelsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.WheelsJsonObject),
                     LightsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.LightsJsonObject),
                     FendersJsonObject = JsonConvert.SerializeObject(new FendersJsonObject

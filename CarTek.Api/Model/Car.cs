@@ -33,9 +33,9 @@ namespace CarTek.Api.Model
         //На линии, на базе, в ремонте
         public TransportState State { get; set; }
 
-        public Trailer Trailer { get; set; }
+        public Trailer? Trailer { get; set; }
 
-        public Driver Driver { get; set; }
+        public ICollection<Driver> Drivers { get; set; }
 
         public ICollection<Questionary> Questionaries { get; set; }
     }
