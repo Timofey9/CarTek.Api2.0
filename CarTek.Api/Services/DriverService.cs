@@ -1,6 +1,7 @@
 ﻿using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +19,13 @@ namespace CarTek.Api.Services
             _logger = logger;
             _dbContext = dbContext;
         }
-        public Driver CreateDriver(CreateDriverModel driver)
+        public ApiResponse CreateDriver(CreateDriverModel driver)
         {
             var driverInDb = _dbContext.Drivers.FirstOrDefault(t => t.Phone.Equals(driver.Phone));
 
             var car = _dbContext.Cars.FirstOrDefault(t => t.Id == driver.CarId);
 
-            if (driverInDb != null)
+            if (driverInDb == null)
             {
                 var driverModel = new Driver
                 {
@@ -40,10 +41,18 @@ namespace CarTek.Api.Services
 
                 _dbContext.SaveChanges();
 
-                return driverEntity.Entity;
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Водитель создан"
+                };
             }
 
-            return null;
+            return new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Водитель с таким номером телефона уже существует"
+            };
         }
 
 
