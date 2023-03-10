@@ -23,5 +23,10 @@ namespace CarTek.Api.Services.Interfaces
         Task<string> SaveImage(IFormFile file, string path);
 
         Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId);
+
+        IEnumerable<Questionary> GetAll(string searchColumn, string search);
+
+        IEnumerable<Questionary> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,
+            string searchColumn, string search);
     }
 }

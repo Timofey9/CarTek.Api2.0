@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Quetionary;
 using CarTek.Api.Model.Response;
@@ -113,9 +114,23 @@ namespace CarTek.Api.Controllers
                 TotalNumber = totalNumber,
                 List = _mapper.Map<List<QuestionaryModel>>(list)
             });
-        }       
-        
-        
+        }
+
+        [HttpGet("history")]
+        public IActionResult GetAllQuestionaries(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search)
+        {
+            var list = _questionaryService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search);
+
+            var totalNumber = _questionaryService.GetAll(searchColumn, search).Count();
+
+            return Ok(new PagedResult<QuestionaryModel>()
+            {
+                TotalNumber = totalNumber,
+                List = _mapper.Map<List<QuestionaryModel>>(list)
+            });
+        }
+
+
         [HttpGet("getImages/{questionaryGuid}")]
         public async Task<IActionResult>GetQuestionaryImages(Guid questionaryGuid)
         {

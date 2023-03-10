@@ -252,6 +252,7 @@ namespace CarTek.Api.Services
                 var questionary = _dbContext.Questionaries
                     .Include(t => t.Driver)
                     .Include(t => t.Car)
+                    .Include(t => t.User)
                     .FirstOrDefault(t => t.UniqueId == id && t.Type.Equals("car"));
 
                 return questionary;
@@ -332,6 +333,8 @@ namespace CarTek.Api.Services
                     trailerQuestionaryModel = new TrailerQuestionaryModel
                     {
                         TransportId = trailerQuestionary.TrailerId ?? 0,
+                        TrailerComment = trailerQuestionary.Comment,
+                        GeneralCondition = trailerQuestionary.GeneralCondition,
                         WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(trailerQuestionary.WheelsJsonObject),
                         LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(trailerQuestionary.LightsJsonObject),
                         FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).MountState,
@@ -386,6 +389,78 @@ namespace CarTek.Api.Services
                 _logger.LogError($"Ошибка получения опросника {ex.Message}", ex);
                 return null;
             }
+        }
+
+        public IEnumerable<Questionary> GetAll(string searchColumn, string search)
+        {
+            return GetAll(null, null, 0, 0, searchColumn, search);
+        }
+
+        public IEnumerable<Questionary> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
+        {
+            pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize >= 0 ? pageSize : 10;
+
+            var result = new List<Questionary>();
+
+            try
+            {
+                Expression<Func<Questionary, bool>> filterBy = x => x.Type.Equals("car");
+                if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
+                {
+                    switch (searchColumn)
+                    {
+                        case "plate":
+                            filterBy = x => x.Type.Equals("car") && x.Car.Plate.ToLower().Contains(search.ToLower().Trim());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                Expression<Func<Questionary, object>> orderBy = x => x.LastUpdated;
+
+                if (sortColumn != null)
+                {
+                    switch (sortColumn)
+                    {
+                        case "date":
+                            orderBy = x => x.LastUpdated;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                var tresult = _dbContext.Questionaries
+                    .Include(t => t.Car)
+                    .Include(t => t.Driver)
+                    .Include(t => t.User)
+                    .Where(filterBy);
+
+                if (sortDirection == "asc")
+                {
+                    tresult = tresult.OrderBy(orderBy);
+                }
+                else
+                {
+                    tresult = tresult.OrderByDescending(orderBy);
+                }
+
+                if (pageSize > 0)
+                {
+                    tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+                }
+
+                result = tresult.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список анкет");
+            }
+
+            return result;
         }
     }
 
