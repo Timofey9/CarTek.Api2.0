@@ -6,7 +6,7 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface IQuestionaryService
     {
-        Task<Questionary> CreateQuestionary(CreateQuestionaryModel model);
+        Questionary CreateQuestionary(CreateQuestionaryModel model);
 
         Questionary GetByUniqueId(Guid id);
 

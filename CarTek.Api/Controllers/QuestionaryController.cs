@@ -26,10 +26,10 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitQuestionary([FromForm]CreateQuestionaryModel questionaryModel)
+        public IActionResult SubmitQuestionary([FromForm]CreateQuestionaryModel questionaryModel)
         {
             try { 
-                var res = await _questionaryService.CreateQuestionary(questionaryModel);
+                var res = _questionaryService.CreateQuestionary(questionaryModel);
 
                 if (res != null)
                     return Ok(_mapper.Map<QuestionaryModel>(res));

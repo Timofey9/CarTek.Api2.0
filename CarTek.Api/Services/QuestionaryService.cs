@@ -8,6 +8,7 @@ using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
@@ -47,6 +48,23 @@ namespace CarTek.Api.Services
 
                     var questionary = GetByUniqueId(uniqueId);
 
+                    var carId = questionary.CarId ?? 0;
+
+                    if (questionary.CarId != 0)
+                    {
+                        var car = _carService.GetById(carId);
+
+                        if (car.State == TransportState.Base)
+                        {
+                            car.State = TransportState.Line;
+                        }
+                        else
+                        if (car.State == TransportState.Line)
+                        {
+                            car.State = TransportState.Base;
+                        }
+                    }
+
                     questionary.ApprovedAt = DateTime.UtcNow;
                     questionary.WasApproved= true;
 
@@ -72,7 +90,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<Questionary> CreateQuestionary(CreateQuestionaryModel model)
+        public Questionary CreateQuestionary(CreateQuestionaryModel model)
         {
             try
             {
@@ -92,22 +110,11 @@ namespace CarTek.Api.Services
                 {
                     foreach (var image in model.Images)
                     {
-                        await SaveImage(image, imagesPath);
+                        SaveImage(image, imagesPath);
                     }
                 }
 
                 string action = "";
-
-                if(car.State == TransportState.Base)
-                {
-                    action = "departure";
-                    car.State = TransportState.Line;
-                } else 
-                if (car.State == TransportState.Line)
-                {
-                    action = "arrival";
-                    car.State = TransportState.Base;
-                }
 
                 var user = _userService.GetByLogin(model.CreatedBy);
 
@@ -173,7 +180,7 @@ namespace CarTek.Api.Services
                 _dbContext.Questionaries.Add(carQuestionaryEntity);
                 _dbContext.Questionaries.Add(trailerQuestionaryEntity);
 
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
 
                 return carQuestionaryEntity;
             }
@@ -218,7 +225,7 @@ namespace CarTek.Api.Services
                 var tresult = _dbContext.Questionaries
                     .Include(t => t.User)
                     .Include(t => t.Driver)
-                    .Where(t => t.CarId == carId);
+                    .Where(t => t.CarId == carId && (t.WasApproved ?? false));
 
                 if (sortDirection == "asc")
                 {

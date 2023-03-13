@@ -14,7 +14,18 @@
     public class Axle
     {
         public Wheel LeftWheel { get; set; }
+
+        /// <summary>
+        /// внутренний
+        /// </summary>
+        public Wheel? LeftWheel2 { get; set; }
+
         public Wheel RightWheel { get; set; }
+
+        /// <summary>
+        /// внутренний
+        /// </summary>
+        public Wheel? RightWheel2 { get; set; }
     }
 
     public class WheelsJson
