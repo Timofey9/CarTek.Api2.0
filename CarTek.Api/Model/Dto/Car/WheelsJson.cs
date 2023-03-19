@@ -2,10 +2,37 @@
 {
     public class Wheel
     {
-        public double Pressure { get; set; }
+        private string _pressure;
+
+        public string Pressure {
+            get
+            {
+                return _pressure;
+            }
+            set
+            {
+                var isDouble = double.TryParse(value, out var result);
+
+                if (isDouble)
+                {
+                    if(result > 8 && result < 11)
+                    {
+                        _pressure = "true";
+                    }
+                    else
+                    {
+                        _pressure = "false";
+                    }
+                }
+                else
+                {
+                    _pressure = value;
+                }
+            }
+        }
         //диск
         public bool RimState { get; set; }
-        
+
         public bool PinsState { get; set; }
 
         public bool TireState { get; set; }
@@ -15,16 +42,10 @@
     {
         public Wheel LeftWheel { get; set; }
 
-        /// <summary>
-        /// внутренний
-        /// </summary>
         public Wheel? LeftWheel2 { get; set; }
 
         public Wheel RightWheel { get; set; }
 
-        /// <summary>
-        /// внутренний
-        /// </summary>
         public Wheel? RightWheel2 { get; set; }
     }
 
@@ -32,7 +53,6 @@
     {
         public Axle FrontAxle { get; set; }
         public Axle BackAxle { get; set; }
-
         public Axle? MiddleAxle { get; set; }
     }
 }

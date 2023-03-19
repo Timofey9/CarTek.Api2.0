@@ -56,11 +56,13 @@ namespace CarTek.Api.Services
 
                         if (car.State == TransportState.Base)
                         {
+                            questionary.Action = "departure";
                             car.State = TransportState.Line;
                         }
                         else
                         if (car.State == TransportState.Line)
                         {
+                            questionary.Action = "arrival";
                             car.State = TransportState.Base;
                         }
                     }
@@ -101,17 +103,11 @@ namespace CarTek.Api.Services
 
                 var car = _carService.GetById(carQuestionary.TransportId);
 
-                var imagesPath = $"/data/uploads/{car.Plate}/{uniqueId}";
+                string imagesPath = "";
 
-                // создаем папку для хранения файлов
-                Directory.CreateDirectory(imagesPath);
-
-                if(model.Images != null)
+                if (model.Images != null)
                 {
-                    foreach (var image in model.Images)
-                    {
-                        SaveImage(image, imagesPath);
-                    }
+                    imagesPath = $"/data/uploads/{car.Plate}/{uniqueId}";
                 }
 
                 string action = "";
@@ -150,43 +146,60 @@ namespace CarTek.Api.Services
                     LastUpdated = timeCreated,
                     DriverId = model.DriverId,
                     UserId = user.Id,
-                    TrailerId = trailerQuestionary.TransportId,
+                    TrailerId = trailerQuestionary?.TransportId,
                     CarId = model.CarId                    
                 };
 
-                var trailerQuestionaryEntity = new Questionary
+                if(trailerQuestionary != null)
                 {
-                    UniqueId = uniqueId,
-                    ImagesPath = imagesPath,
-                    Type = "trailer",
-                    Action = action,
-                    GeneralCondition = trailerQuestionary.GeneralCondition,
-                    Mileage = 0,
-                    User = user,
-                    Comment = trailerQuestionary.TrailerComment,
-                    WheelsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.WheelsJsonObject),
-                    LightsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.LightsJsonObject),
-                    FendersJsonObject = JsonConvert.SerializeObject(new FendersJsonObject
+                    var trailerQuestionaryEntity = new Questionary
                     {
-                        MountState = trailerQuestionary.FendersMountState,
-                        FendersOk = !trailerQuestionary.FendersOk
-                    }),
-                    LastUpdated = timeCreated,
-                    DriverId = model.DriverId,
-                    UserId = user.Id,
-                    TrailerId = trailerQuestionary.TransportId
-                };
+                        UniqueId = uniqueId,
+                        ImagesPath = imagesPath,
+                        Type = "trailer",
+                        Action = action,
+                        GeneralCondition = trailerQuestionary.GeneralCondition,
+                        Mileage = 0,
+                        User = user,
+                        Comment = trailerQuestionary.TrailerComment,
+                        WheelsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.WheelsJsonObject),
+                        LightsJsonObject = JsonConvert.SerializeObject(trailerQuestionary.LightsJsonObject),
+                        FendersJsonObject = JsonConvert.SerializeObject(new FendersJsonObject
+                        {
+                            MountState = trailerQuestionary.FendersMountState,
+                            FendersOk = !trailerQuestionary.FendersOk
+                        }),
+                        LastUpdated = timeCreated,
+                        DriverId = model.DriverId,
+                        UserId = user.Id,
+                        TrailerId = trailerQuestionary.TransportId
+                    };
+                    _dbContext.Questionaries.Add(trailerQuestionaryEntity);
+                }
 
                 _dbContext.Questionaries.Add(carQuestionaryEntity);
-                _dbContext.Questionaries.Add(trailerQuestionaryEntity);
 
                 _dbContext.SaveChanges();
+
+                if (model.Images != null)
+                {
+                    imagesPath = $"/data/uploads/{car.Plate}/{uniqueId}";
+
+                    // создаем папку для хранения файлов
+                    Directory.CreateDirectory(imagesPath);
+
+                    foreach (var image in model.Images)
+                    {
+                        SaveImage(image, imagesPath);
+                    }
+                }
+
 
                 return carQuestionaryEntity;
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Ошибка сохранения опросника: {ex.Message}");
+                _logger.LogError(ex, $"Ошибка создания опросника: {ex.Message}");
                 return null;
             }
         }
@@ -225,7 +238,7 @@ namespace CarTek.Api.Services
                 var tresult = _dbContext.Questionaries
                     .Include(t => t.User)
                     .Include(t => t.Driver)
-                    .Where(t => t.CarId == carId && (t.WasApproved ?? false));
+                    .Where(t => t.CarId == carId);
 
                 if (sortDirection == "asc")
                 {
@@ -266,7 +279,7 @@ namespace CarTek.Api.Services
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Ошибка получения опросника {ex.Message}", ex);
+                _logger.LogError(ex, $"Ошибка получения опросника {ex.Message}", ex);
                 return null;
             }
         }
@@ -337,38 +350,52 @@ namespace CarTek.Api.Services
 
                 if (trailerQuestionary != null )
                 {
-                    trailerQuestionaryModel = new TrailerQuestionaryModel
+                    // in case deserialization fails
+                    try
                     {
-                        TransportId = trailerQuestionary.TrailerId ?? 0,
-                        TrailerComment = trailerQuestionary.Comment,
-                        GeneralCondition = trailerQuestionary.GeneralCondition,
-                        WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(trailerQuestionary.WheelsJsonObject),
-                        LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(trailerQuestionary.LightsJsonObject),
-                        FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).MountState,
-                        FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).FendersOk,
-                    };
+                        trailerQuestionaryModel = new TrailerQuestionaryModel
+                        {
+                            TransportId = trailerQuestionary.TrailerId ?? 0,
+                            TrailerComment = trailerQuestionary.Comment,
+                            GeneralCondition = trailerQuestionary.GeneralCondition,
+                            WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(trailerQuestionary.WheelsJsonObject),
+                            LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(trailerQuestionary.LightsJsonObject),
+                            FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).MountState,
+                            FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).FendersOk,
+                        };
+                    }
+                    catch(Exception ex)
+                    {
+                        _logger.LogError($"Ошибка десериализации {id}", ex);
+                    }
                 }
-
 
                 if (carQuestionary != null)
                 {
-                    carQuestionaryModel = new CarQuestionaryModel
+                    try
                     {
-                        TransportId = (long)carQuestionary.CarId,
-                        Mileage = carQuestionary.Mileage,
-                        WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(carQuestionary.WheelsJsonObject),
-                        LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(carQuestionary.LightsJsonObject),
-                        FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).MountState,
-                        FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).FendersOk,
-                        Rack = carQuestionary.Rack,
-                        FrontSuspension = carQuestionary.FrontSuspension,
-                        BackSuspension = carQuestionary.BackSuspension,
-                        IsCabinClean = carQuestionary.IsCabinClean,
-                        PlatonInPlace = carQuestionary.PlatonInPlace,
-                        PlatonSwitchedOn = carQuestionary.PlatonSwitchedOn,
-                        CabinCushion = carQuestionary.CabinCushion,
-                        HydroEq = carQuestionary.HydroEq,
-                    };
+                        carQuestionaryModel = new CarQuestionaryModel
+                        {
+                            TransportId = (long)carQuestionary.CarId,
+                            Mileage = carQuestionary.Mileage,
+                            WheelsJsonObject = JsonConvert.DeserializeObject<WheelsJson>(carQuestionary.WheelsJsonObject),
+                            LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(carQuestionary.LightsJsonObject),
+                            FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).MountState,
+                            FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(carQuestionary.FendersJsonObject).FendersOk,
+                            Rack = carQuestionary.Rack,
+                            FrontSuspension = carQuestionary.FrontSuspension,
+                            BackSuspension = carQuestionary.BackSuspension,
+                            IsCabinClean = carQuestionary.IsCabinClean,
+                            PlatonInPlace = carQuestionary.PlatonInPlace,
+                            PlatonSwitchedOn = carQuestionary.PlatonSwitchedOn,
+                            CabinCushion = carQuestionary.CabinCushion,
+                            HydroEq = carQuestionary.HydroEq,
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ошибка десериализации {id}", ex);
+                    }
 
                     transportModel = new UnitQuestionaryModel
                     {
@@ -393,7 +420,7 @@ namespace CarTek.Api.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ошибка получения опросника {ex.Message}", ex);
+                _logger.LogError($"Ошибка получения опросника {id}", ex);
                 return null;
             }
         }
@@ -468,6 +495,49 @@ namespace CarTek.Api.Services
             }
 
             return result;
+        }
+
+        public bool DeleteQuestionary(Guid uniqueId)
+        {
+            try
+            {
+                var carQuestionary = _dbContext.Questionaries
+                    .Include(t => t.Driver)
+                    .Include(t => t.User)
+                    .Include(t => t.Car)
+                    .Include(t => t.Trailer)
+                    .FirstOrDefault(t => t.UniqueId == uniqueId && t.Type == "car");
+
+                var trailerQuestionary = _dbContext.Questionaries
+                    .Include(t => t.Driver)
+                    .Include(t => t.Car)
+                    .FirstOrDefault(t => t.UniqueId == uniqueId && t.Type == "trailer");
+
+                if (carQuestionary != null)
+                {
+                    var imagesPath = carQuestionary.ImagesPath;
+                    if (Directory.Exists(imagesPath))
+                    {
+                        Directory.Delete(imagesPath, true);
+                    }
+
+                    _dbContext.Questionaries.Remove(carQuestionary);
+                }
+
+                if (trailerQuestionary != null)
+                {
+                    _dbContext.Questionaries.Remove(trailerQuestionary);
+                }
+
+                _dbContext.SaveChanges();
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка удаления опросника {uniqueId}", ex);
+                return false;
+            }
         }
     }
 

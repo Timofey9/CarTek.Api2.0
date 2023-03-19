@@ -17,12 +17,14 @@ namespace CarTek.Api.Controllers
     public class QuestionaryController : ControllerBase 
     {
         private readonly IQuestionaryService _questionaryService;
+        private readonly ILogger<QuestionaryController> _logger;
         private readonly IMapper _mapper;
 
-        public QuestionaryController(IQuestionaryService questionaryService, IMapper mapper)
+        public QuestionaryController(IQuestionaryService questionaryService, IMapper mapper, ILogger<QuestionaryController> logger)
         {
             _mapper = mapper;
             _questionaryService = questionaryService;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -38,11 +40,21 @@ namespace CarTek.Api.Controllers
             }
             catch(Exception ex)
             {
+                _logger.LogError($"Ошибка создания опросника", ex);
                 return BadRequest(ex.Message);
             }
         }
 
-
+        [HttpDelete("{id}")]
+        public IActionResult DeleteQuestionary(Guid id)
+        {
+            var res = _questionaryService.DeleteQuestionary(id);
+            if (res)
+            {
+                return Ok(new ApiResponse { IsSuccess = true, Message = "Анкета удалена" });
+            }
+            return BadRequest(new ApiResponse { IsSuccess = false, Message="Ошибка удаления анкеты"});
+        }
 
         [HttpGet("{id}")]
         public IActionResult GetQuestionary(Guid id)
@@ -54,10 +66,13 @@ namespace CarTek.Api.Controllers
                 if (res != null)
                     return Ok(_mapper.Map<QuestionaryModel>(res));
                 else
-                    return BadRequest("Ошибка создания опросника. Повторите запрос");
+                {
+                    return BadRequest("Ошибка получения опросника. Повторите запрос");
+                }
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ошибка получения опросника {id}", ex);
                 return BadRequest(ex.Message);
             }
         }

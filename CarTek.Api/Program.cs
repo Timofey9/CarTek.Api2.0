@@ -11,7 +11,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -69,6 +68,10 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+var loggerFactory = app.Services.GetService<ILoggerFactory>();
+
+loggerFactory.AddFile("/data/Logs/log-{Date}.txt");
 
 app.UseStaticFiles();
 

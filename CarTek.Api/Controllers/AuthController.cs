@@ -36,12 +36,12 @@ namespace CarTek.Api.Controllers
             }
             catch (InvalidUsernameException e)
             {
-                _logger.LogWarning(e.Message);
+                _logger.LogWarning(e, $"Неверное имя пользователя {model.Login}");
                 return Unauthorized("Неверное имя пользователя");
             }
             catch (InvalidPasswordException e)
             {
-                _logger.LogWarning(e.Message);
+                _logger.LogWarning(e, $"Неверный пароль {model.Password}");
                 return Unauthorized("Неверный пароль");
             }
         }
