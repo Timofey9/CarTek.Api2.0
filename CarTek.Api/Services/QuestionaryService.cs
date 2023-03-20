@@ -226,7 +226,7 @@ namespace CarTek.Api.Services
 
             try
             {
-                Expression<Func<Questionary, object>> orderBy = x => x.ApprovedAt;
+                Expression<Func<Questionary, object>> orderBy = x => x.LastUpdated;
 
                 if (sortColumn != null)
                 {
