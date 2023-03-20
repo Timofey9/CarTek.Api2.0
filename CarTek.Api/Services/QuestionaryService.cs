@@ -316,21 +316,24 @@ namespace CarTek.Api.Services
 
             var result = new List<ImageModel>();
 
-            var filesPath = questionary.ImagesPath;
+            var filesPath = questionary?.ImagesPath;
 
-            foreach (var file in Directory.GetFiles(filesPath))
+            if (!string.IsNullOrEmpty(filesPath))
             {
-                var bytes = await File.ReadAllBytesAsync(file);
-
-                var imageModel = new ImageModel
+                foreach (var file in Directory.GetFiles(filesPath))
                 {
-                    ImageName = Path.GetFileName(file),
-                    Extension = Path.GetExtension(file).Replace(".", ""),
-                    BinaryData = bytes
-                };
+                    var bytes = await File.ReadAllBytesAsync(file);
 
-                result.Add(imageModel);
-            };
+                    var imageModel = new ImageModel
+                    {
+                        ImageName = Path.GetFileName(file),
+                        Extension = Path.GetExtension(file).Replace(".", ""),
+                        BinaryData = bytes
+                    };
+
+                    result.Add(imageModel);
+                };
+            }
 
             return result;
         }
