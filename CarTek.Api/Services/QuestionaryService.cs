@@ -56,13 +56,11 @@ namespace CarTek.Api.Services
 
                         if (car.State == TransportState.Base)
                         {
-                            questionary.Action = "departure";
                             car.State = TransportState.Line;
                         }
                         else
                         if (car.State == TransportState.Line)
                         {
-                            questionary.Action = "arrival";
                             car.State = TransportState.Base;
                         }
                     }
@@ -117,6 +115,16 @@ namespace CarTek.Api.Services
                 var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == model.DriverId);
 
                 var timeCreated = DateTime.UtcNow;
+
+                if (car.State == TransportState.Base)
+                {                                 
+                    action = "departure";                    
+                }                  
+                else                 
+                if (car.State == TransportState.Line)                    
+                {                        
+                    action = "arrival";                    
+                }                
 
                 var carQuestionaryEntity = new Questionary
                 {
