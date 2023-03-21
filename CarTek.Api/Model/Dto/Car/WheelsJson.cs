@@ -12,21 +12,14 @@
             set
             {
                 var isDouble = double.TryParse(value, out var result);
+                var isBool = bool.TryParse(value, out var boolResult);
 
                 if (isDouble)
-                {
-                    if(result > 8 && result < 11)
-                    {
-                        _pressure = "true";
-                    }
-                    else
-                    {
-                        _pressure = "false";
-                    }
-                }
-                else
-                {
-                    _pressure = value;
+                {                    
+                    _pressure = result.ToString();
+                } 
+                else if(isBool) {
+                    _pressure = boolResult.ToString().ToLower();
                 }
             }
         }
