@@ -6,7 +6,7 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface IQuestionaryService
     {
-        Questionary CreateQuestionary(CreateQuestionaryModel model);
+        Task<Questionary> CreateQuestionary(CreateQuestionaryModel model);
 
         Questionary GetByUniqueId(Guid id);
 
@@ -20,7 +20,7 @@ namespace CarTek.Api.Services.Interfaces
 
         Task<ICollection<Questionary>> GetByCarId(string id);
 
-        Task<string> SaveImage(IFormFile file, string path);
+        Task<string> SaveImage(IFormFile file, string path, string fileNum);
 
         bool DeleteQuestionary(Guid uniqueId);
 

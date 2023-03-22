@@ -13,6 +13,12 @@ using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
 {
+    public class UploadedFileException : Exception
+    {
+        public string ErrorMessage { get; set; }
+    }
+
+
     public class QuestionaryService : IQuestionaryService
     {
         private readonly ApplicationDbContext _dbContext;
@@ -90,7 +96,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public Questionary CreateQuestionary(CreateQuestionaryModel model)
+        public async Task<Questionary>CreateQuestionary(CreateQuestionaryModel model)
         {
             try
             {
@@ -187,23 +193,29 @@ namespace CarTek.Api.Services
 
                 _dbContext.Questionaries.Add(carQuestionaryEntity);
 
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 if (model.Images != null)
                 {
-                    imagesPath = $"/data/uploads/{car.Plate}/{uniqueId}";
+                    if (model.Images.Count > 3)
+                        throw new UploadedFileException() { ErrorMessage = "Максимально можно загрузить 3 изображения" };
 
                     // создаем папку для хранения файлов
                     Directory.CreateDirectory(imagesPath);
 
+                    int fileNum = 1;
+
                     foreach (var image in model.Images)
                     {
-                        SaveImage(image, imagesPath);
+                        await SaveImage(image, imagesPath, fileNum.ToString());
                     }
                 }
 
-
                 return carQuestionaryEntity;
+            }
+            catch(UploadedFileException ex)
+            {
+                throw ex;
             }
             catch(Exception ex)
             {
@@ -292,9 +304,16 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<string> SaveImage(IFormFile file, string path)
+        public async Task<string> SaveImage(IFormFile file, string path, string fileNum)
         {
-            string fullPath = $"{path}/{file.FileName}";
+            var newFileName = fileNum + Path.GetExtension(file.FileName);
+
+            string fullPath = $"{path}/{newFileName}";
+
+            if(file.Length > 1e+7)
+            {
+                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
+            }
 
             // сохраняем файл в папку uploads
             using (var fileStream = new FileStream(fullPath, FileMode.Create))

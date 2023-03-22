@@ -28,15 +28,20 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult SubmitQuestionary([FromForm]CreateQuestionaryModel questionaryModel)
+        public async Task<IActionResult> SubmitQuestionary([FromForm]CreateQuestionaryModel questionaryModel)
         {
             try { 
-                var res = _questionaryService.CreateQuestionary(questionaryModel);
+                var res = await _questionaryService.CreateQuestionary(questionaryModel);
 
                 if (res != null)
                     return Ok(_mapper.Map<QuestionaryModel>(res));
                 else
                     return BadRequest("Ошибка создания опросника. Повторите запрос"); 
+            }
+            catch(UploadedFileException ex)
+            {
+                _logger.LogError($"Ошибка создания опросника", ex);
+                return BadRequest(ex.ErrorMessage);
             }
             catch(Exception ex)
             {
