@@ -24,7 +24,7 @@ namespace CarTek.Api.Services.Interfaces
 
         bool DeleteQuestionary(Guid uniqueId);
 
-        Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId);
+        Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId, string? acceptanceComment);
 
         IEnumerable<Questionary> GetAll(string searchColumn, string search);
 

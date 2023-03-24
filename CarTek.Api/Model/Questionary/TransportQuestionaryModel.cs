@@ -21,6 +21,8 @@ namespace CarTek.Api.Model
         //Пробег
         public int? Mileage { get; set; }
 
+        public string AcceptanceComment { get; set; }
+
         //Nav properties
         public CarModel Car { get; set; }
         public DriverModel Driver { get; set; }

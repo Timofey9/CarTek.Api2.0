@@ -14,6 +14,7 @@ using CarTek.Api.Const;
 using CarTek.Api.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
+using CarTek.Api.Model.Response;
 
 namespace CarTek.Api.Services
 {
@@ -165,7 +166,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<CreateUserModel> RegisterUser(CreateUserModel user)
+        public async Task<ApiResponse> RegisterUser(CreateUserModel user)
         {
             try
             {
@@ -173,8 +174,9 @@ namespace CarTek.Api.Services
 
                 if(dbUser != null)
                 {
-                    _logger.LogWarning($"Пользователь с логином {user.Login} уже существует");
-                    return user;
+                    var message = $"Пользователь с логином {user.Login} уже существует";
+                    _logger.LogWarning(message);
+                    return new ApiResponse { IsSuccess = false, Message = message};
                 }
 
                 var newUser = new User
@@ -193,15 +195,15 @@ namespace CarTek.Api.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                return user;
+                return new ApiResponse { IsSuccess = true, Message = $"Пользователь {user.Login} создан" };
             }
             catch (Exception ex) {
-                _logger.LogError($"Не удалось создать пользователя: {ex.Message}");
-                return null;
+                _logger.LogError(ex, $"Не удалось создать пользователя: {ex.Message}");
+                return new ApiResponse {IsSuccess = false, Message = $"Не удалось создать пользователя: {ex.Message}" };
             }
         }
 
-        public async Task<CreateUserModel> UpdateUser(string login, [FromBody] JsonPatchDocument<User> patchDoc)
+        public async Task<ApiResponse> UpdateUser(string login, [FromBody] JsonPatchDocument<User> patchDoc)
         {
             try { 
                 var existing = _dbContext.Users
@@ -228,23 +230,12 @@ namespace CarTek.Api.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                var res = new CreateUserModel
-                {
-                    Login = login,
-                    FirstName = existing.FirstName,
-                    LastName = existing.LastName,
-                    Email = existing.Email,
-                    MiddleName = existing.MiddleName,
-                    Phone = existing.Phone,
-                    IsAdmin = existing.IsAdmin
-                };
-
-                return res;
+                return new ApiResponse { IsSuccess = true, Message = "Пользователь успешно изменен"};
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Не удалось изменить пользователя {login}, {ex.Message}");
-                return null;
+                _logger.LogError(ex, $"Не удалось изменить пользователя {login}, {ex.Message}");
+                return new ApiResponse { IsSuccess = false, Message = $"Не удалось изменить пользователя {login}" };
             }
         }
 

@@ -16,6 +16,8 @@ namespace CarTek.Api.Model.Quetionary
         public bool FendersOk{ get; set; }
 
         public bool FendersMountState { get; set; }
+
+        public string? TechnicalComment { get; set; }
     }
 
 

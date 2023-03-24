@@ -20,6 +20,8 @@
 
         public string Comment { get; set; }
 
+        public string AcceptanceComment { get; set; }
+
         public bool WasApproved { get; set; }
 
         //Пробег

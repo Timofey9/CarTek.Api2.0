@@ -1,13 +1,14 @@
 ﻿using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Response;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace CarTek.Api.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<CreateUserModel> RegisterUser(CreateUserModel user);
-        Task<CreateUserModel> UpdateUser(string login, JsonPatchDocument<User> patchDoc);
+        Task<ApiResponse> RegisterUser(CreateUserModel user);
+        Task<ApiResponse> UpdateUser(string login, JsonPatchDocument<User> patchDoc);
         Task<User> DeleteUser(string login);
         User Get(UserAuthModel authModel);
         User GetByLogin(string login);

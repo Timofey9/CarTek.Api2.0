@@ -33,19 +33,19 @@ namespace CarTek.Api.Controllers
         {
             try
             {
-                var createdUser = await _userService.RegisterUser(user);
+                var result = await _userService.RegisterUser(user);
 
-                if (createdUser.UserExists)
+                if (!result.IsSuccess)
                 {
-                    return Conflict($"Пользователь с логином {user.Login} уже существует");
+                    return BadRequest(result.Message);
                 }
 
-                return Ok(createdUser);
+                return Ok(result.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Не удалось создать пользователя:{user.Login}:{ex.Message}");
-                return StatusCode(500);
+                _logger.LogError(ex, $"Не удалось создать пользователя:{user.Login}:{ex.Message}");
+                return BadRequest($"Не удалось создать пользователя:{user.Login}:{ex.Message}");
             }
         }
 
@@ -89,14 +89,14 @@ namespace CarTek.Api.Controllers
         [HttpPatch("updateuser/{login}")]
         public async Task<IActionResult> UpdateUser(string login, [FromBody] JsonPatchDocument<User> patchDoc)
         {
-            var user = await _userService.UpdateUser(login, patchDoc);
+            var result = await _userService.UpdateUser(login, patchDoc);
 
-            if(user == null)
+            if (!result.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(result.Message);
             }
 
-            return Ok(user);
+            return Ok(result.Message);
         }
     }
 }

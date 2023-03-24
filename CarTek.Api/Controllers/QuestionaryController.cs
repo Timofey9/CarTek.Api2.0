@@ -106,7 +106,7 @@ namespace CarTek.Api.Controllers
         {
             try
             {
-                var res = await _questionaryService.ApproveQuestionary(approveQuestionaryModel.DriverId, approveQuestionaryModel.DriverPass, approveQuestionaryModel.QuestionaryId);
+                var res = await _questionaryService.ApproveQuestionary(approveQuestionaryModel.DriverId, approveQuestionaryModel.DriverPass, approveQuestionaryModel.QuestionaryId, approveQuestionaryModel.AcceptanceComment);
                 if (res.IsSuccess)
                     return Ok(res);
                 else

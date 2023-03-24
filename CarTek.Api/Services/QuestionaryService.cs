@@ -39,7 +39,7 @@ namespace CarTek.Api.Services
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId)
+        public async Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId, string? acceptanceComment)
         {
             var response = new ApiResponse();
             try
@@ -73,6 +73,7 @@ namespace CarTek.Api.Services
 
                     questionary.ApprovedAt = DateTime.UtcNow;
                     questionary.WasApproved= true;
+                    questionary.AcceptanceComment = acceptanceComment;
 
                     await _dbContext.SaveChangesAsync();
 
@@ -161,7 +162,8 @@ namespace CarTek.Api.Services
                     DriverId = model.DriverId,
                     UserId = user.Id,
                     TrailerId = trailerQuestionary?.TransportId,
-                    CarId = model.CarId                    
+                    CarId = model.CarId,
+                    TechnicalComment = carQuestionary.TechnicalComment
                 };
 
                 if(trailerQuestionary != null)
@@ -186,7 +188,8 @@ namespace CarTek.Api.Services
                         LastUpdated = timeCreated,
                         DriverId = model.DriverId,
                         UserId = user.Id,
-                        TrailerId = trailerQuestionary.TransportId
+                        TrailerId = trailerQuestionary.TransportId,
+                        TechnicalComment = trailerQuestionary.TechnicalComment
                     };
                     _dbContext.Questionaries.Add(trailerQuestionaryEntity);
                 }
@@ -392,6 +395,7 @@ namespace CarTek.Api.Services
                             LightsJsonObject = JsonConvert.DeserializeObject<LightsJsonObject>(trailerQuestionary.LightsJsonObject),
                             FendersMountState = JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).MountState,
                             FendersOk = !JsonConvert.DeserializeObject<FendersJsonObject>(trailerQuestionary.FendersJsonObject).FendersOk,
+                            TechnicalComment = trailerQuestionary.TechnicalComment
                         };
                     }
                     catch(Exception ex)
@@ -420,6 +424,7 @@ namespace CarTek.Api.Services
                             PlatonSwitchedOn = carQuestionary.PlatonSwitchedOn,
                             CabinCushion = carQuestionary.CabinCushion,
                             HydroEq = carQuestionary.HydroEq,
+                            TechnicalComment = carQuestionary.TechnicalComment
                         };
                     }
                     catch (Exception ex)
@@ -442,7 +447,8 @@ namespace CarTek.Api.Services
                         Car = _mapper.Map<CarModel>(carQuestionary.Car),
                         Trailer = _mapper.Map<TrailerModel>(carQuestionary.Trailer),
                         CarQuestionaryModel = carQuestionaryModel,
-                        TrailerQuestionaryModel = trailerQuestionaryModel
+                        TrailerQuestionaryModel = trailerQuestionaryModel,
+                        AcceptanceComment = carQuestionary.AcceptanceComment
                     };
                 }
 

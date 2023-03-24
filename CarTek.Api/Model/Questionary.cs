@@ -56,6 +56,10 @@
 
         public bool HydroEq { get; set; }
 
+        public string? AcceptanceComment { get; set; }
+
+        public string? TechnicalComment { get; set; }
+
 
         //Nav properties
         public long? CarId { get; set; }
