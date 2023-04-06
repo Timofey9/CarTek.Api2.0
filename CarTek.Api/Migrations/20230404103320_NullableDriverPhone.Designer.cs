@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230404103320_NullableDriverPhone")]
+    partial class NullableDriverPhone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,7 +122,7 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("Comment")
                         .HasColumnType("text");
 
-                    b.Property<long?>("DriverId")
+                    b.Property<long>("DriverId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("FendersJsonObject")
@@ -173,7 +176,7 @@ namespace CarTek.Api.Migrations
                     b.Property<Guid>("UniqueId")
                         .HasColumnType("uuid");
 
-                    b.Property<long?>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.Property<bool?>("WasApproved")
@@ -284,7 +287,9 @@ namespace CarTek.Api.Migrations
 
                     b.HasOne("CarTek.Api.Model.Driver", "Driver")
                         .WithMany("Questionaries")
-                        .HasForeignKey("DriverId");
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CarTek.Api.Model.Trailer", "Trailer")
                         .WithMany()
@@ -292,7 +297,9 @@ namespace CarTek.Api.Migrations
 
                     b.HasOne("CarTek.Api.Model.User", "User")
                         .WithMany("Questionaries")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Car");
 

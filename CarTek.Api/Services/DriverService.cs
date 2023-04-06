@@ -13,20 +13,21 @@ namespace CarTek.Api.Services
     {
         private readonly ILogger<DriverService> _logger;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IQuestionaryService _questionaryService;
 
-        public DriverService(ILogger<DriverService> logger, ApplicationDbContext dbContext)
+        public DriverService(ILogger<DriverService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _questionaryService = questionaryService;
         }
+
         public ApiResponse CreateDriver(CreateDriverModel driver)
         {
-            var driverInDb = _dbContext.Drivers.FirstOrDefault(t => t.Phone.Equals(driver.Phone));
-
-            var car = _dbContext.Cars.FirstOrDefault(t => t.Id == driver.CarId);
-
-            if (driverInDb == null)
+            try
             {
+                var car = _dbContext.Cars.FirstOrDefault(t => t.Id == driver.CarId);
+
                 var driverModel = new Driver
                 {
                     FirstName = driver.FirstName,
@@ -34,7 +35,7 @@ namespace CarTek.Api.Services
                     LastName = driver.LastName,
                     Phone = driver.Phone,
                     Password = driver.Password,
-                    Car = car
+                    CarId = car?.Id
                 };
 
                 var driverEntity = _dbContext.Drivers.Add(driverModel);
@@ -47,30 +48,50 @@ namespace CarTek.Api.Services
                     Message = "Водитель создан"
                 };
             }
-
-            return new ApiResponse
+            catch(Exception ex)
             {
-                IsSuccess = false,
-                Message = "Водитель с таким номером телефона уже существует"
-            };
+                _logger.LogError($"Не удалось создать водителя {driver.LastName}", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Не удалось создать водителя {driver.LastName}"
+                };
+            }
         }
 
 
-        public Driver DeleteDriver(long driverId)
+        public ApiResponse DeleteDriver(long driverId)
         {
             var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == driverId);
             if (driver == null)
                 return null;
             try
             {
+                var questionariesAssociated = _dbContext.Questionaries.Where(t => t.DriverId == driverId).ToList();
+
+                foreach(var questionary in questionariesAssociated)
+                {
+                    _questionaryService.DeleteQuestionary(questionary.UniqueId);
+                }
+
                 var result = _dbContext.Drivers.Remove(driver);
+
                 _dbContext.SaveChanges();
-                return result.Entity;
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = $"Водитель {driver.LastName} и осмотры связанные с ним успешно удалены"
+                };
             }
-            catch
+            catch(Exception ex)
             {
                 _logger.LogError($"Не удалось удалить водителя {driverId}");
-                return null;
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Не удалось удалить водителя {driver.LastName} и осмотры связанные с ним"
+                };
             }
         }
 

@@ -29,12 +29,12 @@ namespace CarTek.Api.Controllers
         [HttpPost("createdriver")]
         public IActionResult CreateDriver([FromBody] CreateDriverModel driver)
         {
-            var driverEntity = _driverService.CreateDriver(driver);
-            if (driverEntity == null)
+            var res = _driverService.CreateDriver(driver);
+            if (res.IsSuccess)
             {
-                return Conflict(driver);
+                return Ok(res.Message);
             }
-            return Ok(driverEntity);
+            return BadRequest(res.Message);
         }
 
         [HttpPatch("updatedriver/{id}")]
@@ -65,7 +65,7 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpDelete("deletedriver/{driverId}")]
-        public IActionResult DeleteCar(long driverId)
+        public IActionResult DeleteDriver(long driverId)
         {
             var res = _driverService.DeleteDriver(driverId);
             if (res != null)

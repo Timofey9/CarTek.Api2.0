@@ -9,7 +9,7 @@ namespace CarTek.Api.Services.Interfaces
     {
         Task<ApiResponse> RegisterUser(CreateUserModel user);
         Task<ApiResponse> UpdateUser(string login, JsonPatchDocument<User> patchDoc);
-        Task<User> DeleteUser(string login);
+        User DeleteUser(string login);
         User Get(UserAuthModel authModel);
         User GetByLogin(string login);
 

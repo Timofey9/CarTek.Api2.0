@@ -20,7 +20,7 @@ namespace CarTek.Api.Services.Interfaces
 
         public Driver GetById(long carId);
 
-        public Driver DeleteDriver(long carId);
+        public ApiResponse DeleteDriver(long carId);
 
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel);
     }

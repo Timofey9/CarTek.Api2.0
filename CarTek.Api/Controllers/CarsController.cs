@@ -38,7 +38,7 @@ namespace CarTek.Api.Controllers
             {
                 return Ok(trailerEntity);
             }
-            return Conflict(trailerEntity);
+            return Conflict(trailerEntity.Message);
         }
 
 
@@ -106,15 +106,26 @@ namespace CarTek.Api.Controllers
             return Ok(_mapper.Map<CarModel>(car));
         }
 
+        [HttpDelete("deletetrailer/{trailerId}")]
+        public IActionResult DeleteTrailer(long trailerId)
+        {
+            var res = _trailerService.DeleteTrailer(trailerId);
+            if (res.IsSuccess)
+            {
+                return Ok(res.Message);
+            }
+            return BadRequest(res.Message);
+        }
+
         [HttpDelete("deletecar/{carId}")]
         public IActionResult DeleteCar(long carId)
         {
             var res = _carService.DeleteCar(carId);
-            if(res != null)
+            if(res.IsSuccess)
             {
-                return Ok();
+                return Ok(res.Message);
             }
-            return BadRequest();
+            return BadRequest(res.Message);
         }
 
         [HttpGet("getcars")]
@@ -129,9 +140,6 @@ namespace CarTek.Api.Controllers
                 List = _mapper.Map<List<CarModel>>(list)
             });
         }
-
-
-
 
         [HttpGet("gettrailers")]
         public IActionResult GetTrailers(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search)

@@ -23,9 +23,6 @@ namespace CarTek.Api.DBContext
             {
                 entity.ToTable("cars");
 
-                entity.HasOne(e => e.Trailer)
-                .WithOne(e => e.Car)
-                .HasForeignKey<Trailer>(trailer => trailer.CarId);
             });
 
             modelBuilder.Entity<Questionary>(entity =>

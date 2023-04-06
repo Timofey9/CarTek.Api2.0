@@ -22,19 +22,12 @@ namespace CarTek.Api.Services
     public class QuestionaryService : IQuestionaryService
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly IUserService _userService;
-        private readonly ICarService _carService;
-        private readonly IDriverService _driverService;
         private readonly ILogger<QuestionaryService> _logger;
         private readonly IMapper _mapper;
 
-        public QuestionaryService(ApplicationDbContext dbContext, IUserService userService, ICarService carService, 
-            IDriverService driverService, ILogger<QuestionaryService> logger, IMapper mapper)
+        public QuestionaryService(ApplicationDbContext dbContext, ILogger<QuestionaryService> logger, IMapper mapper)
         {
             _dbContext = dbContext;
-            _driverService = driverService;
-            _userService = userService; 
-            _carService = carService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -46,8 +39,8 @@ namespace CarTek.Api.Services
             {
                 _logger.LogInformation($"Подтверждение анкеты: {uniqueId}");
 
-                var driver = _driverService.GetById(driverId);
-                if(driver.Password.Equals(driverPass))
+                var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == driverId);
+                if(driver != null && driver.Password.Equals(driverPass))
                 {
                     response.IsSuccess = true;
                     response.Message = "Пароль принят анкета отправлена";
@@ -58,14 +51,14 @@ namespace CarTek.Api.Services
 
                     if (questionary.CarId != 0)
                     {
-                        var car = _carService.GetById(carId);
+                        var car = _dbContext.Cars.FirstOrDefault(t => t.Id == carId);
 
-                        if (car.State == TransportState.Base)
+                        if (car != null && car.State == TransportState.Base)
                         {
                             car.State = TransportState.Line;
                         }
                         else
-                        if (car.State == TransportState.Line)
+                        if (car != null && car.State == TransportState.Line)
                         {
                             car.State = TransportState.Base;
                         }
@@ -106,7 +99,7 @@ namespace CarTek.Api.Services
                 var carQuestionary = JsonConvert.DeserializeObject<CarQuestionaryModel>(model.CarQuestionaryModel);
                 var trailerQuestionary = JsonConvert.DeserializeObject<TrailerQuestionaryModel>(model.TrailerQuestionaryModel);
 
-                var car = _carService.GetById(carQuestionary.TransportId);
+                var car = _dbContext.Cars.FirstOrDefault(t => t.Id == carQuestionary.TransportId);
 
                 string imagesPath = "";
 
@@ -117,7 +110,7 @@ namespace CarTek.Api.Services
 
                 string action = "";
 
-                var user = _userService.GetByLogin(model.CreatedBy);
+                var user = _dbContext.Users.FirstOrDefault(t => t.Login == model.CreatedBy);
 
                 var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == model.DriverId);
 
@@ -533,6 +526,32 @@ namespace CarTek.Api.Services
             return result;
         }
 
+        public bool DeleteQuestionaryEntity(Questionary questionary)
+        {
+            try
+            {
+                if (questionary != null)
+                {
+                    var imagesPath = questionary.ImagesPath;
+                    if (Directory.Exists(imagesPath))
+                    {
+                        Directory.Delete(imagesPath, true);
+                    }
+
+                    _dbContext.Questionaries.Remove(questionary);
+                }
+
+                _dbContext.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка удаления опросника {questionary?.UniqueId}", ex);
+                return false;
+            }
+        }
+    
         public bool DeleteQuestionary(Guid uniqueId)
         {
             try

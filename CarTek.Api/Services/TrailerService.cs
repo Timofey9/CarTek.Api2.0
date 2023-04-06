@@ -29,9 +29,9 @@ namespace CarTek.Api.Services
                 var trailerModel = new Trailer
                 {
                     Brand = model.Brand,
-                    Plate = model.Plate,
+                    Plate = model.Plate.ToLower(),
                     Model = model.Model,
-                    CarId = model.CarId,
+                    CarId = model.CarId == 0 ? null : model.CarId,
                     AxelsCount = model.AxelsCount
                 };
 
@@ -59,6 +59,57 @@ namespace CarTek.Api.Services
                 IsSuccess = false,
                 Message = "Полуприцеп с таким гос. номером уже существует",
             };
+        }
+
+        public ApiResponse DeleteTrailer(long trailerId)
+        {
+            try
+            {
+                var trailer = _dbContext.Trailers.FirstOrDefault(trailer => trailer.Id == trailerId);
+
+                if (trailer == null)
+                {
+                    _logger.LogError($"Не удалось удалить прицеп {trailerId}");
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = $"Не удалось удалить прицеп {trailerId}"
+                    };
+                }
+
+                var questionariesAssociated = _dbContext.Questionaries.Where(t => t.TrailerId == trailerId);
+
+                foreach (var questionary in questionariesAssociated)
+                {
+                    if(questionary.Type == "car")
+                    {
+                        questionary.TrailerId = null;
+                    }
+                    else
+                    {
+                        _dbContext.Questionaries.Remove(questionary);
+                    }
+                }
+
+                _dbContext.Trailers.Remove(trailer);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Прицеп успешно удален"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Не удалось удалить прицеп {trailerId}", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Не удалось удалить прицеп {trailerId}"
+                };
+            }
         }
 
         public IEnumerable<Trailer> GetAll()
@@ -170,7 +221,6 @@ namespace CarTek.Api.Services
 
                 patchDoc.ApplyTo(existing);
 
-                //Снять текущего водителя с машины
                 var attachedTrailer = _dbContext.Trailers.FirstOrDefault(t => t.Id == existing.CarId);
 
                 if (attachedTrailer != null && attachedTrailer.Id != trailerId)

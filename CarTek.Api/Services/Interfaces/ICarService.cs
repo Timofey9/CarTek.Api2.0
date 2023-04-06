@@ -20,7 +20,7 @@ namespace CarTek.Api.Services.Interfaces
 
         public Car GetById(long carId);
 
-        public Car DeleteCar(long carId);
+        public ApiResponse DeleteCar(long carId);
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> carModel);
     }

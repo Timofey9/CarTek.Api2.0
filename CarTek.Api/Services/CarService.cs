@@ -14,27 +14,38 @@ namespace CarTek.Api.Services
     {
         private readonly ILogger<CarService> _logger;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IQuestionaryService _questionaryService;
 
-        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext)
+        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _questionaryService = questionaryService;
         }
 
         public ApiResponse CreateCar(CreateCarModel car)
         {
             var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.Equals(car.Plate.ToLower()));
             
-            if(carInDb == null) { 
+            if(carInDb == null) {
                 var carModel = new Car
                 {
                     Brand = car.Brand,
-                    Plate = car.Plate,
+                    Plate = car.Plate.ToLower(),
                     Model = car.Model,
-                    AxelsCount = car.AxelsCount
+                    AxelsCount = car.AxelsCount,
                 };
 
                 var carEntity = _dbContext.Cars.Add(carModel);
+
+                _dbContext.SaveChanges();
+
+                var trailer = _dbContext.Trailers.FirstOrDefault(t => t.Id == car.TrailerId);
+
+                if (trailer != null)
+                {
+                    trailer.CarId = carEntity.Entity.Id;
+                }
 
                 _dbContext.SaveChanges();
 
@@ -52,21 +63,49 @@ namespace CarTek.Api.Services
             };
         }
 
-        public Car DeleteCar(long carId)
+        public ApiResponse DeleteCar(long carId)
         {
             var car = _dbContext.Cars.FirstOrDefault(car => car.Id == carId);
             if (car == null)
                 return null;
             try
             {
+                var trailer = _dbContext.Trailers.FirstOrDefault(t => t.CarId == carId);
+
+                var drivers = _dbContext.Drivers.Where(t => t.CarId == carId);
+
+                foreach(var driver in drivers) {
+                    driver.CarId = null;
+                }
+
+                if(trailer != null)
+                    trailer.CarId = null;
+
+                var questionariesAssociated = _dbContext.Questionaries.Where(t => t.CarId == carId).ToList();
+
+                foreach (var questionary in questionariesAssociated)
+                {
+                    _questionaryService.DeleteQuestionary(questionary.UniqueId);
+                }                
+
                 var result = _dbContext.Cars.Remove(car);    
+                
                 _dbContext.SaveChanges();
-                return result.Entity;
+                
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Автомобиль успешно удален"
+                };
             }
-            catch
+            catch(Exception ex)
             {
-                _logger.LogError($"Не удалось удалить автомобиль {carId}");
-                return null;
+                _logger.LogError($"Не удалось удалить автомобиль {carId}", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Не удалось удалить автомобиль {carId}"
+                };
             }
         }
 

@@ -65,11 +65,11 @@
         public long? CarId { get; set; }
         public Car? Car { get; set; }    
 
-        public long DriverId { get; set; }
-        public Driver Driver { get; set; }
+        public long? DriverId { get; set; }
+        public Driver? Driver { get; set; }
 
-        public long UserId { get; set; }
-        public User User { get; set; }
+        public long? UserId { get; set; }
+        public User? User { get; set; }
 
         public long? TrailerId { get; set; } 
         public Trailer? Trailer { get; set; }

@@ -75,15 +75,15 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpDelete("deleteuser/{login}")]
-        public async Task<IActionResult> DeleteUser(string login)
+        public IActionResult DeleteUser(string login)
         {
-            var user = await _userService.DeleteUser(login);
+            var user = _userService.DeleteUser(login);
 
             if (user == null) {
                 return NotFound(login);
             }
 
-            return Ok(user);
+            return Ok();
         }
 
         [HttpPatch("updateuser/{login}")]

@@ -13,7 +13,7 @@ namespace CarTek.Api.Mapper
                 src => src.MapFrom(t => t.Car != null ? t.Car.Plate.ToUpper() : ""));
             CreateMap<Trailer, TrailerModel>().ForMember(trailer => trailer.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
             CreateMap<Car, CarModel>().ForMember(car => car.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
-            CreateMap<Car, DriverCarModel>();
+            CreateMap<Car, DriverCarModel>().ForMember(car => car.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
             CreateMap<User, UserModel>();
             CreateMap<Questionary, QuestionaryModel>();
             CreateMap<Questionary, QuestionaryCarModel>();

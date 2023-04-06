@@ -23,15 +23,17 @@ namespace CarTek.Api.Services
         private readonly ILogger<UserService> _logger;
         private readonly IJwtService _jwtService;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IQuestionaryService _questionaryService;
 
-        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IJwtService jwtService)
+        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IJwtService jwtService)
         {
             _logger = logger;
             _jwtService = jwtService;
             _dbContext = dbContext;
+            _questionaryService = questionaryService;
         }
 
-        public async Task<User> DeleteUser(string login)
+        public User DeleteUser(string login)
         {
             try
             {
@@ -41,8 +43,18 @@ namespace CarTek.Api.Services
                     _logger.LogWarning($"Пользователь с логином {login} не существует");
                     return null;
                 }
+
+                var questionariesAssociated = _dbContext.Questionaries.Where(t => t.UserId == user.Id);
+
+                foreach (var questionary in questionariesAssociated)
+                {
+                    _questionaryService.DeleteQuestionaryEntity(questionary);
+                }
+               
                 _dbContext.Users.Remove(user);
-                await _dbContext.SaveChangesAsync();
+                
+                _dbContext.SaveChanges();
+
                 return user;
             }
             catch (Exception ex)
@@ -136,7 +148,7 @@ namespace CarTek.Api.Services
             string passwordHash = GetHash(authModel.Password);
 
             var userInstance = _dbContext.Users
-                .FirstOrDefault(u => u.Login.ToLower() == authModel.Login.ToLower());
+                .FirstOrDefault(u => u.Login.ToLower() == authModel.Login.Trim().ToLower());
 
             if (userInstance == null)
             {

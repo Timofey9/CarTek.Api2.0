@@ -6,6 +6,7 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface ITrailerService
     {
+        public ApiResponse DeleteTrailer(long trailerId);
         public ApiResponse CreateTrailer(CreateTrailerModel model);
         public ApiResponse UpdateTrailer(long trailerId, JsonPatchDocument<Trailer> trailerModel);
 
@@ -27,7 +28,7 @@ namespace CarTek.Api.Services.Interfaces
 
         public string Model { get; set; }
 
-        public long CarId { get; set; }
+        public long? CarId { get; set; }
 
         public int AxelsCount { get; set; }
     }
