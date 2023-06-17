@@ -1,4 +1,6 @@
-﻿namespace CarTek.Api.Model
+﻿using CarTek.Api.Model.Orders;
+
+namespace CarTek.Api.Model
 {
     public class Driver
     {
@@ -15,6 +17,8 @@
         public string? Phone { get; set; }
 
         public ICollection<Questionary> Questionaries { get; set; }
+
+        public ICollection<DriverTask> DriverTasks { get; set; }
 
         public long? CarId { get; set; }
 

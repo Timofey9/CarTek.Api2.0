@@ -2,6 +2,7 @@
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Dto.Driver;
+using CarTek.Api.Model.Orders;
 
 namespace CarTek.Api.Mapper
 {
@@ -17,6 +18,9 @@ namespace CarTek.Api.Mapper
             CreateMap<User, UserModel>();
             CreateMap<Questionary, QuestionaryModel>();
             CreateMap<Questionary, QuestionaryCarModel>();
+            CreateMap<Material, MaterialModel>();
+            CreateMap<DriverTask, DriverTaskOrderModel>();
+            CreateMap<Order, OrderModel>();
         }
     }
 }

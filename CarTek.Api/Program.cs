@@ -27,6 +27,7 @@ builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddAuthentication(auth =>

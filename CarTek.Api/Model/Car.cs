@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using CarTek.Api.Model.Orders;
 
 namespace CarTek.Api.Model
 {
@@ -28,12 +28,16 @@ namespace CarTek.Api.Model
         //Количество осей
         public int AxelsCount { get; set; }
 
+        public long CurrentOrderId { get; set; }
+
         //////////////////
 
         //На линии, на базе, в ремонте
         public TransportState State { get; set; }
 
         public Trailer? Trailer { get; set; }
+        
+        public ICollection<DriverTask> DriverTasks { get; set; }
 
         public ICollection<Driver> Drivers { get; set; }
 

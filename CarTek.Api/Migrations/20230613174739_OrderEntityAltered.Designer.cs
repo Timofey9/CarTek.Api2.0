@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230613174739_OrderEntityAltered")]
+    partial class OrderEntityAltered
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,6 +106,9 @@ namespace CarTek.Api.Migrations
                     b.Property<int>("CarCount")
                         .HasColumnType("integer");
 
+                    b.Property<long?>("CarId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ClientInn")
                         .HasColumnType("text");
 
@@ -118,10 +124,7 @@ namespace CarTek.Api.Migrations
                     b.Property<int>("LoadUnit")
                         .HasColumnType("integer");
 
-                    b.Property<string>("LocationA")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LocationB")
+                    b.Property<string>("Location")
                         .HasColumnType("text");
 
                     b.Property<long>("MaterialId")
@@ -151,6 +154,8 @@ namespace CarTek.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CarId");
+
                     b.HasIndex("MaterialId");
 
                     b.ToTable("Orders");
@@ -170,14 +175,14 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverId")
                         .HasColumnType("bigint");
 
+                    b.Property<int>("DriverTaskStatusId")
+                        .HasColumnType("integer");
+
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Shift")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -185,15 +190,7 @@ namespace CarTek.Api.Migrations
                     b.Property<Guid>("UniqueId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Unit")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Volume")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("CarId");
 
                     b.HasIndex("DriverId");
 
@@ -241,7 +238,7 @@ namespace CarTek.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Materials");
+                    b.ToTable("Material");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Questionary", b =>
@@ -433,6 +430,10 @@ namespace CarTek.Api.Migrations
 
             modelBuilder.Entity("CarTek.Api.Model.Order", b =>
                 {
+                    b.HasOne("CarTek.Api.Model.Car", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("CarId");
+
                     b.HasOne("CarTek.Api.Model.Orders.Material", "Material")
                         .WithMany("Orders")
                         .HasForeignKey("MaterialId")
@@ -444,13 +445,7 @@ namespace CarTek.Api.Migrations
 
             modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTask", b =>
                 {
-                    b.HasOne("CarTek.Api.Model.Car", null)
-                        .WithMany("DriverTasks")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CarTek.Api.Model.Driver", "Driver")
+                    b.HasOne("CarTek.Api.Model.Driver", null)
                         .WithMany("DriverTasks")
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -461,8 +456,6 @@ namespace CarTek.Api.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Driver");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTaskNote", b =>
@@ -512,9 +505,9 @@ namespace CarTek.Api.Migrations
 
             modelBuilder.Entity("CarTek.Api.Model.Car", b =>
                 {
-                    b.Navigation("DriverTasks");
-
                     b.Navigation("Drivers");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("Questionaries");
 
