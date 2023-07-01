@@ -43,7 +43,7 @@ namespace CarTek.Api.Model
 
         public string? LocationB { get; set; }   
         
-        public double Price { get; set; }
+        public double Price { get; set; } //TODO: надо-ли?
 
         public string? Note { get; set; }
 

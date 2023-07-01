@@ -19,24 +19,73 @@ namespace CarTek.Api.Services
             _dbContext = dbContext;
         }
 
-        public Task<DriverTask> CreateDriverTask(CreateDriverTaskModel model)
+        public async Task<ApiResponse> CreateDriverTask(CreateDriverTaskModel model)
         {
+            string message = string.Empty;
+
             try
             {
-                var driverTask = new DriverTask
+                bool updateTask = true;
+
+                if (!model.ForceChange)
                 {
-                    DriverId = model.DriverId,
-                    CarId = model.CarId,
-                    Shift = model.Shift,
-                    UniqueId = Guid.NewGuid(),
-                    OrderId = model.OrderId
+                    var currentCarTask = _dbContext.DriverTasks.Where(dt => dt.CarId == model.CarId
+                    && dt.StartDate.Date == model.TaskDate.Date)
+                        .FirstOrDefault();
+
+                    message = "У машины уже есть задача на указанное число, переназначить?";
+
+                    var currentDriverTask = _dbContext.DriverTasks.Where(dt => dt.DriverId == model.DriverId
+                    && dt.StartDate.Date == model.TaskDate.Date)
+                        .FirstOrDefault();
+
+                    message = "У водителя уже есть задача на указанное число, переназначить?";
+
+                    updateTask = currentCarTask == null && currentDriverTask == null;
+                }
+
+                if (updateTask)
+                {
+
+                    var driverTask = new DriverTask
+                    {
+                        DriverId = model.DriverId,
+                        CarId = model.CarId,
+                        Shift = model.Shift,
+                        UniqueId = Guid.NewGuid(),
+                        OrderId = model.OrderId,
+                        StartDate = model.TaskDate
+                    };
+
+                    _dbContext.Add(driverTask);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    message = "Задача создана";
+
+                    return new ApiResponse{
+                        IsSuccess = true,
+                        Message = message
+                    };
+                }
+                else
+                {
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = message
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Ошибка создания задачи", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка создания задачи"
                 };
             }
-            catch
-            {
-
-            }
-            throw new NotImplementedException();
         }
 
         public async Task<ApiResponse> CreateOrder(CreateOrderModel model)
@@ -56,7 +105,7 @@ namespace CarTek.Api.Services
                     DueDate = model.DueDate.ToUniversalTime(),
                     LocationA = model.LocationA,
                     LocationB = model.LocationB,
-                    Price = model.Price,
+                    Price = model.Price ?? 0,
                     Note = model.Note,
                     CarCount = model.CarCount,
                     MaterialId = model.MaterialId,
@@ -65,7 +114,7 @@ namespace CarTek.Api.Services
 
                 var orderEntity = _dbContext.Orders.Add(order);
 
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 return new ApiResponse
                 {
@@ -171,7 +220,7 @@ namespace CarTek.Api.Services
 
             try
             {
-                Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Date;
+                Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
 
                 if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
                 {
@@ -179,11 +228,11 @@ namespace CarTek.Api.Services
                     {
                         case "clientname":
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Date;
+                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
                             break;
                         case "name":
-                            filterBy = x => x.Name.ToLower().Contains(search.ToLower().Trim())                            
-                            && x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Date;
+                            filterBy = x => x.Name.ToLower().Contains(search.ToLower().Trim())
+                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
                             break;
                         default:
                             break;
@@ -234,6 +283,30 @@ namespace CarTek.Api.Services
             }
 
             return result;
+        }
+
+        public IEnumerable<Material> GetMaterials()
+        {
+            try
+            {
+                var materials = _dbContext.Materials.ToList();
+                return materials;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список материалов");
+                return Enumerable.Empty<Material>();
+            }
+        }
+
+        public Order GetOrderById(long orderId)
+        {
+            var order = _dbContext
+                .Orders
+                .Include(t => t.DriverTasks)
+                .FirstOrDefault(t => t.Id == orderId);
+
+            return order;
         }
     }
 }

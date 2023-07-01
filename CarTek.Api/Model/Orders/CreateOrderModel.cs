@@ -24,7 +24,7 @@
         public string LocationA { get; set; }
         public string LocationB { get; set; }
 
-        public double Price { get; set; }
+        public double? Price { get; set; }
 
         public string Note { get; set; }
 

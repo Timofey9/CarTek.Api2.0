@@ -11,5 +11,9 @@ namespace CarTek.Api.Model
         public long DriverId { get; set; }
 
         public long CarId { get; set; }
+
+        public DateTime TaskDate { get; set; }
+
+        public bool ForceChange { get; set; }
     }
 }

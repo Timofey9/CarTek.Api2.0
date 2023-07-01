@@ -31,7 +31,19 @@ namespace CarTek.Api.Controllers
             var res = await _orderService.CreateOrder(driver);
             if (res.IsSuccess)
             {
-                return Ok(res.Message);
+                return Ok(res);
+            }
+            return BadRequest(res.Message);
+        }
+
+
+        [HttpPost("createtask")]
+        public async Task<IActionResult> CreateTask([FromBody] CreateDriverTaskModel task)
+        {
+            var res = await _orderService.CreateDriverTask(task);
+            if (res.IsSuccess)
+            {
+                return Ok(res);
             }
             return BadRequest(res.Message);
         }
@@ -47,6 +59,15 @@ namespace CarTek.Api.Controllers
                 TotalNumber = totalNumber,
                 List = _mapper.Map<List<OrderModel>>(list)
             });
+        }
+
+
+        [HttpGet("getmaterials")]
+        public IActionResult GetMaterials()
+        {
+            var list = _orderService.GetMaterials();
+
+            return Ok(list);
         }
     }
 }

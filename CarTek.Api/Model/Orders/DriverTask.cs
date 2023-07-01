@@ -43,6 +43,8 @@
         
         public long CarId { get; set; }
 
+        public Car Car { get; set; }
+
         public Driver Driver { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
