@@ -1,11 +1,15 @@
-﻿using CarTek.Api.DBContext;
+﻿using AutoMapper;
+using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
+using CarTek.Api.Model.Dto.Driver;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using NuGet.DependencyResolver;
+using System.Drawing.Printing;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
@@ -15,12 +19,14 @@ namespace CarTek.Api.Services
         private readonly ILogger<CarService> _logger;
         private readonly ApplicationDbContext _dbContext;
         private readonly IQuestionaryService _questionaryService;
+        private readonly IMapper _mapper;
 
-        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService)
+        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IMapper mapper)
         {
             _logger = logger;
             _dbContext = dbContext;
             _questionaryService = questionaryService;
+            _mapper = mapper;
         }
 
         public ApiResponse CreateCar(CreateCarModel car)
@@ -214,6 +220,48 @@ namespace CarTek.Api.Services
                 car.Plate = car.Plate.ToUpper();
 
             return car;
+        }
+
+        public IEnumerable<CarDriverTaskModel> GetCarsWithTasks(DateTime date)
+        {
+            var result = new List<CarDriverTaskModel>();
+            try
+            {
+                var tresult = _dbContext.Cars
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
+                            .ThenInclude(dt => dt.Order)                            
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
+                            .ThenInclude(dt => dt.Driver);
+
+                foreach(var car in tresult)
+                {
+                    result.Add(new CarDriverTaskModel
+                    {
+                        Id = car.Id,
+                        Model = car.Model,
+                        Plate = car.Plate,
+                        Brand = car.Brand,
+                        DriverTasks = car.DriverTasks.Select(dt => new DriverTaskCarModel
+                        {
+                            Id = dt.Id,
+                            Order = _mapper.Map<OrderModel>(dt.Order),
+                            UniqueId = dt.UniqueId,
+                            Driver = _mapper.Map<DriverInfoModel>(dt.Driver),
+                            Shift = dt.Shift,
+                            Status = dt.Status,
+                            StartDate = dt.StartDate,
+                            Volume = dt.Volume,
+                            Unit = dt.Unit
+                        }).ToList(),
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список авто");
+            }
+
+            return result;
         }
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> patchDoc)

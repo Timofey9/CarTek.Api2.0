@@ -13,6 +13,8 @@ namespace CarTek.Api.Services.Interfaces
 
         IEnumerable<Order> GetAll(string searchColumn, string search);
 
+        IEnumerable<Order> GetAllActive(DateTime startDate);
+
         IEnumerable<Material> GetMaterials();
 
         IEnumerable<Order> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,
@@ -22,5 +24,7 @@ namespace CarTek.Api.Services.Interfaces
             string searchColumn, string search, DateTime startDate, DateTime endDate);
 
         Order GetOrderById(long orderId);
+
+        IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate);
     }
 }

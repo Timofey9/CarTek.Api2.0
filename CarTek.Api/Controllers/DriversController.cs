@@ -96,5 +96,19 @@ namespace CarTek.Api.Controllers
 
             return Ok(list);
         }
+
+        [HttpGet("getdrivertasks")]
+        public IActionResult GetDriverTasks(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId)
+        {
+            var list = _driverService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId);
+
+            var totalNumber = _driverService.GetDriverTasksAll(startDate, endDate, driverId).Count();
+
+            return Ok(new PagedResult<DriverTaskOrderModel>()
+            {
+                TotalNumber = totalNumber,
+                List = _mapper.Map<List<DriverTaskOrderModel>>(list)
+            });
+        }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230701142953_AddedCarToDriverTask")]
+    partial class AddedCarToDriverTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,10 +75,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -460,7 +459,7 @@ namespace CarTek.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CarTek.Api.Model.Order", "Order")
+                    b.HasOne("CarTek.Api.Model.Order", null)
                         .WithMany("DriverTasks")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -469,8 +468,6 @@ namespace CarTek.Api.Migrations
                     b.Navigation("Car");
 
                     b.Navigation("Driver");
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTaskNote", b =>

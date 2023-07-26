@@ -10,5 +10,6 @@
     {
         public const string ClaimTypeLogin = "Login";
         public const string ClaimTypeIsAdmin = "IsAdmin";
+        public const string ClaimTypeIsDriver = "IsDriver";
     }
 }

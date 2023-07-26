@@ -17,7 +17,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationDbContext")));
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(ModelProfile));
 
@@ -28,7 +30,10 @@ builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddTransient<IAWSS3ClientFactory, AWSS3ClientFactory>();
+builder.Services.AddTransient<IAWSS3Service, AWSS3Service>();
 
 builder.Services.AddAuthentication(auth =>
 {
@@ -52,6 +57,7 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthPolicies.ADMIN_ONLY, policy => policy.RequireClaim(AuthConstants.ClaimTypeIsAdmin));
+    options.AddPolicy(AuthPolicies.DRIVER_ONLY, policy => policy.RequireClaim(AuthConstants.ClaimTypeIsDriver));
 });
 
 builder.Services.AddControllers()
@@ -64,7 +70,10 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://cartek-app.ru", "http://cartek-app.ru:3000", "http://localhost:3000", "https://localhost:3000" })
-            .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition");
         });
 });
 

@@ -1,6 +1,7 @@
 ﻿using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
@@ -48,7 +49,7 @@ namespace CarTek.Api.Services
                     Message = "Водитель создан"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Не удалось создать водителя {driver.LastName}", ex);
                 return new ApiResponse
@@ -59,7 +60,6 @@ namespace CarTek.Api.Services
             }
         }
 
-
         public ApiResponse DeleteDriver(long driverId)
         {
             var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == driverId);
@@ -69,7 +69,7 @@ namespace CarTek.Api.Services
             {
                 var questionariesAssociated = _dbContext.Questionaries.Where(t => t.DriverId == driverId).ToList();
 
-                foreach(var questionary in questionariesAssociated)
+                foreach (var questionary in questionariesAssociated)
                 {
                     _questionaryService.DeleteQuestionary(questionary.UniqueId);
                 }
@@ -84,7 +84,7 @@ namespace CarTek.Api.Services
                     Message = $"Водитель {driver.LastName} и осмотры связанные с ним успешно удалены"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Не удалось удалить водителя {driverId}");
                 return new ApiResponse
@@ -177,6 +177,12 @@ namespace CarTek.Api.Services
             return result;
         }
 
+        //TODO: add pagination
+        public IEnumerable<DriverTask> GetAllDriverTasks(long driverId)
+        {
+            return GetDriverTasksAll(null, null, driverId);
+        }
+
         public Driver GetById(long driverdId)
         {
             var driver = _dbContext.Drivers
@@ -191,6 +197,53 @@ namespace CarTek.Api.Services
             var driver = _dbContext.Drivers.FirstOrDefault(t => t.LastName == lastname);
 
             return driver;
+        }
+
+        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId)
+        {
+            return GetDriverTasksFiltered(0, 0, startDate, endDate, driverId);
+        }
+
+        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId)
+        {
+            pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize >= 0 ? pageSize : 10;
+
+            var result = new List<DriverTask>();
+
+            try
+            {
+                Expression<Func<DriverTask, bool>> filterBy = x => x.DriverId == driverId;
+
+                if (startDate != null && endDate != null)
+                {
+                    var date1 = startDate.Value;
+                    var date2 = endDate.Value;
+                    filterBy = x => x.DriverId == driverId && x.StartDate.Date >= date1.Date.AddDays(-1) && x.StartDate.Date <= date2.Date;
+                }
+
+                Expression<Func<DriverTask, object>> orderBy = x => x.StartDate;
+
+                var tresult = _dbContext.DriverTasks
+                    .Include(t => t.Car)
+                    .Where(filterBy);
+
+                tresult = tresult.OrderBy(orderBy);
+
+                if (pageSize > 0)
+                {
+                    tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+                }
+
+                result = tresult.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список задач");
+            }
+
+            return result;
         }
 
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel)

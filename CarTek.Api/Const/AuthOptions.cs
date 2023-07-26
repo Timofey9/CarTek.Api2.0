@@ -18,5 +18,6 @@ namespace CarTek.Api.Const
     public static class AuthPolicies
     {
         public const string ADMIN_ONLY = "ADMIN_ONLY";
+        public const string DRIVER_ONLY = "DRIVER_ONLY";
     }
 }

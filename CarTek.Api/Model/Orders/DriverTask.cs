@@ -26,7 +26,7 @@
      
         public Guid UniqueId { get; set; }
 
-        // night/day
+        // day/night
         public ShiftType Shift { get; set; }
 
         public DriverTaskStatus Status { get; set; }
@@ -46,6 +46,8 @@
         public Car Car { get; set; }
 
         public Driver Driver { get; set; }
+
+        public Order Order{ get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
     }

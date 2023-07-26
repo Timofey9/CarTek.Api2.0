@@ -4,6 +4,7 @@ using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing.Printing;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
@@ -30,13 +31,13 @@ namespace CarTek.Api.Services
                 if (!model.ForceChange)
                 {
                     var currentCarTask = _dbContext.DriverTasks.Where(dt => dt.CarId == model.CarId
-                    && dt.StartDate.Date == model.TaskDate.Date)
+                    && dt.StartDate.Date == model.TaskDate.Date && dt.Shift == model.Shift)
                         .FirstOrDefault();
 
                     message = "У машины уже есть задача на указанное число, переназначить?";
 
                     var currentDriverTask = _dbContext.DriverTasks.Where(dt => dt.DriverId == model.DriverId
-                    && dt.StartDate.Date == model.TaskDate.Date)
+                    && dt.StartDate.Date == model.TaskDate.Date && dt.Shift == model.Shift)
                         .FirstOrDefault();
 
                     message = "У водителя уже есть задача на указанное число, переназначить?";
@@ -258,6 +259,7 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.Orders
                         .Include(o => o.DriverTasks)
+                        .ThenInclude(dt => dt.Car)
                         .Where(filterBy);
 
                 if (sortDirection == "asc")
@@ -276,6 +278,53 @@ namespace CarTek.Api.Services
 
                 result = tresult.ToList();
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список заявок");
+            }
+
+            return result;
+        }
+
+        public IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var result = new List<Order>();
+
+            try
+            {
+                Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
+
+                Expression<Func<Order, object>> orderBy = x => x.StartDate;
+
+
+                var tresult = _dbContext.Orders
+                        .Include(o => o.DriverTasks)
+                        .Include(t => t.Material)
+                        .Where(filterBy);
+
+                result = tresult.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список заявок");
+            }
+
+            return result;
+        }
+
+
+        public IEnumerable<Order> GetAllActive(DateTime startDate)
+        {
+            var result = new List<Order>();
+            try
+            {
+                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Date >= startDate.Date.AddDays(-1);
+
+                var tresult = _dbContext.Orders.Where(filterBy);
+
+                result = tresult.ToList();
             }
             catch (Exception ex)
             {

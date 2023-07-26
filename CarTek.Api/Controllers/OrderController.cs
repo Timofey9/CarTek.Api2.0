@@ -18,11 +18,13 @@ namespace CarTek.Api.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
+        private readonly IReportGeneratorService _reportGeneratorService;
 
-        public OrderController(IOrderService orderService, IMapper mapper)
+        public OrderController(IOrderService orderService, IMapper mapper, IReportGeneratorService reportGeneratorService)
         {
             _orderService = orderService;
             _mapper = mapper;
+            _reportGeneratorService = reportGeneratorService;
         }
 
         [HttpPost("create")]
@@ -45,7 +47,7 @@ namespace CarTek.Api.Controllers
             {
                 return Ok(res);
             }
-            return BadRequest(res.Message);
+            return BadRequest(res);
         }
 
         [HttpGet("getordersbetweendates")]
@@ -61,6 +63,15 @@ namespace CarTek.Api.Controllers
             });
         }
 
+        [HttpGet("getallactiveorders")]
+        public IActionResult GetAllActiveOrders(DateTime startDate)
+        {
+            var list = _orderService.GetAllActive(startDate);
+
+            var result = _mapper.Map<List<OrderModel>>(list);
+
+            return Ok(result);
+        }
 
         [HttpGet("getmaterials")]
         public IActionResult GetMaterials()
@@ -68,6 +79,29 @@ namespace CarTek.Api.Controllers
             var list = _orderService.GetMaterials();
 
             return Ok(list);
+        }
+
+
+        [HttpGet("getxls")]
+        public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var orders = _orderService.GetAllBetweenDates(startDate, endDate);
+
+                var fileStream = _reportGeneratorService.GenerateOrdersReport(orders);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

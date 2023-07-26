@@ -21,13 +21,14 @@ namespace CarTek.Api.Services
         private readonly IJwtService _jwtService;
         private readonly ApplicationDbContext _dbContext;
         private readonly IQuestionaryService _questionaryService;
-
-        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IJwtService jwtService)
+        private readonly IReportGeneratorService _reportGeneratorService;
+        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IJwtService jwtService, IReportGeneratorService reportGeneratorService)
         {
             _logger = logger;
             _jwtService = jwtService;
             _dbContext = dbContext;
             _questionaryService = questionaryService;
+            _reportGeneratorService = reportGeneratorService;
         }
 
         public User DeleteUser(string login)
@@ -47,9 +48,9 @@ namespace CarTek.Api.Services
                 {
                     _questionaryService.DeleteQuestionaryEntity(questionary);
                 }
-               
+
                 _dbContext.Users.Remove(user);
-                
+
                 _dbContext.SaveChanges();
 
                 return user;
@@ -160,6 +161,25 @@ namespace CarTek.Api.Services
             return userInstance;
         }
 
+
+        private Driver GetDriver(UserAuthModel authModel)
+        {
+            var driverInstance = _dbContext.Drivers
+                .FirstOrDefault(u => u.Login.ToLower() == authModel.Login.Trim().ToLower());
+
+            if (driverInstance == null)
+            {
+                throw new InvalidUsernameException(authModel.Login);
+            }
+
+            if (driverInstance.Password != authModel.Password.Trim())
+            {
+                throw new InvalidPasswordException();
+            }
+
+            return driverInstance;
+        }
+
         public string GetHash(string input)
 
         {
@@ -181,11 +201,11 @@ namespace CarTek.Api.Services
             {
                 var dbUser = _dbContext.Users.FirstOrDefault(t => t.Login.Equals(user.Login));
 
-                if(dbUser != null)
+                if (dbUser != null)
                 {
                     var message = $"Пользователь с логином {user.Login} уже существует";
                     _logger.LogWarning(message);
-                    return new ApiResponse { IsSuccess = false, Message = message};
+                    return new ApiResponse { IsSuccess = false, Message = message };
                 }
 
                 var newUser = new User
@@ -206,15 +226,17 @@ namespace CarTek.Api.Services
 
                 return new ApiResponse { IsSuccess = true, Message = $"Пользователь {user.Login} создан" };
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, $"Не удалось создать пользователя: {ex.Message}");
-                return new ApiResponse {IsSuccess = false, Message = $"Не удалось создать пользователя: {ex.Message}" };
+                return new ApiResponse { IsSuccess = false, Message = $"Не удалось создать пользователя: {ex.Message}" };
             }
         }
 
         public async Task<ApiResponse> UpdateUser(string login, [FromBody] JsonPatchDocument<User> patchDoc)
         {
-            try { 
+            try
+            {
                 var existing = _dbContext.Users
                     .FirstOrDefault(u => u.Login.Equals(login));
 
@@ -239,9 +261,9 @@ namespace CarTek.Api.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                return new ApiResponse { IsSuccess = true, Message = "Пользователь успешно изменен"};
+                return new ApiResponse { IsSuccess = true, Message = "Пользователь успешно изменен" };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Не удалось изменить пользователя {login}, {ex.Message}");
                 return new ApiResponse { IsSuccess = false, Message = $"Не удалось изменить пользователя {login}" };
@@ -252,13 +274,36 @@ namespace CarTek.Api.Services
         {
             try
             {
-                User userInstance = Get(authModel);
+                Claim[] claims;
+                User userInstance;
 
-                Claim[] claims = new[]
+                if (authModel.IsDriver == true)
                 {
-                    new Claim(AuthConstants.ClaimTypeLogin, userInstance.Login),
-                    new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString())
-                };
+                    var driver = GetDriver(authModel);
+                    claims = new[]
+                    {
+                        new Claim(AuthConstants.ClaimTypeLogin, driver.Login),
+                        new Claim(AuthConstants.ClaimTypeIsDriver, "True")
+                    };
+
+                    userInstance = new User
+                    {
+                        Id = driver.Id,
+                        Login = driver.Login,
+                        FirstName = driver.FirstName,
+                        LastName = driver.LastName,
+                        MiddleName = driver.MiddleName
+                    };
+                }
+                else
+                {
+                    userInstance = Get(authModel);
+                    claims = new[]
+                    {
+                        new Claim(AuthConstants.ClaimTypeLogin, userInstance.Login),
+                        new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString())
+                    };
+                }
 
                 var token = _jwtService.GenerateToken(claims, 24, 0);
 

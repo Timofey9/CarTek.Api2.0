@@ -1,10 +1,13 @@
-﻿using CarTek.Api.Model.Orders;
+﻿using CarTek.Api.Model.Dto.Driver;
+using CarTek.Api.Model.Orders;
 
 namespace CarTek.Api.Model.Dto
 {
-    public class DriverTaskOrderModel
+    public class DriverTaskCarModel
     {
         public long Id { get; set; }
+
+        public OrderModel Order { get; set; }
 
         public Guid UniqueId { get; set; }
 
@@ -19,14 +22,6 @@ namespace CarTek.Api.Model.Dto
 
         public Unit Unit { get; set; }
 
-        public long OrderId { get; set; }
-
-        public long DriverId { get; set; }
-
-        public DriverModel Driver { get; set; }
-
-        public CarModel Car { get; set; }
-
-        public ICollection<DriverTaskNote> Notes { get; set; }
+        public DriverInfoModel Driver { get; set; }
     }
 }

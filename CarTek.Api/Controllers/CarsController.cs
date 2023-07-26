@@ -104,6 +104,19 @@ namespace CarTek.Api.Controllers
             }
 
             return Ok(_mapper.Map<CarModel>(car));
+        }        
+        
+        [HttpGet("getcarswithtasks")]
+        public IActionResult GetCarsWithTasks(DateTime startDate)
+        {
+            var result = _carService.GetCarsWithTasks(startDate);
+
+            if(result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
 
         [HttpDelete("deletetrailer/{trailerId}")]

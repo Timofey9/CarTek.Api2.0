@@ -6,6 +6,8 @@ namespace CarTek.Api.Model
     {
         public long Id { get; set; }
 
+        public string Login { get; set; }
+
         public string FirstName { get; set; }
 
         public string? MiddleName { get; set; }
@@ -23,5 +25,7 @@ namespace CarTek.Api.Model
         public long? CarId { get; set; }
 
         public Car? Car { get; set; }
+
+        public string FullName => $"{FirstName} {MiddleName} {LastName}";
     }
 }
