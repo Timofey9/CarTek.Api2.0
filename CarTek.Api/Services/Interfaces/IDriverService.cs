@@ -24,11 +24,5 @@ namespace CarTek.Api.Services.Interfaces
         public ApiResponse DeleteDriver(long carId);
 
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel);
-
-        public IEnumerable<DriverTask> GetAllDriverTasks(long driverId);
-
-        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId);
-
-        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId);
     }
 }

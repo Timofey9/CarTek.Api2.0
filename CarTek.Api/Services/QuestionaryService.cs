@@ -302,9 +302,9 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<string> SaveImage(IFormFile file, string path, string fileNum)
+        public async Task<string> SaveImage(IFormFile file, string path, string fileName)
         {
-            var newFileName = fileNum + Path.GetExtension(file.FileName);
+            var newFileName = fileName + Path.GetExtension(file.FileName);
 
             string fullPath = $"{path}/{newFileName}";
 
@@ -312,8 +312,6 @@ namespace CarTek.Api.Services
             {
                 throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
             }
-
-            await _awss3Service.UploadFileToS3(file, "cartek", "test", "cartek");
 
             // сохраняем файл в папку uploads
             using (var fileStream = new FileStream(fullPath, FileMode.Create))

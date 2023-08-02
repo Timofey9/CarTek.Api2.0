@@ -292,7 +292,7 @@ namespace CarTek.Api.Services
                         Login = driver.Login,
                         FirstName = driver.FirstName,
                         LastName = driver.LastName,
-                        MiddleName = driver.MiddleName
+                        MiddleName = driver.MiddleName,
                     };
                 }
                 else
@@ -310,7 +310,8 @@ namespace CarTek.Api.Services
                 return new UserAuthResult
                 {
                     Token = token,
-                    Identity = userInstance
+                    Identity = userInstance,
+                    IsDriver = authModel.IsDriver ?? false
                 };
             }
             catch

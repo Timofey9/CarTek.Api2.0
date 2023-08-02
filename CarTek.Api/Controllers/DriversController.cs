@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace CarTek.Api.Controllers
 {
@@ -17,13 +19,15 @@ namespace CarTek.Api.Controllers
     {
         private readonly ILogger<DriversController> _logger;
         private readonly IDriverService _driverService;
+        private readonly IDriverTaskService _driverTaskService;
         private readonly IMapper _mapper;
 
-        public DriversController(ILogger<DriversController> logger, IDriverService driverService, IMapper mapper)
+        public DriversController(ILogger<DriversController> logger, IDriverService driverService, IMapper mapper, IDriverTaskService driverTaskService)
         {
             _logger = logger;
             _driverService = driverService;
             _mapper = mapper;
+            _driverTaskService = driverTaskService;
         }
 
         [HttpPost("createdriver")]
@@ -100,15 +104,34 @@ namespace CarTek.Api.Controllers
         [HttpGet("getdrivertasks")]
         public IActionResult GetDriverTasks(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId)
         {
-            var list = _driverService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId);
+            var list = _driverTaskService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId);
 
-            var totalNumber = _driverService.GetDriverTasksAll(startDate, endDate, driverId).Count();
+            var totalNumber = _driverTaskService.GetDriverTasksAll(startDate, endDate, driverId).Count();
 
             return Ok(new PagedResult<DriverTaskOrderModel>()
             {
                 TotalNumber = totalNumber,
                 List = _mapper.Map<List<DriverTaskOrderModel>>(list)
             });
+        }
+
+        [HttpGet("getdrivertask/{driverTaskId}")]
+        public IActionResult GetDriverTasks(long driverTaskId)
+        {
+            var task = _driverTaskService.GetDriverTaskById(driverTaskId);
+
+            return Ok(_mapper.Map<DriverTaskCarModel>(task));
+        }        
+        
+        [HttpPost("updateDriverTask")]
+        public async Task<IActionResult> GetDriverTasks([FromForm] UpdateDriverTaskModel driverTaskModel)
+        {
+            var result = await _driverTaskService.UpdateDriverTask(driverTaskModel.DriverTaskId, 
+                driverTaskModel.File,
+                driverTaskModel.UpdatedStatus,
+                driverTaskModel.Note);
+
+            return Ok(result);
         }
     }
 }

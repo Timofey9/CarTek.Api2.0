@@ -21,6 +21,7 @@ namespace CarTek.Api.Mapper
             CreateMap<Questionary, QuestionaryCarModel>();
             CreateMap<Material, MaterialModel>();
             CreateMap<DriverTask, DriverTaskOrderModel>();
+            CreateMap<DriverTask, DriverTaskCarModel>();
             CreateMap<Order, OrderModel>();
         }
     }
