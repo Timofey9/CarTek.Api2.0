@@ -13,11 +13,14 @@ namespace CarTek.Api.Services
     {
         private readonly ILogger<OrderService> _logger;
         private readonly ApplicationDbContext _dbContext;
-
-        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext)
+        private readonly IAddressService _addressService;
+        private readonly IClientService _clientService;
+        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext, IAddressService addressService, IClientService clientService)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _addressService = addressService;
+            _clientService = clientService;
         }
 
         public async Task<ApiResponse> CreateDriverTask(CreateDriverTaskModel model)
@@ -97,21 +100,40 @@ namespace CarTek.Api.Services
                 {
                     Name = model.Name,
                     ClientName = model.ClientName,
-                    ClientInn = model.ClientInn,
                     Volume = model.Volume,
                     LoadUnit = model.LoadUnit,
                     UnloadUnit = model.UnloadUnit,
                     IsComplete = model.IsComplete,
                     StartDate = model.StartDate.ToUniversalTime(),
                     DueDate = model.DueDate.ToUniversalTime(),
-                    LocationA = model.LocationA,
-                    LocationB = model.LocationB,
                     Price = model.Price ?? 0,
                     Note = model.Note,
                     CarCount = model.CarCount,
                     MaterialId = model.MaterialId,
-                    Service = model.Service,
+                    Service = model.Service,                    
                 };
+
+                var locationA = _addressService.GetAddress(model.AddressAId);
+                var locationB = _addressService.GetAddress(model.AddressBId);
+
+                var client = _clientService.GetClient(model.ClientId);
+
+                if(client != null)
+                {
+                    order.ClientId = model.ClientId;
+                }
+
+                if(locationA != null)
+                {
+                    order.LocationAId = locationA.Id;
+                    order.LocationA = locationA.Coordinates;
+                }
+
+                if(locationB != null)
+                {
+                    order.LocationBId = locationB.Id;
+                    order.LocationB = locationB.Coordinates;
+                }
 
                 var orderEntity = _dbContext.Orders.Add(order);
 

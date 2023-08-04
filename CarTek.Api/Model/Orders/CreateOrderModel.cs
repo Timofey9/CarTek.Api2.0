@@ -18,14 +18,20 @@
 
         public bool IsComplete { get; set; }
 
-        public DateTime DueDate { get; set; }
-        public DateTime StartDate { get; set; }
+        public long AddressAId { get; set; }
+        
+        public long AddressBId { get; set; }
+        
+        public long ClientId { get; set; }
 
-        public string LocationA { get; set; }
-        public string LocationB { get; set; }
+        public DateTime DueDate { get; set; }
+        
+        public DateTime StartDate { get; set; }       
+        
+        public string Mileage { get; set; }
 
         public double? Price { get; set; }
-
+      
         public string Note { get; set; }
 
         public int CarCount { get; set; }

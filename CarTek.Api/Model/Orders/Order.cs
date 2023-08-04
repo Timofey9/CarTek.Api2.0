@@ -25,8 +25,6 @@ namespace CarTek.Api.Model
 
         public string? ClientName { get; set; }
 
-        public string? ClientInn { get; set; }
-
         public double Volume { get; set; }
         
         public Unit LoadUnit { get; set; }
@@ -40,9 +38,11 @@ namespace CarTek.Api.Model
         public DateTime DueDate { get; set; }
 
         public string? LocationA { get; set; }   
+        public long? LocationAId { get; set; }   
 
-        public string? LocationB { get; set; }   
-        
+        public string? LocationB { get; set; }
+        public long? LocationBId { get; set; }
+
         public double Price { get; set; } //TODO: надо-ли?
 
         public string? Note { get; set; }
@@ -51,10 +51,12 @@ namespace CarTek.Api.Model
 
         public long MaterialId { get; set; }
 
+        public long ClientId { get; set; }
+
+        public Client Client { get; set; }  
+
         public ServiceType Service { get; set; }
 
-
-        //Услуга
         public Material Material { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }

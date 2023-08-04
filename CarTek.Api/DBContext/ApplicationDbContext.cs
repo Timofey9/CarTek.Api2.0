@@ -21,8 +21,10 @@ namespace CarTek.Api.DBContext
         public DbSet<Order> Orders { get; set; } 
         public DbSet<DriverTask> DriverTasks { get; set; }
         public DbSet<DriverTaskNote> DriverTaskNotes { get; set; }
-
         public DbSet<Material> Materials { get; set; }
+
+        public DbSet<Client> Clients { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

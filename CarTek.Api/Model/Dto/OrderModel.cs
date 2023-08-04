@@ -25,14 +25,18 @@ namespace CarTek.Api.Model.Dto
         public DateTime DueDate { get; set; }
 
         public string? LocationA { get; set; }
+        public long? LocationAId { get; set; }
 
         public string? LocationB { get; set; }
+        public long? LocationBId { get; set; }
 
         public double Price { get; set; }
 
         public string? Note { get; set; }
 
         public int CarCount { get; set; }
+
+        public string Mileage { get; set; }
 
         public long MaterialId { get; set; }
 
