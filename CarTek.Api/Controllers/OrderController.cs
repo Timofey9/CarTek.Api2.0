@@ -17,12 +17,17 @@ namespace CarTek.Api.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IClientService _clientService;
+        private readonly IAddressService _addressService;
         private readonly IMapper _mapper;
         private readonly IReportGeneratorService _reportGeneratorService;
 
-        public OrderController(IOrderService orderService, IMapper mapper, IReportGeneratorService reportGeneratorService)
+        public OrderController(IOrderService orderService, IClientService clientService,
+            IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService)
         {
             _orderService = orderService;
+            _addressService = addresSservice;
+            _clientService = clientService;
             _mapper = mapper;
             _reportGeneratorService = reportGeneratorService;
         }
@@ -81,6 +86,38 @@ namespace CarTek.Api.Controllers
             return Ok(list);
         }
 
+        [HttpGet("getaddresses")]
+        public IActionResult GetAddresses()
+        {
+            var list = _addressService.GetAddresses();
+
+            return Ok(list);
+        }
+
+        [HttpGet("getclients")]
+        public IActionResult GetClients()
+        {
+            var list = _clientService.GetClients();
+
+            return Ok(list);
+        }
+
+
+        [HttpPost("createclient")]
+        public IActionResult CreateClient([FromBody] CreateClientModel model)
+        {
+            var result = _clientService.CreateClient(model.ClientName, model.Inn, model.Ogrn, model.Kpp, model.ClientAddress);
+
+            return Ok(result);
+        }
+
+        [HttpPost("createaddress")]
+        public IActionResult CreateAddress([FromBody] CrateAddressModel model)
+        {
+            var result = _addressService.CreateAddress(model.Name, model.Coordinates, model.TextAddress);
+
+            return Ok(result);
+        }
 
         [HttpGet("getxls")]
         public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)

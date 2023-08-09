@@ -80,6 +80,7 @@ namespace CarTek.Api.Services
                 .Include(dt => dt.Order)
                 .ThenInclude(o => o.Material)
                 .Include(dt => dt.Car)
+                .Include(dt => dt.Notes)
                 .FirstOrDefault(dt => dt.Id == driverTaskId);
 
             return task;
@@ -104,7 +105,7 @@ namespace CarTek.Api.Services
 
                     
                     task.Status = (DriverTaskStatus)status;
-                    
+                     
 
                     if (file.Length > 1e+7)
                     {

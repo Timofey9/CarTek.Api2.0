@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230804182432_ClientAndAddressAdded")]
-    partial class ClientAndAddressAdded
+    [Migration("20230807175412_TaskUpdatedColumnAdded")]
+    partial class TaskUpdatedColumnAdded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,7 +168,7 @@ namespace CarTek.Api.Migrations
                     b.Property<int>("CarCount")
                         .HasColumnType("integer");
 
-                    b.Property<long>("ClientId")
+                    b.Property<long?>("ClientId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("ClientName")
@@ -243,6 +243,9 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
@@ -282,6 +285,9 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
@@ -507,10 +513,8 @@ namespace CarTek.Api.Migrations
             modelBuilder.Entity("CarTek.Api.Model.Order", b =>
                 {
                     b.HasOne("CarTek.Api.Model.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Orders")
+                        .HasForeignKey("ClientId");
 
                     b.HasOne("CarTek.Api.Model.Orders.Material", "Material")
                         .WithMany("Orders")
@@ -604,6 +608,11 @@ namespace CarTek.Api.Migrations
                     b.Navigation("Questionaries");
 
                     b.Navigation("Trailer");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Client", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>

@@ -19,8 +19,7 @@ namespace CarTek.Api.Migrations
                 name: "ClientId",
                 table: "Orders",
                 type: "bigint",
-                nullable: false,
-                defaultValue: 0L);
+                nullable: true);
 
             migrationBuilder.AddColumn<long>(
                 name: "LocationAId",
@@ -76,8 +75,7 @@ namespace CarTek.Api.Migrations
                 table: "Orders",
                 column: "ClientId",
                 principalTable: "Clients",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />

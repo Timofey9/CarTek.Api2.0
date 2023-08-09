@@ -23,5 +23,7 @@ namespace CarTek.Api.Model.Dto
         public Unit Unit { get; set; }
 
         public DriverInfoModel Driver { get; set; }
+
+        public ICollection<DriverTaskNote> Notes { get; set; }
     }
 }

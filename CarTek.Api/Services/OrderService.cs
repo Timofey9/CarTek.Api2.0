@@ -61,7 +61,7 @@ namespace CarTek.Api.Services
                         StartDate = model.TaskDate
                     };
 
-                    _dbContext.Add(driverTask);
+                    _dbContext.DriverTasks.Add(driverTask);
 
                     await _dbContext.SaveChangesAsync();
 

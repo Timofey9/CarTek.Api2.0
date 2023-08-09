@@ -51,13 +51,12 @@ namespace CarTek.Api.Model
 
         public long MaterialId { get; set; }
 
-        public long ClientId { get; set; }
-
-        public Client Client { get; set; }  
+        public long? ClientId { get; set; }
 
         public ServiceType Service { get; set; }
 
         public Material Material { get; set; }
+        public Client Client { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }
     }

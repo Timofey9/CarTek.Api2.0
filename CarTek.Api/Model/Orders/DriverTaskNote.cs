@@ -8,6 +8,8 @@
 
         public DriverTaskStatus Status { get; set; }
 
+        public DateTime DateCreated { get; set; }
+
         public long DriverTaskId { get; set; }
     }
 }

@@ -29,7 +29,7 @@ namespace CarTek.Api.Services
                     Ogrn = ogrn,
                 };
 
-                _dbContext.Clients.Add(client);
+                var entity = _dbContext.Clients.Add(client);
 
                 _dbContext.SaveChanges();
 
