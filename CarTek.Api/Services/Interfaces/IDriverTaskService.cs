@@ -1,4 +1,5 @@
-﻿using CarTek.Api.Model.Orders;
+﻿using CarTek.Api.Model;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 
 namespace CarTek.Api.Services.Interfaces
@@ -13,6 +14,12 @@ namespace CarTek.Api.Services.Interfaces
 
         public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId);
 
-        public Task<ApiResponse> UpdateDriverTask(long taskId, IFormFile file, int status, string comment);
+        public Task<ApiResponse> UpdateDriverTask(long taskId, ICollection<IFormFile>? file, int status, string comment);
+
+        public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId);
+
+        public ApiResponse DeleteDriverTask(long taskId);
+        
+        public TNModel GetTnModel(long driverTaskId);
     }
 }

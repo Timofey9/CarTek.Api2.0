@@ -16,12 +16,14 @@ namespace CarTek.Api.Mapper
             CreateMap<Trailer, TrailerModel>().ForMember(trailer => trailer.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
             CreateMap<Car, CarModel>().ForMember(car => car.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
             CreateMap<Car, DriverCarModel>().ForMember(car => car.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
+            CreateMap<Car, CarInfoModel>().ForMember(car => car.Plate, src => src.MapFrom(t => t.Plate.ToUpper()));
             CreateMap<User, UserModel>();
             CreateMap<Questionary, QuestionaryModel>();
             CreateMap<Questionary, QuestionaryCarModel>();
             CreateMap<Material, MaterialModel>();
             CreateMap<DriverTask, DriverTaskOrderModel>();
             CreateMap<DriverTask, DriverTaskCarModel>();
+            CreateMap<DriverTask, DriverTaskExportModel>();
             CreateMap<Order, OrderModel>();
         }
     }

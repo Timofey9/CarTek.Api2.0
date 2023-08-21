@@ -6,7 +6,7 @@
 
         public int UpdatedStatus { get; set; }
 
-        public IFormFile File { get; set; }
+        public ICollection<IFormFile>? Files { get; set; }
 
         public string Note { get; set; } 
     }

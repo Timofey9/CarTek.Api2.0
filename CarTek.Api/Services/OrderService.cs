@@ -15,12 +15,16 @@ namespace CarTek.Api.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IAddressService _addressService;
         private readonly IClientService _clientService;
-        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext, IAddressService addressService, IClientService clientService)
+        private readonly INotificationService _notificationService;
+
+        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext, 
+            IAddressService addressService, IClientService clientService, INotificationService notificationService)
         {
             _logger = logger;
             _dbContext = dbContext;
             _addressService = addressService;
             _clientService = clientService;
+            _notificationService = notificationService;
         }
 
         public async Task<ApiResponse> CreateDriverTask(CreateDriverTaskModel model)
@@ -62,6 +66,8 @@ namespace CarTek.Api.Services
                     };
 
                     _dbContext.DriverTasks.Add(driverTask);
+
+                    await _notificationService.SendNotification("Новая задача", $"Вам назначена новая задача на {model.TaskDate.ToShortDateString()}. Подробности смотри в ЛК", model.DriverId, true);
 
                     await _dbContext.SaveChangesAsync();
 
@@ -335,7 +341,6 @@ namespace CarTek.Api.Services
 
             return result;
         }
-
 
         public IEnumerable<Order> GetAllActive(DateTime startDate)
         {

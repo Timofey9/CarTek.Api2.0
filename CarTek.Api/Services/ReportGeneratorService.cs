@@ -9,6 +9,13 @@ namespace CarTek.Api.Services
 {
     public class ReportGeneratorService : IReportGeneratorService
     {
+        private readonly ILogger<ReportGeneratorService> _logger;
+
+        public ReportGeneratorService(ILogger<ReportGeneratorService> logger)
+        {
+            _logger = logger;
+        }
+
         public MemoryStream GenerateOrdersReport(IEnumerable<Order> orders)
         {
             IWorkbook workbook;
@@ -38,6 +45,50 @@ namespace CarTek.Api.Services
 
             workbook.Write(stream, true);
 
+            return stream;
+        }
+
+        public MemoryStream GenerateTn(TNModel model)
+        {
+            IWorkbook workbook;
+
+            using (FileStream fileStream = new FileStream("\\Templates\\TN.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
+
+            ISheet sheet = workbook.GetSheetAt(0);
+
+            IRow row = sheet.GetRow(12);
+
+            row.GetCell(1).SetCellValue(model.Sender);
+            row.GetCell(29).SetCellValue(model.ClientInfo);
+
+            row = sheet.GetRow(20);
+            row.GetCell(1).SetCellValue(model.Material);
+
+            row = sheet.GetRow(22);
+            row.GetCell(1).SetCellValue(model.MaterialAmount);
+
+            row = sheet.GetRow(48);
+            row.GetCell(1).SetCellValue(model.LocationA);
+            row.GetCell(29).SetCellValue(model.LocationB);
+
+            row = sheet.GetRow(60);
+            row.GetCell(1).SetCellValue(model.DriverInfo);
+            row.GetCell(29).SetCellValue(model.DriverInfo);
+
+            row = sheet.GetRow(90);
+            row.GetCell(1).SetCellValue(model.CarModel);
+
+            row = sheet.GetRow(92);
+            row.GetCell(29).SetCellValue($"{model.CarPlate}/{model.TrailerPlate}");
+
+            row = sheet.GetRow(123);
+            row.GetCell(1).SetCellValue("ООО \"КарТэк\"");
+
+            var stream = new MemoryStream();
+            workbook.Write(stream, true);
             return stream;
         }
 

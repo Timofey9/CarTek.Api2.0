@@ -37,6 +37,8 @@ namespace CarTek.Api.Model
 
         public DateTime DueDate { get; set; }
 
+        public int Mileage { get; set; }
+
         public string? LocationA { get; set; }   
         public long? LocationAId { get; set; }   
 

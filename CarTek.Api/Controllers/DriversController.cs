@@ -98,7 +98,7 @@ namespace CarTek.Api.Controllers
         {
             var list = _driverService.GetAll();
 
-            return Ok(list);
+            return Ok(_mapper.Map<List<DriverModel>>(list));
         }
 
         [HttpGet("getdrivertasks")]
@@ -120,14 +120,14 @@ namespace CarTek.Api.Controllers
         {
             var task = _driverTaskService.GetDriverTaskById(driverTaskId);
 
-            return Ok(_mapper.Map<DriverTaskCarModel>(task));
+            return Ok(_mapper.Map<DriverTaskExportModel>(task));
         }        
         
         [HttpPost("updateDriverTask")]
-        public async Task<IActionResult> GetDriverTasks([FromForm] UpdateDriverTaskModel driverTaskModel)
+        public async Task<IActionResult> CreateDriverTasks([FromForm] UpdateDriverTaskModel driverTaskModel)
         {
             var result = await _driverTaskService.UpdateDriverTask(driverTaskModel.DriverTaskId, 
-                driverTaskModel.File,
+                driverTaskModel.Files,
                 driverTaskModel.UpdatedStatus,
                 driverTaskModel.Note);
 

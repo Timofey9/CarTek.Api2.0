@@ -8,5 +8,7 @@ namespace CarTek.Api.Services.Interfaces
         public MemoryStream TestGenerateReport(string input);
 
         public MemoryStream GenerateOrdersReport(IEnumerable<Order> orders);
+
+        public MemoryStream GenerateTn(TNModel model);
     }
 }

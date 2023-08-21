@@ -34,6 +34,7 @@ builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
 builder.Services.AddScoped<IDriverTaskService, DriverTaskService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddTransient<IAWSS3ClientFactory, AWSS3ClientFactory>();
 builder.Services.AddTransient<IAWSS3Service, AWSS3Service>();

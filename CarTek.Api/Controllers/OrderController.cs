@@ -8,6 +8,7 @@ using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 
 namespace CarTek.Api.Controllers
 {
@@ -21,15 +22,18 @@ namespace CarTek.Api.Controllers
         private readonly IAddressService _addressService;
         private readonly IMapper _mapper;
         private readonly IReportGeneratorService _reportGeneratorService;
+        private readonly IDriverTaskService _driverTaskService;
 
         public OrderController(IOrderService orderService, IClientService clientService,
-            IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService)
+            IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService,
+            IDriverTaskService driverTaskService)
         {
             _orderService = orderService;
             _addressService = addresSservice;
             _clientService = clientService;
             _mapper = mapper;
             _reportGeneratorService = reportGeneratorService;
+            _driverTaskService = driverTaskService;
         }
 
         [HttpPost("create")]
@@ -138,7 +142,35 @@ namespace CarTek.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
 
+        [HttpGet("gettn")]
+        public IActionResult DownloadTN(long driverTaskId)
+        {
+            try
+            {
+                var tnModel = _driverTaskService.GetTnModel(driverTaskId);
+
+                var fileStream = _reportGeneratorService.GenerateTn(tnModel);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("updatedrivertask")]
+        public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
+        {
+            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId);
+            
+            return Ok(result);
         }
     }
 }
