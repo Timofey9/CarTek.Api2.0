@@ -7,5 +7,7 @@ namespace CarTek.Api.Services.Interfaces
         Task SendNotification(string title, string text, long userId, bool isDriver, string link = "");
 
         Tuple<int,ICollection<Notification>> GetUserNotifications(bool isDriver, long userId, int pageNumber, int pageSize);
+
+        void SaveToken(long userId, string token, bool isDriver);
     }
 }

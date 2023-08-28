@@ -16,11 +16,12 @@ namespace CarTek.Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
-
-        public AuthController(IUserService userService, ILogger<AuthController> logger)
+        private readonly INotificationService _notificationService;
+        public AuthController(IUserService userService, ILogger<AuthController> logger, INotificationService notificationService)
         {
             _logger = logger;
             _userService = userService;
+            _notificationService = notificationService;
         }
 
         [AllowAnonymous]
@@ -32,6 +33,8 @@ namespace CarTek.Api.Controllers
                 _logger.LogInformation($"User {model.Login} auth attempt");
                 var userAuthResult = _userService.Authenticate(model);
                 _logger.LogInformation($"User {model.Login} successfully authenticated");
+                _notificationService.SendNotification("Новый вход", $"Новый вход под вашим логном {userAuthResult.Identity.Login}", userAuthResult.Identity.Id, userAuthResult.IsDriver);
+
                 return Ok(userAuthResult);
             }
             catch (InvalidUsernameException e)

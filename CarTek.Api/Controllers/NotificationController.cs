@@ -31,5 +31,15 @@ namespace CarTek.Api.Controllers
                 List = result.Item2.ToList(),
             });
         }
+
+        [HttpPost("savedeviceinfo")]
+        public IActionResult SaveDeviceInfo([FromBody] AddTokenModel model)
+        {
+            _notificationService.SaveToken(model.UserId, model.Token, model.IsDriver);
+
+            _notificationService.SendNotification("Новое устройство", "Добавлено новое устройство", model.UserId, model.IsDriver);
+
+            return Ok();
+        }
     }
 }
