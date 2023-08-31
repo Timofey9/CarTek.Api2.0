@@ -1,6 +1,5 @@
 ﻿using CarTek.Api.Model;
 using CarTek.Api.Model.Orders;
-using CarTek.Api.Model.Quetionary;
 using CarTek.Api.Model.Response;
 
 namespace CarTek.Api.Services.Interfaces
@@ -24,6 +23,8 @@ namespace CarTek.Api.Services.Interfaces
             string searchColumn, string search, DateTime startDate, DateTime endDate);
 
         Order GetOrderById(long orderId);
+
+        ApiResponse AddMaterial(string name);
 
         IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate);
     }

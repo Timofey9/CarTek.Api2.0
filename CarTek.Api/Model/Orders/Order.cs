@@ -23,6 +23,9 @@ namespace CarTek.Api.Model
 
         public string Name { get; set; }
 
+        //Грузополучатель - отдельная сущность
+        //Приемщик - просто строка
+
         public string? ClientName { get; set; }
 
         public double Volume { get; set; }

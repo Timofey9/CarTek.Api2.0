@@ -4,6 +4,7 @@ using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System.Drawing.Printing;
 using System.Linq.Expressions;
 
@@ -37,24 +38,29 @@ namespace CarTek.Api.Services
 
                 if (!model.ForceChange)
                 {
-                    var currentCarTask = _dbContext.DriverTasks.Where(dt => dt.CarId == model.CarId
+                    var currentCarTask = _dbContext.DriverTasks.Include(dt => dt.Car).Where(dt => dt.CarId == model.CarId
                     && dt.StartDate.Date == model.TaskDate.Date && dt.Shift == model.Shift)
                         .FirstOrDefault();
 
-                    message = "У машины уже есть задача на указанное число, переназначить?";
+                    if(currentCarTask != null)
+                    {
+                        message = $"У машины {currentCarTask.Car.Plate} уже есть задача на указанное число, переназначить?";
+                    }
 
                     var currentDriverTask = _dbContext.DriverTasks.Where(dt => dt.DriverId == model.DriverId
                     && dt.StartDate.Date == model.TaskDate.Date && dt.Shift == model.Shift)
                         .FirstOrDefault();
 
-                    message = "У водителя уже есть задача на указанное число, переназначить?";
+                    if(currentDriverTask != null)
+                    {
+                        message += $"\nУ {currentDriverTask.Driver.FullName} уже есть задача на указанное число, переназначить?";
+                    }
 
                     updateTask = currentCarTask == null && currentDriverTask == null;
                 }
 
                 if (updateTask)
                 {
-
                     var driverTask = new DriverTask
                     {
                         DriverId = model.DriverId,
@@ -148,7 +154,7 @@ namespace CarTek.Api.Services
                 return new ApiResponse
                 {
                     IsSuccess = true,
-                    Message = $"Заказ #{orderEntity.Entity.Id} создан"
+                    Message = $"{orderEntity.Entity.Id}"
                 };
             }
             catch (Exception ex)
@@ -383,6 +389,36 @@ namespace CarTek.Api.Services
                 .FirstOrDefault(t => t.Id == orderId);
 
             return order;
+        }
+
+        public ApiResponse AddMaterial(string name)
+        {
+            try
+            {
+                var material = new Material
+                {
+                    Name = name
+                };
+
+                var entity = _dbContext.Materials.Add(material);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = $"Материал {name} добавлен"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка создания материала", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка создания материала"
+                };
+            }
         }
     }
 }

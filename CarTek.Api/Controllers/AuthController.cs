@@ -26,14 +26,14 @@ namespace CarTek.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult UserAuth(UserAuthModel model)
+        public async Task<IActionResult> UserAuth(UserAuthModel model)
         {
             try
             {
                 _logger.LogInformation($"User {model.Login} auth attempt");
                 var userAuthResult = _userService.Authenticate(model);
                 _logger.LogInformation($"User {model.Login} successfully authenticated");
-                _notificationService.SendNotification("Новый вход", $"Новый вход под вашим логном {userAuthResult.Identity.Login}", userAuthResult.Identity.Id, userAuthResult.IsDriver);
+                await _notificationService.SendNotification("Новый вход", $"Новый вход под вашим логном {userAuthResult.Identity.Login}", userAuthResult.Identity.Id, userAuthResult.IsDriver);
 
                 return Ok(userAuthResult);
             }

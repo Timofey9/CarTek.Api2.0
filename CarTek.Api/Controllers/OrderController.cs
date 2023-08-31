@@ -59,6 +59,33 @@ namespace CarTek.Api.Controllers
             return BadRequest(res);
         }
 
+        [HttpPost("createtasksmultiple")]
+        public async Task<IActionResult> CreateTasks([FromBody] CreateDriverMultipleTaskModel tasks)
+        {
+            var result = new List<ApiResponse>();
+
+            foreach(var task in tasks.Tasks)
+            {
+                var res = await _orderService.CreateDriverTask(task);
+                result.Add(res);
+            }
+
+            if (result.Any(t => !t.IsSuccess))
+            {
+                return BadRequest(new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Не удалось создать задачи"
+                });
+            }
+            else
+                return Ok(new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Все задачи успешно созданы"
+                });
+        }
+
         [HttpGet("getordersbetweendates")]
         public IActionResult GetOrders(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
@@ -163,6 +190,14 @@ namespace CarTek.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("creatematerial")]
+        public IActionResult CreateMaterial(string name)
+        {
+            var res = _orderService.AddMaterial(name);
+
+            return Ok(res);
         }
 
         [HttpPost("updatedrivertask")]

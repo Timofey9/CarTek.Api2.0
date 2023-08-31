@@ -16,4 +16,11 @@ namespace CarTek.Api.Model
 
         public bool ForceChange { get; set; }
     }
+
+    public class CreateDriverMultipleTaskModel
+    {
+        public long OrderId { get; set; }
+
+        public ICollection<CreateDriverTaskModel> Tasks { get; set; }   
+    }
 }

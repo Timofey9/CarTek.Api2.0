@@ -264,6 +264,7 @@ namespace CarTek.Api.Services
                     var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationAId);
                     var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationBId);
 
+
                     var driverInfo = task.Driver.FullName;
                     var client = task.Order.Client;
                     var clientInfo = $"{client.ClientName}, ИНН {client.Inn}, КПП {client.Kpp}, {client.ClientAddress}";

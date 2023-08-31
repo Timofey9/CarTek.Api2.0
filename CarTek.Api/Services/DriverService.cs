@@ -27,6 +27,17 @@ namespace CarTek.Api.Services
         {
             try
             {
+                var driverExists = _dbContext.Drivers.Any(t => t.Login.Equals(driver.Login));
+
+                if(driverExists)
+                {
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Водитель с таким логином уже существует. Логин должен быть уникальным"
+                    };
+                }
+
                 var car = _dbContext.Cars.FirstOrDefault(t => t.Id == driver.CarId);
 
                 var driverModel = new Driver
@@ -36,7 +47,8 @@ namespace CarTek.Api.Services
                     LastName = driver.LastName,
                     Phone = driver.Phone,
                     Password = driver.Password,
-                    CarId = car?.Id
+                    CarId = car?.Id,
+                    Login = driver.Login
                 };
 
                 var driverEntity = _dbContext.Drivers.Add(driverModel);

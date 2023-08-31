@@ -16,6 +16,8 @@ namespace CarTek.Api.Model.Dto
 
         public string Phone { get; set; }
 
+        public string Login { get; set; }
+
         public string FullName => $"{LastName} {FirstName} {MiddleName}";
 
         public DriverCarModel Car { get; set; }
