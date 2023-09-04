@@ -26,6 +26,8 @@
      
         public Guid UniqueId { get; set; }
 
+        //Нужно время -> сделать строкой и обозначить промежуток, за который было добавлено время
+
         // day/night
         public ShiftType Shift { get; set; }
 

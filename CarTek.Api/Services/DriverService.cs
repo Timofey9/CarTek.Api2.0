@@ -206,7 +206,6 @@ namespace CarTek.Api.Services
             return driver;
         }
 
-
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel)
         {
             try

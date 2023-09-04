@@ -117,6 +117,8 @@ namespace CarTek.Api.Controllers
             return Ok(list);
         }
 
+
+
         [HttpGet("getaddresses")]
         public IActionResult GetAddresses()
         {
@@ -193,9 +195,9 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPost("creatematerial")]
-        public IActionResult CreateMaterial(string name)
+        public IActionResult CreateMaterial([FromBody]CreateMaterialModel model)
         {
-            var res = _orderService.AddMaterial(name);
+            var res = _orderService.AddMaterial(model.Name);
 
             return Ok(res);
         }

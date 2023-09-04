@@ -8,4 +8,9 @@
         
         public ICollection<Order> Orders { get;set; }
     }
+
+    public class CreateMaterialModel
+    {
+        public string Name { get; set; }
+    }
 }

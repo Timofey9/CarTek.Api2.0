@@ -1,10 +1,13 @@
-﻿using CarTek.Api.DBContext;
+﻿using AutoMapper;
+using CarTek.Api.DBContext;
 using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 
@@ -16,14 +19,16 @@ namespace CarTek.Api.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IAWSS3Service _AWSS3Service;
         private readonly INotificationService _notificationService;
+        private readonly IMapper _mapper;
 
         public DriverTaskService(ILogger<DriverTaskService> logger, 
-            ApplicationDbContext dbContext, IAWSS3Service aWSS3Service, INotificationService notificationService)
+            ApplicationDbContext dbContext, IAWSS3Service aWSS3Service, INotificationService notificationService, IMapper mapper)
         {
             _logger = logger;
             _dbContext = dbContext;
             _AWSS3Service = aWSS3Service;
             _notificationService = notificationService;
+            _mapper = mapper;
         }
 
         public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId)
@@ -53,6 +58,7 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
+                    .Include(t => t.Order)
                     .Where(filterBy);
 
                 tresult = tresult.OrderByDescending(orderBy);
@@ -63,7 +69,6 @@ namespace CarTek.Api.Services
                 }
 
                 result = tresult.ToList();
-
             }
             catch (Exception ex)
             {
@@ -71,6 +76,43 @@ namespace CarTek.Api.Services
             }
 
             return result;
+        }
+
+        public List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert)
+        {
+            var mappedResult = new List<DriverTaskOrderModel>();
+
+            try
+            {
+                var list = listToConvert.ToList();
+
+                mappedResult = _mapper.Map<List<DriverTaskOrderModel>>(list);
+
+                for (var i = 0; i < list.Count; i++)
+                {
+                    Address locationA = new Address();
+                    Address locationB = new Address();
+
+                    if (list[i].Order?.LocationAId != null)
+                    {
+                        locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == list[i].Order.LocationAId);
+                    }
+
+                    if (list[i].Order?.LocationBId != null)
+                    {
+                        locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == list[i].Order.LocationBId);
+                    }
+
+                    mappedResult[i].LocationA = locationA;
+                    mappedResult[i].LocationB = locationB;
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Не удалось получить адреса, {ex.Message}");
+            }
+
+            return mappedResult;
         }
 
         //TODO: add pagination
@@ -92,6 +134,32 @@ namespace CarTek.Api.Services
             return task;
         }
 
+        public void DriverTaskExportModelSetLocations(DriverTaskExportModel model)
+        {
+            try
+            {
+                Address locationA = new Address();
+                Address locationB = new Address();
+
+                if (model.Order?.LocationAId != null)
+                {
+                    locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationAId);
+                }
+
+                if (model.Order?.LocationBId != null)
+                {
+                    locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationBId);
+                }
+
+                model.LocationA = locationA;
+                model.LocationB = locationB;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Не удалось получить адреса, {ex.Message}");
+            }
+        }
+
         public async Task<ApiResponse> UpdateDriverTask(long taskId, ICollection<IFormFile>? files, int status, string comment)
         {
             try
@@ -106,7 +174,7 @@ namespace CarTek.Api.Services
                     {
                         DriverTaskId = taskId,
                         Status = (DriverTaskStatus)task.Status,
-                        Text = comment,
+                        Text = string.IsNullOrEmpty(comment) ? "-" : comment,
                         DateCreated = DateTime.UtcNow,
                     };
                     
@@ -150,8 +218,10 @@ namespace CarTek.Api.Services
                     Message = "Статус обновлен"
                 };
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
+
                 return new ApiResponse
                 {
                     IsSuccess = false,

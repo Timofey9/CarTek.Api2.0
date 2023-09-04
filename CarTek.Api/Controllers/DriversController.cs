@@ -106,12 +106,14 @@ namespace CarTek.Api.Controllers
         {
             var list = _driverTaskService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId);
 
+            var listRes = _driverTaskService.MapAndExtractLocationsInfo(list);
+
             var totalNumber = _driverTaskService.GetDriverTasksAll(startDate, endDate, driverId).Count();
 
             return Ok(new PagedResult<DriverTaskOrderModel>()
             {
                 TotalNumber = totalNumber,
-                List = _mapper.Map<List<DriverTaskOrderModel>>(list)
+                List = listRes
             });
         }
 
@@ -120,7 +122,11 @@ namespace CarTek.Api.Controllers
         {
             var task = _driverTaskService.GetDriverTaskById(driverTaskId);
 
-            return Ok(_mapper.Map<DriverTaskExportModel>(task));
+            var res = _mapper.Map<DriverTaskExportModel>(task);
+
+            _driverTaskService.DriverTaskExportModelSetLocations(res);
+
+            return Ok(res);
         }        
         
         [HttpPost("updateDriverTask")]
@@ -131,7 +137,14 @@ namespace CarTek.Api.Controllers
                 driverTaskModel.UpdatedStatus,
                 driverTaskModel.Note);
 
-            return Ok(result);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
         }
     }
 }

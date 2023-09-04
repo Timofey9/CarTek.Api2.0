@@ -8,6 +8,6 @@
 
         public ICollection<IFormFile>? Files { get; set; }
 
-        public string Note { get; set; } 
+        public string? Note { get; set; } 
     }
 }

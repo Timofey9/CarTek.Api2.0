@@ -20,7 +20,7 @@ namespace CarTek.Api.Services
         {
             IWorkbook workbook;
 
-            using (FileStream fileStream = new FileStream("\\Templates\\reportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            using (FileStream fileStream = new FileStream("/data/Templates/reportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
             {
                 workbook = new XSSFWorkbook(fileStream);
             }
@@ -52,7 +52,7 @@ namespace CarTek.Api.Services
         {
             IWorkbook workbook;
 
-            using (FileStream fileStream = new FileStream("\\Templates\\TN.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            using (FileStream fileStream = new FileStream("/data/Templates/TN.xlsx", FileMode.Open, FileAccess.ReadWrite))
             {
                 workbook = new XSSFWorkbook(fileStream);
             }
@@ -96,7 +96,7 @@ namespace CarTek.Api.Services
         {
             IWorkbook workbook;
          
-            using (FileStream fileStream = new FileStream("\\Templates\\reportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            using (FileStream fileStream = new FileStream("/data/Templates/reportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
             {
                 workbook = new XSSFWorkbook(fileStream);
             }

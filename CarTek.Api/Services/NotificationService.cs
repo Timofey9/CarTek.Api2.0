@@ -19,6 +19,8 @@ namespace CarTek.Api.Services
         {
             _logger = logger;
             _dbContext = dbContext;
+
+            InitializeFirebase();
         }
 
         public Tuple<int, ICollection<Model.Notification>> GetUserNotifications(bool isDriver, long userId, int pageNumber, int pageSize)
@@ -64,31 +66,43 @@ namespace CarTek.Api.Services
             _dbContext.SaveChanges();
         }
 
-        public async Task SendNotification(string title, string text, long userId, bool isDriver, string link = "")
+        private void InitializeFirebase()
         {
             try
             {
-                if(FirebaseApp.DefaultInstance == null)
+                if (FirebaseApp.DefaultInstance == null)
                 {
                     FirebaseApp.Create(new AppOptions()
                     {
                         Credential = GoogleCredential.GetApplicationDefault(),
                     });
                 }
+            }
+            catch(Exception ex) 
+            {
+                _logger.LogError(ex.Message, ex);
+            }
+        }
 
+        public async Task SendNotification(string title, string text, long userId, bool isDriver, string link = "")
+        {
+            try
+            {
                 var tokens = _dbContext.UserDevices.Where(ud => ud.IsDriver == isDriver && ud.UserId == userId).Select(t => t.Token).ToList();
 
-                var message = new MulticastMessage()
-                {
-                    Tokens = tokens,
-                    Notification = new Notification()
+                if(tokens != null && tokens.Count > 0) { 
+                    var message = new MulticastMessage()
                     {
-                        Title = title,
-                        Body = text,
-                    }
-                };
+                        Tokens = tokens,
+                        Notification = new Notification()
+                        {
+                            Title = title,
+                            Body = text,
+                        }
+                    };
 
-                var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+                    var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+                }
 
                 var notification = new Model.Notification
                 {

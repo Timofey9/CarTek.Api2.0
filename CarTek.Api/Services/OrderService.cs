@@ -47,7 +47,9 @@ namespace CarTek.Api.Services
                         message = $"У машины {currentCarTask.Car.Plate} уже есть задача на указанное число, переназначить?";
                     }
 
-                    var currentDriverTask = _dbContext.DriverTasks.Where(dt => dt.DriverId == model.DriverId
+                    var currentDriverTask = _dbContext.DriverTasks
+                        .Include(t => t.Driver)
+                        .Where(dt => dt.DriverId == model.DriverId
                     && dt.StartDate.Date == model.TaskDate.Date && dt.Shift == model.Shift)
                         .FirstOrDefault();
 

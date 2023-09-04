@@ -13,6 +13,10 @@ namespace CarTek.Api.Model.Dto
 
         public DriverTaskStatus Status { get; set; }
 
+        public Address LocationA { get; set; }
+
+        public Address LocationB { get; set; }
+
         public DateTime StartDate { get; set; }
 
         public int Volume { get; set; }

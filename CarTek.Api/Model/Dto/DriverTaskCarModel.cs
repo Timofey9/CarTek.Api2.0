@@ -44,6 +44,10 @@ namespace CarTek.Api.Model.Dto
 
         public int Volume { get; set; }
 
+        public Address LocationA { get; set; }
+
+        public Address LocationB { get; set; }
+
         public Unit Unit { get; set; }
 
         public DriverInfoModel Driver { get; set; }

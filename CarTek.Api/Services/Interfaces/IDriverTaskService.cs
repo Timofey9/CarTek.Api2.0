@@ -1,4 +1,5 @@
 ﻿using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 
@@ -21,5 +22,9 @@ namespace CarTek.Api.Services.Interfaces
         public ApiResponse DeleteDriverTask(long taskId);
         
         public TNModel GetTnModel(long driverTaskId);
+
+        List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert);
+
+        public void DriverTaskExportModelSetLocations(DriverTaskExportModel model);
     }
 }
