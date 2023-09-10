@@ -228,9 +228,9 @@ namespace CarTek.Api.Services
             try
             {
                 var tresult = _dbContext.Cars
-                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date.AddDays(-1)))
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
                             .ThenInclude(dt => dt.Order)                            
-                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date.AddDays(-1)))
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
                             .ThenInclude(dt => dt.Driver);
 
                 foreach(var car in tresult)

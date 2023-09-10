@@ -1,6 +1,7 @@
 ﻿using CarTek.Api.Model;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace CarTek.Api.Services.Interfaces
 {
@@ -24,7 +25,13 @@ namespace CarTek.Api.Services.Interfaces
 
         Order GetOrderById(long orderId);
 
+        OrderExportModel GetOrderExportById(long orderId);
+
+        ApiResponse DeleteOrder(long orderId);
+
         ApiResponse AddMaterial(string name);
+
+        ApiResponse UpdateOrder(long orderId, JsonPatchDocument<Order> orderModel);
 
         IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate);
     }

@@ -7,6 +7,7 @@ using CarTek.Api.Model.Response;
 using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 
@@ -70,20 +71,14 @@ namespace CarTek.Api.Controllers
                 result.Add(res);
             }
 
-            if (result.Any(t => !t.IsSuccess))
-            {
-                return BadRequest(new ApiResponse
-                {
-                    IsSuccess = false,
-                    Message = "Не удалось создать задачи"
-                });
-            }
-            else
-                return Ok(new ApiResponse
-                {
-                    IsSuccess = true,
-                    Message = "Все задачи успешно созданы"
-                });
+            var successCount = result.Where(t => !t.IsSuccess).Count();
+
+                
+            return Ok(new ApiResponse            
+            {            
+                IsSuccess = true,            
+                Message = $"Создано {successCount} задач из {tasks.Tasks.Count}"                
+            });
         }
 
         [HttpGet("getordersbetweendates")]
@@ -116,7 +111,6 @@ namespace CarTek.Api.Controllers
 
             return Ok(list);
         }
-
 
 
         [HttpGet("getaddresses")]
@@ -205,9 +199,49 @@ namespace CarTek.Api.Controllers
         [HttpPost("updatedrivertask")]
         public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
         {
-            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId);
+            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId, model.AdminComment);
             
             return Ok(result);
         }
+
+        [HttpGet("getorderbyid/{orderId}")]
+        public IActionResult GetOrderById(long orderId)
+        {
+            var result = _orderService.GetOrderExportById(orderId);
+            if(result != null)
+            {
+                return Ok(result);
+            }
+            return (BadRequest(new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Не удалось получить заявку"
+            }));
+        }
+
+        [HttpDelete("deleteorder/{orderId}")]
+        public IActionResult DeleteOrder(long orderId)
+        {
+            var res = _orderService.DeleteOrder(orderId);
+            if (res != null)
+            {
+                return Ok(res);
+            }
+            return BadRequest(res);
+        }
+
+        [HttpPatch("updateorder/{id}")]
+        public IActionResult UpdateDriver(long id, [FromBody] JsonPatchDocument<Order> patchDoc)
+        {
+            var res = _orderService.UpdateOrder(id, patchDoc);
+
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res);
+            }
+
+            return Ok(res);
+        }
+
     }
 }

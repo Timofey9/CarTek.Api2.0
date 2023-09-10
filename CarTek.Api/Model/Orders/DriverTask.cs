@@ -47,6 +47,10 @@
 
         public DateTime LastUpdated { get; set; }
 
+        public DateTime DateCreated { get; set; }
+
+        public string? AdminComment { get; set; }
+
         public Car Car { get; set; }
 
         public Driver Driver { get; set; }

@@ -231,7 +231,7 @@ namespace CarTek.Api.Services
         }
 
 
-        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId)
+        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment)
         {
             try
             {
@@ -252,6 +252,12 @@ namespace CarTek.Api.Services
                         task.DriverId = driverId.Value;
 
                         await _notificationService.SendNotification("Новая задача", $"На вас назначена новая задача. Подробности в личном кабинете", driverId.Value, true, "http://localhost:3000/driver-dashboard");
+                    }
+
+                    if (!string.IsNullOrEmpty(adminComment))
+                    {
+                        task.AdminComment = adminComment;
+                        await _notificationService.SendNotification("Комментарий", $"Обновлен комментарий по задаче на {task.DateCreated}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
                     }
 
                     _dbContext.Update(task);
@@ -334,25 +340,27 @@ namespace CarTek.Api.Services
                     var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationAId);
                     var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationBId);
 
-
                     var driverInfo = task.Driver.FullName;
                     var client = task.Order.Client;
                     var clientInfo = $"{client.ClientName}, ИНН {client.Inn}, КПП {client.Kpp}, {client.ClientAddress}";
+
+                    var order = task.Order;
 
                     //TODO: грузоотправитель
                     var result = new TNModel
                     {
                         ClientInfo = clientInfo,
                         DriverInfo = driverInfo,
-                        Sender = "ГРУЗООТПРАВИТЕЛЬ",
+                        Number = order.Id.ToString(),
+                        Sender = order.Service == ServiceType.Supply ? "ООО \"КарТэк\"" : "Грузоотправитель",
                         Accepter = "ДОБАВИТЬ КОНТАКТЫ ПРИЕМЩИКА",
                         Material = task.Order.Material.Name,
                         MaterialAmount = $"{task.Volume} {UnitToString(task.Unit)}",
                         CarModel = $"{task.Car.Brand} {task.Car.Model}",
                         CarPlate = task.Car.Plate,
-                        TrailerPlate = task.Car.Trailer.Plate,
-                        LocationA = locationA.TextAddress,
-                        LocationB = locationB.TextAddress
+                        TrailerPlate = task.Car?.Trailer.Plate,
+                        LocationA = locationA?.TextAddress,
+                        LocationB = locationB?.TextAddress
                     };
 
                     return result;
@@ -360,7 +368,7 @@ namespace CarTek.Api.Services
             }
             catch(Exception ex)
             {
-                _logger.LogError("Ошибка сохранения", ex.Message);
+                _logger.LogError($"Ошибка сохранения: {ex.Message}", ex.Message);
             }
 
             return new TNModel();

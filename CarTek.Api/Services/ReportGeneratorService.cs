@@ -59,7 +59,10 @@ namespace CarTek.Api.Services
 
             ISheet sheet = workbook.GetSheetAt(0);
 
-            IRow row = sheet.GetRow(12);
+            IRow row = sheet.GetRow(7);
+            row.GetCell(26).SetCellValue(model.Number);
+
+            row = sheet.GetRow(12);
 
             row.GetCell(1).SetCellValue(model.Sender);
             row.GetCell(29).SetCellValue(model.ClientInfo);
@@ -77,6 +80,12 @@ namespace CarTek.Api.Services
             row = sheet.GetRow(60);
             row.GetCell(1).SetCellValue(model.DriverInfo);
             row.GetCell(29).SetCellValue(model.DriverInfo);
+
+            row = sheet.GetRow(83);
+            row.GetCell(1).SetCellValue("ООО \"КарТэк\"");
+
+            row = sheet.GetRow(85);
+            row.GetCell(1).SetCellValue(model.DriverInfo);
 
             row = sheet.GetRow(90);
             row.GetCell(1).SetCellValue(model.CarModel);

@@ -25,6 +25,8 @@ namespace CarTek.Api.Model.Dto
 
         public long OrderId { get; set; }
 
+        public string AdminComment { get; set; }
+
         public long DriverId { get; set; }
 
         public DriverModel Driver { get; set; }

@@ -23,6 +23,8 @@ namespace CarTek.Api.Model
 
         public string Name { get; set; }
 
+        // public DateTime DateCreated { get; set; }
+
         //Грузополучатель - это компания, поэтому можно их брать из клиентов
         //Грузоотправитель - в случае Поставки - это картек, в случае перевозки -> Брать из клиентов, может быть null
 
@@ -63,6 +65,7 @@ namespace CarTek.Api.Model
         public ServiceType Service { get; set; }
 
         public Material Material { get; set; }
+
         public Client Client { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }

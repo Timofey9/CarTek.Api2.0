@@ -7,5 +7,7 @@
         public long? DriverId { get; set; }
 
         public long? CarId { get; set; }
+
+        public string? AdminComment { get; set; }
     }
 }

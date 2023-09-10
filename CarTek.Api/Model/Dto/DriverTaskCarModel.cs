@@ -22,6 +22,8 @@ namespace CarTek.Api.Model.Dto
 
         public Unit Unit { get; set; }
 
+        public string AdminComment { get; set; }
+
         public DriverInfoModel Driver { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
@@ -47,6 +49,8 @@ namespace CarTek.Api.Model.Dto
         public Address LocationA { get; set; }
 
         public Address LocationB { get; set; }
+
+        public string AdminComment { get; set; }
 
         public Unit Unit { get; set; }
 

@@ -15,6 +15,8 @@ namespace CarTek.Api.Model
         public DateTime TaskDate { get; set; }
 
         public bool ForceChange { get; set; }
+
+        public string? Comment { get; set; }
     }
 
     public class CreateDriverMultipleTaskModel

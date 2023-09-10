@@ -1,8 +1,11 @@
-﻿using CarTek.Api.DBContext;
+﻿using AutoMapper;
+using CarTek.Api.DBContext;
 using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using NPOI.SS.Formula.Functions;
 using System.Drawing.Printing;
@@ -17,8 +20,9 @@ namespace CarTek.Api.Services
         private readonly IAddressService _addressService;
         private readonly IClientService _clientService;
         private readonly INotificationService _notificationService;
+        private readonly IMapper _mapper;
 
-        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext, 
+        public OrderService(ILogger<OrderService> logger, ApplicationDbContext dbContext, IMapper mapper,
             IAddressService addressService, IClientService clientService, INotificationService notificationService)
         {
             _logger = logger;
@@ -26,6 +30,7 @@ namespace CarTek.Api.Services
             _addressService = addressService;
             _clientService = clientService;
             _notificationService = notificationService;
+            _mapper = mapper;
         }
 
         public async Task<ApiResponse> CreateDriverTask(CreateDriverTaskModel model)
@@ -70,7 +75,9 @@ namespace CarTek.Api.Services
                         Shift = model.Shift,
                         UniqueId = Guid.NewGuid(),
                         OrderId = model.OrderId,
-                        StartDate = model.TaskDate
+                        StartDate = model.TaskDate,
+                        DateCreated = DateTime.UtcNow,
+                        AdminComment = model.Comment
                     };
 
                     _dbContext.DriverTasks.Add(driverTask);
@@ -355,7 +362,8 @@ namespace CarTek.Api.Services
             var result = new List<Order>();
             try
             {
-                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Date >= startDate.Date.AddDays(-1);
+                var date = startDate.Date.AddDays(-1);
+                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Date >= date;
 
                 var tresult = _dbContext.Orders.Where(filterBy);
 
@@ -388,7 +396,12 @@ namespace CarTek.Api.Services
             var order = _dbContext
                 .Orders
                 .Include(t => t.DriverTasks)
+                .Include(t => t.Client)
+                .Include(t => t.Material)
                 .FirstOrDefault(t => t.Id == orderId);
+
+            var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationAId);
+            var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationBId);
 
             return order;
         }
@@ -421,6 +434,135 @@ namespace CarTek.Api.Services
                     Message = "Ошибка создания материала"
                 };
             }
+        }
+
+        public OrderExportModel GetOrderExportById(long orderId)
+        {
+            try
+            {
+                var order = _dbContext
+                .Orders
+                .Include(t => t.DriverTasks)
+                .Include(t => t.Client)
+                .Include(t => t.Material)
+                .FirstOrDefault(t => t.Id == orderId);
+
+                if (order != null)
+                {
+                    var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationAId);
+                    var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationBId);
+                    var exportModel = new OrderExportModel
+                    {
+                        Id = order.Id,
+                        Name = order.Name,
+                        Note = order.Note,
+                        Client = new ClientModel
+                        {
+                            Id = order.Client.Id,
+                            Inn = order.Client.Inn,
+                            Kpp = order.Client.Kpp,
+                            ClientName = order.Client.ClientName,
+                            ClientAddress = order.Client.ClientAddress,
+                            Ogrn = order.Client.Ogrn
+                        },
+                        LocationA = locationA,
+                        LocationB = locationB,
+                        StartDate = order.StartDate,
+                        DueDate = order.DueDate,
+                        Price = order.Price,
+                        Service = order.Service,
+                        CarCount = order.CarCount,
+                        Mileage = order.Mileage,
+                        Material = new Model.Dto.MaterialModel
+                        {
+                            Id = order.Material.Id,
+                            Name = order.Material.Name
+                        },
+                        Volume = order.Volume,
+                        DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
+                    };
+
+                    return exportModel;
+                }
+
+                return null;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Не удалось получить заявку {orderId}.{ex.Message}");
+                return null;
+            }
+
+        }
+
+        public ApiResponse UpdateOrder(long orderId, JsonPatchDocument<Order> orderModel)
+        {
+            try
+            {
+                var existing = GetOrderById(orderId);
+
+                if (existing == null)
+                {
+                    return null;
+                }
+
+                orderModel.ApplyTo(existing);
+
+                _dbContext.Orders.Update(existing);
+
+                var modifiedEntries = _dbContext.ChangeTracker
+                       .Entries()
+                       .Where(x => x.State == EntityState.Added || x.State == EntityState.Modified || x.State == EntityState.Deleted || x.State == EntityState.Detached)
+                       .Select(x => $"{x.DebugView.LongView}.\nState: {x.State}")
+                       .ToList();
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Заявка обновлена"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка обновления заявки.{ex.Message}");
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка обновления заявки"
+                };
+            }
+        }
+
+        public ApiResponse DeleteOrder(long orderId)
+        {
+            try
+            {
+                var order = _dbContext.Orders.FirstOrDefault(o => o.Id == orderId);
+                if(order != null)
+                {
+                    _dbContext.Orders.Remove(order);
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Заявка удалена"
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка удаления заявки. {ex.Message}", ex);
+            }
+
+            return new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Ошибка удаления заявки"
+            };
         }
     }
 }

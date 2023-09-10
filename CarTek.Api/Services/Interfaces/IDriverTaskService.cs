@@ -17,7 +17,7 @@ namespace CarTek.Api.Services.Interfaces
 
         public Task<ApiResponse> UpdateDriverTask(long taskId, ICollection<IFormFile>? file, int status, string comment);
 
-        public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId);
+        public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment);
 
         public ApiResponse DeleteDriverTask(long taskId);
         

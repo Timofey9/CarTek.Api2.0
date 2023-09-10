@@ -2,6 +2,10 @@
 {
     public class TNModel
     {
+        public string Number { get; set; }
+
+        public DateTime Date { get; set; }
+
         //Название, юр. адрес, телефон
         public string ClientInfo { get; set; }
 
