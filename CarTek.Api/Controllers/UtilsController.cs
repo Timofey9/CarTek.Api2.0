@@ -15,20 +15,17 @@ namespace CarTek.Api.Controllers
         private readonly IOrderService _orderService;
         private readonly IClientService _clientService;
         private readonly IAddressService _addressService;
+        private readonly IMaterialService _materialService;
         private readonly IMapper _mapper;
-        private readonly IReportGeneratorService _reportGeneratorService;
-        private readonly IDriverTaskService _driverTaskService;
 
         public UtilsController(IOrderService orderService, IClientService clientService,
-            IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService,
-            IDriverTaskService driverTaskService)
+            IAddressService addresSservice, IMapper mapper, IMaterialService materialService)
         {
             _orderService = orderService;
             _addressService = addresSservice;
             _clientService = clientService;
+            _materialService = materialService;
             _mapper = mapper;
-            _reportGeneratorService = reportGeneratorService;
-            _driverTaskService = driverTaskService;
         }
 
         [HttpGet("getmaterials")]
@@ -64,6 +61,22 @@ namespace CarTek.Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("updateclient")]
+        public IActionResult UpdateClient([FromBody] CreateClientModel model)
+        {
+            var result = _clientService.UpdateClient(model.Id, model.ClientName, model.Inn, model.ClientAddress);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("deleteclient/{clientId}")]
+        public IActionResult DeleteClient(long clientId)
+        {
+            var result = _clientService.DeleteClient(clientId);
+
+            return Ok(result);
+        }
+
         [HttpPost("createaddress")]
         public IActionResult CreateAddress([FromBody] CrateAddressModel model)
         {
@@ -72,12 +85,44 @@ namespace CarTek.Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("updateaddress")]
+        public IActionResult UpdateAddress([FromBody] CrateAddressModel model)
+        {
+            var result = _addressService.UpdateAddress(model.Id, model.Coordinates, model.TextAddress);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("deleteaddress/{addressId}")]
+        public IActionResult DeleteAddress(long addressId)
+        {
+            var result = _addressService.DeleteAddress(addressId);
+
+            return Ok(result);
+        }
+
         [HttpPost("creatematerial")]
         public IActionResult CreateMaterial([FromBody] CreateMaterialModel model)
         {
-            var res = _orderService.AddMaterial(model.Name);
+            var res = _materialService.CreateMaterial(model.Name);
 
             return Ok(res);
+        }
+
+        [HttpPost("updatematerial")]
+        public IActionResult UpdateMaterial([FromBody] CreateMaterialModel model)
+        {
+            var res = _materialService.UpdateMaterial(model.Id, model.Name);
+
+            return Ok(res);
+        }
+
+        [HttpDelete("deletematerial/{materialId}")]
+        public IActionResult DeleteMaterial(long materialId)
+        {
+            var result = _materialService.DeleteMaterial(materialId);
+
+            return Ok(result);
         }
     }
 }

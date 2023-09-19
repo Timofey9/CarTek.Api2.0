@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
-using CarTek.Api.Const;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
-using CarTek.Api.Services;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
-using System.Collections.Generic;
 
 namespace CarTek.Api.Controllers
 {
@@ -117,13 +113,6 @@ namespace CarTek.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("getmaterials")]
-        public IActionResult GetMaterials()
-        {
-            var list = _orderService.GetMaterials();
-
-            return Ok(list);
-        }
 
         [HttpGet("getxls")]
         public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)

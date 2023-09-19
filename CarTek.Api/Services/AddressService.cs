@@ -87,9 +87,16 @@ namespace CarTek.Api.Services
             return addresses;
         }
 
-        public ApiResponse UpdateAddress(long id, string? coordinates, string? textAddress)
+        public ApiResponse UpdateAddress(long? id, string? coordinates, string? textAddress)
         {
-            var address = GetAddress(id);
+            if (id == null)
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Не предоставлен id"
+                };
+
+            var address = GetAddress(id ?? 0);
 
             if (address != null)
             {

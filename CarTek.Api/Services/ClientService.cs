@@ -107,9 +107,18 @@ namespace CarTek.Api.Services
             return clients.ToList();
         }
 
-        public ApiResponse UpdateClient(long id, string? clientName, string? inn, string? clientAddress)
+        public ApiResponse UpdateClient(long? id, string? clientName, string? inn, string? clientAddress)
         {
-            var client = GetClient(id);
+            if(id == null)
+            {
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = $"Клиент не найден"
+                };
+            }
+
+            var client = GetClient(id ?? 0);
 
             if (client != null)
             {
@@ -121,14 +130,7 @@ namespace CarTek.Api.Services
                 {
                     client.Inn = inn;
                 }
-                //if (!string.IsNullOrEmpty(ogrn))
-                //{
-                //    client.Ogrn = ogrn;
-                //}
-                //if (!string.IsNullOrEmpty(kpp))
-                //{
-                //    client.Kpp = kpp;
-                //}
+
                 if (!string.IsNullOrEmpty(clientAddress))
                 {
                     client.ClientAddress = clientAddress;

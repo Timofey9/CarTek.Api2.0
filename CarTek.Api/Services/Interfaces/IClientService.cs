@@ -9,7 +9,7 @@ namespace CarTek.Api.Services.Interfaces
 
         ApiResponse DeleteClient(long id);
 
-        ApiResponse UpdateClient(long id, string? clientName, string? inn, string? clientAddress);
+        ApiResponse UpdateClient(long? id, string? clientName, string? inn, string? clientAddress);
 
         Client GetClient(long id);
 

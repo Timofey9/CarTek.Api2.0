@@ -11,7 +11,7 @@ namespace CarTek.Api.Services.Interfaces
 
         ApiResponse DeleteAddress(long id);
 
-        ApiResponse UpdateAddress(long id, string? coordinates, string? textAddress);
+        ApiResponse UpdateAddress(long? id, string? coordinates, string? textAddress);
 
         IEnumerable<Address> GetAddresses();
     }
