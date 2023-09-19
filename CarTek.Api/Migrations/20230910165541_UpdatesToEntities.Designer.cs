@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230910165541_UpdatesToEntities")]
+    partial class UpdatesToEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,6 +101,14 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Inn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Kpp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Ogrn")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -196,10 +207,10 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("ClientName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DueDate")
+                    b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("GpId")
+                    b.Property<long?>("GpId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("IsComplete")
@@ -227,6 +238,7 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Note")
@@ -241,7 +253,10 @@ namespace CarTek.Api.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double?>("Volume")
+                    b.Property<int>("UnloadUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Volume")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
@@ -288,6 +303,12 @@ namespace CarTek.Api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<long?>("TNId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("TnId")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid>("UniqueId")
                         .HasColumnType("uuid");
 
@@ -304,6 +325,8 @@ namespace CarTek.Api.Migrations
                     b.HasIndex("DriverId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("TNId");
 
                     b.ToTable("DriverTasks");
                 });
@@ -478,13 +501,10 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("DropOffArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("DropOffArrivalTime")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DropOffDepartureDate")
+                    b.Property<DateTime?>("DropOffDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DropOffDepartureTime")
@@ -508,13 +528,10 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("Number")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("PickUpArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("PickUpArrivalTime")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("PickUpDepartureDate")
+                    b.Property<DateTime?>("PickUpDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PickUpDepartureTime")
@@ -527,9 +544,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DriverTaskId")
-                        .IsUnique();
 
                     b.ToTable("TNs");
                 });
@@ -583,9 +597,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDispatcher")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -677,11 +688,17 @@ namespace CarTek.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CarTek.Api.Model.TN", "TN")
+                        .WithMany()
+                        .HasForeignKey("TNId");
+
                     b.Navigation("Car");
 
                     b.Navigation("Driver");
 
                     b.Navigation("Order");
+
+                    b.Navigation("TN");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTaskNote", b =>
@@ -718,17 +735,6 @@ namespace CarTek.Api.Migrations
                     b.Navigation("Trailer");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CarTek.Api.Model.TN", b =>
-                {
-                    b.HasOne("CarTek.Api.Model.Orders.DriverTask", "DriverTask")
-                        .WithOne("TN")
-                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DriverTask");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Trailer", b =>
@@ -771,8 +777,6 @@ namespace CarTek.Api.Migrations
             modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTask", b =>
                 {
                     b.Navigation("Notes");
-
-                    b.Navigation("TN");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Orders.Material", b =>

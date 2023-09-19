@@ -8,9 +8,9 @@
 
         public string Inn { get; set; }
 
-        public string Ogrn { get; set; }
+        //public string Ogrn { get; set; }
 
-        public string Kpp { get; set; }
+        //public string Kpp { get; set; }
 
         public string ClientAddress { get; set; }
     }

@@ -7,11 +7,11 @@ namespace CarTek.Api.Services.Interfaces
     {
         Address GetAddress(long id);
 
-        ApiResponse CreateAddress(string name, string coordinates, string textAddress);
+        ApiResponse CreateAddress(string coordinates, string textAddress);
 
         ApiResponse DeleteAddress(long id);
 
-        ApiResponse UpdateAddress(long id, string? name, string? coordinates, string? textAddress);
+        ApiResponse UpdateAddress(long id, string? coordinates, string? textAddress);
 
         IEnumerable<Address> GetAddresses();
     }

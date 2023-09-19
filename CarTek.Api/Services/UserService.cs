@@ -217,6 +217,7 @@ namespace CarTek.Api.Services
                     Login = user.Login,
                     Phone = user.Phone,
                     IsAdmin = user.IsAdmin,
+                    IsDispatcher = user.IsDispatcher,
                     Password = GetHash(user.Password)
                 };
 

@@ -16,7 +16,7 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
-        public ApiResponse CreateClient(string clientName, string inn, string ogrn, string kpp, string clientAddress)
+        public ApiResponse CreateClient(string clientName, string inn, string clientAddress)
         {
             try
             {
@@ -24,9 +24,7 @@ namespace CarTek.Api.Services
                 {
                     ClientAddress = clientAddress,
                     ClientName = clientName,
-                    Inn = inn,
-                    Kpp = kpp,
-                    Ogrn = ogrn,
+                    Inn = inn
                 };
 
                 var entity = _dbContext.Clients.Add(client);
@@ -109,7 +107,7 @@ namespace CarTek.Api.Services
             return clients.ToList();
         }
 
-        public ApiResponse UpdateClient(long id, string? clientName, string? inn, string? ogrn, string? kpp, string? clientAddress)
+        public ApiResponse UpdateClient(long id, string? clientName, string? inn, string? clientAddress)
         {
             var client = GetClient(id);
 
@@ -123,14 +121,14 @@ namespace CarTek.Api.Services
                 {
                     client.Inn = inn;
                 }
-                if (!string.IsNullOrEmpty(ogrn))
-                {
-                    client.Ogrn = ogrn;
-                }
-                if (!string.IsNullOrEmpty(kpp))
-                {
-                    client.Kpp = kpp;
-                }
+                //if (!string.IsNullOrEmpty(ogrn))
+                //{
+                //    client.Ogrn = ogrn;
+                //}
+                //if (!string.IsNullOrEmpty(kpp))
+                //{
+                //    client.Kpp = kpp;
+                //}
                 if (!string.IsNullOrEmpty(clientAddress))
                 {
                     client.ClientAddress = clientAddress;

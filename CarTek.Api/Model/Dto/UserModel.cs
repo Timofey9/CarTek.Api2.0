@@ -17,6 +17,8 @@
 
         public bool IsAdmin { get; set; }
 
+        public bool IsDispatcher { get; set; }
+
         public string Phone { get; set; }
 
         public string FullName => $"{LastName} {FirstName} {MiddleName}";

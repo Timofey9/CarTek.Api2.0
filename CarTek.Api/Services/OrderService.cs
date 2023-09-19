@@ -39,6 +39,19 @@ namespace CarTek.Api.Services
 
             try
             {
+                var order = _dbContext.Orders
+                    .Include(t => t.DriverTasks)
+                    .FirstOrDefault(t => t.Id == model.OrderId);
+
+                if(order?.DriverTasks.Count >= order?.CarCount)
+                {
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = $"Для этой заявки уже создано {order.DriverTasks.Count} задач из {order.CarCount}"
+                    };
+                }
+
                 bool updateTask = true;
 
                 if (!model.ForceChange)
@@ -77,7 +90,7 @@ namespace CarTek.Api.Services
                         OrderId = model.OrderId,
                         StartDate = model.TaskDate,
                         DateCreated = DateTime.UtcNow,
-                        AdminComment = model.Comment
+                        AdminComment = model.Comment,
                     };
 
                     _dbContext.DriverTasks.Add(driverTask);
@@ -123,11 +136,11 @@ namespace CarTek.Api.Services
                     ClientName = model.ClientName,
                     Volume = model.Volume,
                     LoadUnit = model.LoadUnit,
-                    UnloadUnit = model.UnloadUnit,
                     IsComplete = model.IsComplete,
                     StartDate = model.StartDate.ToUniversalTime(),
-                    DueDate = model.DueDate.ToUniversalTime(),
+                    DueDate = model.DueDate?.ToUniversalTime(),
                     Price = model.Price ?? 0,
+                    GpId = model.GpId,
                     Note = model.Note,
                     CarCount = model.CarCount,
                     MaterialId = model.MaterialId,
@@ -300,9 +313,14 @@ namespace CarTek.Api.Services
                 //    }
                 //}
 
+                var test = _dbContext.Orders.ToList();
+
                 var tresult = _dbContext.Orders
                         .Include(o => o.DriverTasks)
                         .ThenInclude(dt => dt.Car)
+                        .Include(o => o.DriverTasks)
+                        .ThenInclude(dt => dt.Driver)
+                        .Include(t => t.Client)
                         .Where(filterBy);
 
                 if (sortDirection == "asc")
@@ -363,7 +381,7 @@ namespace CarTek.Api.Services
             try
             {
                 var date = startDate.Date.AddDays(-1);
-                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Date >= date;
+                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Value.Date >= date;
 
                 var tresult = _dbContext.Orders.Where(filterBy);
 
@@ -451,6 +469,8 @@ namespace CarTek.Api.Services
                 {
                     var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationAId);
                     var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationBId);
+                    var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == order.GpId);
+
                     var exportModel = new OrderExportModel
                     {
                         Id = order.Id,
@@ -460,15 +480,24 @@ namespace CarTek.Api.Services
                         {
                             Id = order.Client.Id,
                             Inn = order.Client.Inn,
-                            Kpp = order.Client.Kpp,
+                            //Kpp = order.Client.Kpp,
                             ClientName = order.Client.ClientName,
                             ClientAddress = order.Client.ClientAddress,
-                            Ogrn = order.Client.Ogrn
+                            //Ogrn = order.Client.Ogrn
+                        },
+                        Gp = new ClientModel
+                        {
+                            Id = gp.Id,
+                            Inn = gp.Inn,
+                            //Kpp = order.Client.Kpp,
+                            ClientName = gp.ClientName,
+                            ClientAddress = gp.ClientAddress,
+                            //Ogrn = order.Client.Ogrn
                         },
                         LocationA = locationA,
                         LocationB = locationB,
                         StartDate = order.StartDate,
-                        DueDate = order.DueDate,
+                        DueDate = order?.DueDate,
                         Price = order.Price,
                         Service = order.Service,
                         CarCount = order.CarCount,
@@ -478,7 +507,7 @@ namespace CarTek.Api.Services
                             Id = order.Material.Id,
                             Name = order.Material.Name
                         },
-                        Volume = order.Volume,
+                        Volume = order?.Volume,
                         DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
                     };
 

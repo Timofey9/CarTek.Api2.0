@@ -146,5 +146,35 @@ namespace CarTek.Api.Controllers
                 return BadRequest(result);
             }
         }
+
+        [HttpPost("starttn")]
+        public async Task <IActionResult> StartTn([FromForm] FillDocumentModel model)
+        {
+            var res = _driverTaskService.StartDocument(model);
+
+            var saveNote = await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
+
+        [HttpPost("finalizetn")]
+        public async Task<IActionResult> FinalizeTn([FromForm] FillDocumentModel model)
+        {
+            var res = _driverTaskService.FinalizeDocument(model);
+
+            var saveNote = await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
     }
 }

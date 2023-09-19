@@ -10,12 +10,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
+using System.Collections.Generic;
 
 namespace CarTek.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = AuthPolicies.ADMIN_ONLY)]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -38,9 +39,9 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderModel driver)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderModel order)
         {
-            var res = await _orderService.CreateOrder(driver);
+            var res = await _orderService.CreateOrder(order);
             if (res.IsSuccess)
             {
                 return Ok(res);
@@ -71,8 +72,7 @@ namespace CarTek.Api.Controllers
                 result.Add(res);
             }
 
-            var successCount = result.Where(t => !t.IsSuccess).Count();
-
+            var successCount = result.Where(t => t.IsSuccess).Count();
                 
             return Ok(new ApiResponse            
             {            
@@ -85,12 +85,25 @@ namespace CarTek.Api.Controllers
         public IActionResult GetOrders(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             var list = _orderService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
-            var totalNumber = _orderService.GetAll(searchColumn, search).Count();
+            var totalNumber = _orderService.GetAllBetweenDates(startDate, endDate).Count();
+
+            var mappedList = new List<OrderModel>();
+
+            foreach (var item in list)
+            {
+                var gp = _clientService.GetClient(item.GpId);
+
+                var mappedItem = _mapper.Map<OrderModel>(item);
+
+                mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                mappedList.Add(mappedItem);
+            }
 
             return Ok(new PagedResult<OrderModel>()
             {
                 TotalNumber = totalNumber,
-                List = _mapper.Map<List<OrderModel>>(list)
+                List = mappedList
             });
         }
 
@@ -110,40 +123,6 @@ namespace CarTek.Api.Controllers
             var list = _orderService.GetMaterials();
 
             return Ok(list);
-        }
-
-
-        [HttpGet("getaddresses")]
-        public IActionResult GetAddresses()
-        {
-            var list = _addressService.GetAddresses();
-
-            return Ok(list);
-        }
-
-        [HttpGet("getclients")]
-        public IActionResult GetClients()
-        {
-            var list = _clientService.GetClients();
-
-            return Ok(list);
-        }
-
-
-        [HttpPost("createclient")]
-        public IActionResult CreateClient([FromBody] CreateClientModel model)
-        {
-            var result = _clientService.CreateClient(model.ClientName, model.Inn, model.Ogrn, model.Kpp, model.ClientAddress);
-
-            return Ok(result);
-        }
-
-        [HttpPost("createaddress")]
-        public IActionResult CreateAddress([FromBody] CrateAddressModel model)
-        {
-            var result = _addressService.CreateAddress(model.Name, model.Coordinates, model.TextAddress);
-
-            return Ok(result);
         }
 
         [HttpGet("getxls")]
@@ -188,14 +167,6 @@ namespace CarTek.Api.Controllers
             }
         }
 
-        [HttpPost("creatematerial")]
-        public IActionResult CreateMaterial([FromBody]CreateMaterialModel model)
-        {
-            var res = _orderService.AddMaterial(model.Name);
-
-            return Ok(res);
-        }
-
         [HttpPost("updatedrivertask")]
         public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
         {
@@ -223,6 +194,17 @@ namespace CarTek.Api.Controllers
         public IActionResult DeleteOrder(long orderId)
         {
             var res = _orderService.DeleteOrder(orderId);
+            if (res != null)
+            {
+                return Ok(res);
+            }
+            return BadRequest(res);
+        }
+
+        [HttpDelete("deletetask/{taskId}")]
+        public IActionResult DeleteTask(long taskId)
+        {
+            var res = _driverTaskService.DeleteDriverTask(taskId);
             if (res != null)
             {
                 return Ok(res);

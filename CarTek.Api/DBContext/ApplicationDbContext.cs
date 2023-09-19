@@ -26,6 +26,7 @@ namespace CarTek.Api.DBContext
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserDevice> UserDevices { get; set; }
+        public DbSet<TN> TNs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

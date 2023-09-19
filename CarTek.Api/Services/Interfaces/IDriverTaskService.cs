@@ -23,6 +23,10 @@ namespace CarTek.Api.Services.Interfaces
         
         public TNModel GetTnModel(long driverTaskId);
 
+        public ApiResponse StartDocument(FillDocumentModel model);
+
+        public ApiResponse FinalizeDocument(FillDocumentModel model);
+
         List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert);
 
         public void DriverTaskExportModelSetLocations(DriverTaskExportModel model);

@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230910172143_AddedNavProperty")]
+    partial class AddedNavProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,6 +101,14 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Inn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Kpp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Ogrn")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -196,10 +207,10 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("ClientName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DueDate")
+                    b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("GpId")
+                    b.Property<long?>("GpId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("IsComplete")
@@ -227,6 +238,7 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Note")
@@ -241,7 +253,10 @@ namespace CarTek.Api.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double?>("Volume")
+                    b.Property<int>("UnloadUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Volume")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
@@ -478,13 +493,10 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("DropOffArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("DropOffArrivalTime")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DropOffDepartureDate")
+                    b.Property<DateTime?>("DropOffDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DropOffDepartureTime")
@@ -508,13 +520,10 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("Number")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("PickUpArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("PickUpArrivalTime")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("PickUpDepartureDate")
+                    b.Property<DateTime?>("PickUpDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PickUpDepartureTime")
@@ -583,9 +592,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDispatcher")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")

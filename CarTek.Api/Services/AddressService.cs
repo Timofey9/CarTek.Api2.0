@@ -16,11 +16,11 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
-        public ApiResponse CreateAddress(string name, string coordinates, string textAddress)
+        public ApiResponse CreateAddress(string coordinates, string textAddress)
         {
             try
             {
-                var address = new Address { Name = name, Coordinates = coordinates, TextAddress = textAddress };
+                var address = new Address {Coordinates = coordinates, TextAddress = textAddress };
                 _dbContext.Addresses.Add(address);
                 _dbContext.SaveChanges();
                 return new ApiResponse
@@ -87,16 +87,12 @@ namespace CarTek.Api.Services
             return addresses;
         }
 
-        public ApiResponse UpdateAddress(long id, string? name, string? coordinates, string? textAddress)
+        public ApiResponse UpdateAddress(long id, string? coordinates, string? textAddress)
         {
             var address = GetAddress(id);
 
             if (address != null)
             {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    address.Name = name;
-                }
                 if (!string.IsNullOrEmpty(coordinates))
                 {
                     address.Coordinates = coordinates;

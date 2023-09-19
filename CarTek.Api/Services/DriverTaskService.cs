@@ -5,6 +5,7 @@ using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -126,6 +127,8 @@ namespace CarTek.Api.Services
             var task = _dbContext.DriverTasks
                 .Include(dt => dt.Order)
                 .ThenInclude(o => o.Material)
+                .Include(dt => dt.Order)
+                .ThenInclude(o => o.Client)
                 .Include(dt => dt.Car)
                 .Include(dt => dt.Driver)
                 .Include(dt => dt.Notes)
@@ -325,6 +328,8 @@ namespace CarTek.Api.Services
         {
             try
             {
+                var tn = _dbContext.TNs.FirstOrDefault(t => t.DriverTaskId == driverTaskId);
+
                 var task = _dbContext.DriverTasks
                     .Include(t => t.Order)
                     .ThenInclude(t => t.Material)
@@ -335,32 +340,42 @@ namespace CarTek.Api.Services
                     .Include(dt => dt.Driver)
                     .FirstOrDefault(t => t.Id == driverTaskId);
 
-                if(task != null)
+                if(tn != null)
                 {
-                    var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationAId);
-                    var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationBId);
+                    var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                    var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
 
-                    var driverInfo = task.Driver.FullName;
-                    var client = task.Order.Client;
-                    var clientInfo = $"{client.ClientName}, ИНН {client.Inn}, КПП {client.Kpp}, {client.ClientAddress}";
+                    var driverInfo = tn.DriverTask.Driver.FullName;
 
-                    var order = task.Order;
+                    var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                    var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                    var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
+                    var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
 
                     //TODO: грузоотправитель
                     var result = new TNModel
                     {
-                        ClientInfo = clientInfo,
+                        GoInfo = goInfo,
                         DriverInfo = driverInfo,
-                        Number = order.Id.ToString(),
-                        Sender = order.Service == ServiceType.Supply ? "ООО \"КарТэк\"" : "Грузоотправитель",
-                        Accepter = "ДОБАВИТЬ КОНТАКТЫ ПРИЕМЩИКА",
-                        Material = task.Order.Material.Name,
-                        MaterialAmount = $"{task.Volume} {UnitToString(task.Unit)}",
-                        CarModel = $"{task.Car.Brand} {task.Car.Model}",
-                        CarPlate = task.Car.Plate,
-                        TrailerPlate = task.Car?.Trailer.Plate,
+                        Date = tn.DriverTask.StartDate,
+                        Number = tn.Number,
+                        GpInfo = gpInfo,
+                        Accepter = "",
+                        Unit = UnitToString(tn.Unit),
+                        LoadVolume = tn.LoadVolume.ToString(),
+                        UnloadVolume = tn.UnloadVolume.ToString(),
+                        Material = tn.DriverTask.Order.Material.Name,
+                        MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
+                        CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
+                        CarPlate = tn.DriverTask.Car.Plate,
+                        TrailerPlate = tn.DriverTask.Car?.Trailer.Plate,
                         LocationA = locationA?.TextAddress,
-                        LocationB = locationB?.TextAddress
+                        LocationB = locationB?.TextAddress,
+                        PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")} {tn.PickUpArrivalTime}",
+                        PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")} {tn.PickUpDepartureTime}",
+                        DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")} {tn.DropOffArrivalTime}",
+                        DropOffDepartureTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")} {tn.DropOffArrivalTime}",
                     };
 
                     return result;
@@ -374,7 +389,7 @@ namespace CarTek.Api.Services
             return new TNModel();
         }
 
-        private string UnitToString(Unit unit)
+        private string UnitToString(Unit? unit)
         {
             switch (unit)
             {
@@ -386,6 +401,117 @@ namespace CarTek.Api.Services
                     return "шт";
                 default:
                     return "m3";
+            }
+        }
+
+        public ApiResponse StartDocument(FillDocumentModel model)
+        {
+            try
+            {
+                var task = _dbContext.DriverTasks
+                    .Include(t => t.TN)
+                    .FirstOrDefault(dt => dt.Id == model.DriverTaskId);
+
+                if(task != null)
+                {
+                    var Tn = new TN
+                    {
+                        Number = model.Number,
+                        GoId = model.GoId,
+                        GpId = model.GpId,
+                        LoadVolume = model.LoadVolume,
+                        Unit = model.Unit,
+                        LocationAId = model.LocationAId,
+                        LocationBId = model.LocationBId,
+                        PickUpArrivalDate = model.PickUpArrivalDate,
+                        PickUpArrivalTime = model.PickUpArrivalTime,
+                        PickUpDepartureDate = model.PickUpDepartureDate,
+                        PickUpDepartureTime = model.PickUpDepartureTime,
+                        DriverTaskId = task.Id,
+                        DriverId = task.DriverId
+                    };
+
+                    if (task.TN == null)
+                    {
+                        _dbContext.TNs.Add(Tn);
+                    }
+                    else
+                    {
+                        var updTn = task.TN;
+                        _dbContext.Update(updTn).CurrentValues.SetValues(Tn);
+                    }
+
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Данные сохранены"
+                    };
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Задача не найдена"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка заполнения ТН.{ex.Message}");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка сохранения данных"
+                };
+            }
+        }
+
+        public ApiResponse FinalizeDocument(FillDocumentModel model)
+        {
+            try
+            {
+                var task = _dbContext.DriverTasks
+                    .Include(t => t.TN)
+                    .FirstOrDefault(dt => dt.Id == model.DriverTaskId);
+
+                if (task != null)
+                {
+                    if (task.TN != null)
+                    {
+                        task.TN.UnloadVolume = model.UnloadVolume;
+                        task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        task.TN.LocationBId = model.LocationBId;
+                        task.TN.DropOffDepartureDate= model.DropOffDepartureDate;
+                        task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
+                        task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
+
+                        _dbContext.Update(task.TN);
+                    }
+
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Данные сохранены"
+                    };
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Задача не найдена"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка заполнения ТН.{ex.Message}");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка сохранения данных"
+                };
             }
         }
     }

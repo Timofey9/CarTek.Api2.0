@@ -26,8 +26,6 @@
      
         public Guid UniqueId { get; set; }
 
-        //Нужно время -> сделать строкой и обозначить промежуток, за который было добавлено время
-
         // day/night
         public ShiftType Shift { get; set; }
 
@@ -35,7 +33,7 @@
 
         public DateTime StartDate { get; set; }
 
-        public int Volume { get; set; }
+        public double Volume { get; set; }
 
         public Unit Unit { get; set; }
 
@@ -50,6 +48,8 @@
         public DateTime DateCreated { get; set; }
 
         public string? AdminComment { get; set; }
+
+        public TN? TN { get; set; }
 
         public Car Car { get; set; }
 

@@ -27,6 +27,8 @@ namespace CarTek.Api.Model.Dto
 
         public string AdminComment { get; set; }
 
+        public DateTime DateCreated { get; set; }
+
         public long DriverId { get; set; }
 
         public DriverModel Driver { get; set; }

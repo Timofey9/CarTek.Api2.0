@@ -5,16 +5,12 @@
         public string Name { get; set; }
 
         public string ClientName { get; set; }
-
-        public string? ClientInn { get; set; }
-
+ 
         public long MaterialId { get; set; }
 
-        public double Volume { get; set; }
+        public double? Volume { get; set; }
 
         public Unit LoadUnit { get; set; }
-
-        public Unit UnloadUnit { get; set; }
 
         public bool IsComplete { get; set; }
 
@@ -22,17 +18,20 @@
         
         public long AddressBId { get; set; }
         
+        //GO
         public long ClientId { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public long GpId { get; set; }
+
+        public DateTime? DueDate { get; set; }
         
         public DateTime StartDate { get; set; }       
         
-        public string Mileage { get; set; }
+        public string? Mileage { get; set; }
 
         public double? Price { get; set; }
       
-        public string Note { get; set; }
+        public string? Note { get; set; }
 
         public int CarCount { get; set; }
 

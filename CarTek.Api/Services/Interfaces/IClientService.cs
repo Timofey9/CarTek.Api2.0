@@ -5,11 +5,11 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface IClientService
     {
-        ApiResponse CreateClient(string clientName, string inn, string ogrn, string kpp, string clientAddress);
+        ApiResponse CreateClient(string clientName, string inn, string clientAddress);
 
         ApiResponse DeleteClient(long id);
 
-        ApiResponse UpdateClient(long id, string? clientName, string? inn, string? ogrn, string? kpp, string? clientAddress);
+        ApiResponse UpdateClient(long id, string? clientName, string? inn, string? clientAddress);
 
         Client GetClient(long id);
 

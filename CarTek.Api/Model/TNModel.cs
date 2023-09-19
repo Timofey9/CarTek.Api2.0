@@ -6,12 +6,23 @@
 
         public DateTime Date { get; set; }
 
+        public string LoadVolume { get; set; }
+        public string UnloadVolume { get; set; }
+
+        public string Unit { get; set; }
+
+        public string PickUpArrivalTime { get; set; }
+        public string PickUpDepartureTime { get; set; }
+
+        public string DropOffArrivalTime { get; set; }
+        public string DropOffDepartureTime { get; set; }
+
         //Название, юр. адрес, телефон
-        public string ClientInfo { get; set; }
+        public string GpInfo { get; set; }
+
+        public string GoInfo { get; set; }
 
         public string DriverInfo { get; set; }
-
-        public string Sender { get; set; }
 
         public string Accepter { get; set; }
 

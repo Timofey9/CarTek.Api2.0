@@ -18,11 +18,13 @@ namespace CarTek.Api.Model.Dto
 
         public DateTime StartDate { get; set; }
 
-        public int Volume { get; set; }
+        public double Volume { get; set; }
 
         public Unit Unit { get; set; }
 
         public string AdminComment { get; set; }
+
+        public DateTime DateCreated { get; set; }
 
         public DriverInfoModel Driver { get; set; }
 

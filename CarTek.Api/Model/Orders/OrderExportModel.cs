@@ -8,9 +8,13 @@ namespace CarTek.Api.Model.Orders
 
         public string Name { get; set; }
 
+        //Грузоотправитель
         public ClientModel Client { get; set; }
 
-        public double Volume { get; set; }
+        //Грузополучатель
+        public ClientModel Gp { get; set; }
+
+        public double? Volume { get; set; }
 
         public Unit LoadUnit { get; set; }
 
@@ -20,19 +24,19 @@ namespace CarTek.Api.Model.Orders
 
         public DateTime StartDate { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
 
         public Address LocationA { get; set; }
 
         public Address LocationB { get; set; }
 
-        public double Price { get; set; }
+        public double? Price { get; set; }
 
         public string? Note { get; set; }
 
         public int CarCount { get; set; }
 
-        public int Mileage { get; set; }
+        public int? Mileage { get; set; }
 
         public ServiceType Service { get; set; }
 

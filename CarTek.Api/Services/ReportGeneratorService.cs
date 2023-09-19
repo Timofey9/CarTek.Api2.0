@@ -59,42 +59,73 @@ namespace CarTek.Api.Services
 
             ISheet sheet = workbook.GetSheetAt(0);
 
-            IRow row = sheet.GetRow(7);
-            row.GetCell(26).SetCellValue(model.Number);
+            IRow row = sheet.GetRow(8);
+            row.GetCell(6).SetCellValue(model.Date.ToString("dd.MM.yyyy"));
+            row.GetCell(28).SetCellValue(model.Number);
 
-            row = sheet.GetRow(12);
 
-            row.GetCell(1).SetCellValue(model.Sender);
-            row.GetCell(29).SetCellValue(model.ClientInfo);
+            row = sheet.GetRow(14);
+            row.GetCell(1).SetCellValue(model.GoInfo);
 
-            row = sheet.GetRow(20);
+            row = sheet.GetRow(19);
+            row.GetCell(1).SetCellValue(model.GpInfo);
+
+            row = sheet.GetRow(21);
+            row.GetCell(1).SetCellValue(model.LocationB);
+
+            row = sheet.GetRow(24);
             row.GetCell(1).SetCellValue(model.Material);
+            row.GetCell(57).SetCellValue(model.LoadVolume);
 
-            row = sheet.GetRow(22);
-            row.GetCell(1).SetCellValue(model.MaterialAmount);
-
-            row = sheet.GetRow(48);
-            row.GetCell(1).SetCellValue(model.LocationA);
-            row.GetCell(29).SetCellValue(model.LocationB);
-
-            row = sheet.GetRow(60);
-            row.GetCell(1).SetCellValue(model.DriverInfo);
-            row.GetCell(29).SetCellValue(model.DriverInfo);
-
-            row = sheet.GetRow(83);
+            row = sheet.GetRow(43);
             row.GetCell(1).SetCellValue("ООО \"КарТэк\"");
+            row.GetCell(57).SetCellValue(model.DriverInfo);
 
-            row = sheet.GetRow(85);
-            row.GetCell(1).SetCellValue(model.DriverInfo);
-
-            row = sheet.GetRow(90);
+            row = sheet.GetRow(47);
             row.GetCell(1).SetCellValue(model.CarModel);
+            row.GetCell(57).SetCellValue($"{model.CarPlate}/{model.TrailerPlate}");
 
-            row = sheet.GetRow(92);
-            row.GetCell(29).SetCellValue($"{model.CarPlate}/{model.TrailerPlate}");
 
-            row = sheet.GetRow(123);
-            row.GetCell(1).SetCellValue("ООО \"КарТэк\"");
+            row = sheet.GetRow(55);
+            row.GetCell(1).SetCellValue(model.GoInfo);
+
+            row = sheet.GetRow(59);
+            row.GetCell(1).SetCellValue(model.LocationA);
+
+            row = sheet.GetRow(61);
+            row.GetCell(1).SetCellValue(model.PickUpArrivalTime);
+            row.GetCell(57).SetCellValue(model.PickUpDepartureTime);
+
+            sheet = workbook.GetSheetAt(1);
+            row = sheet.GetRow(2);
+            row.GetCell(1).SetCellValue(model.LocationB);
+
+            row = sheet.GetRow(4);
+            row.GetCell(1).SetCellValue(model.DropOffArrivalTime);
+            row.GetCell(57).SetCellValue(model.DropOffDepartureTime);
+
+            //row = sheet.GetRow(52);
+            //row.GetCell(1).SetCellValue(model.PickUpArrivalTime);
+            //row.GetCell(15).SetCellValue(model.PickUpDepartureTime);
+            //row.GetCell(29).SetCellValue(model.DropOffArrivalTime);
+            //row.GetCell(45).SetCellValue(model.PickUpDepartureTime);
+
+            //row = sheet.GetRow(56);
+            //row.GetCell(1).SetCellValue(model.LoadVolume);
+            //row.GetCell(29).SetCellValue(model.UnloadVolume);
+
+            //row = sheet.GetRow(60);
+            //row.GetCell(1).SetCellValue(model.DriverInfo);
+            //row.GetCell(29).SetCellValue(model.DriverInfo);
+
+            //row = sheet.GetRow(76);
+            //row.GetCell(0).SetCellValue(model.Date.ToShortDateString());
+            //row.GetCell(15).SetCellValue("");
+
+            //row = sheet.GetRow(85);
+            //row.GetCell(1).SetCellValue(model.DriverInfo);
+
+
 
             var stream = new MemoryStream();
             workbook.Write(stream, true);
