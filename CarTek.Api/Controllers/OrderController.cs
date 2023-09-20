@@ -107,10 +107,20 @@ namespace CarTek.Api.Controllers
         public IActionResult GetAllActiveOrders(DateTime startDate)
         {
             var list = _orderService.GetAllActive(startDate);
+            var mappedList = new List<OrderModel>();
 
-            var result = _mapper.Map<List<OrderModel>>(list);
+            foreach (var item in list)
+            {
+                var gp = _clientService.GetClient(item.GpId);
 
-            return Ok(result);
+                var mappedItem = _mapper.Map<OrderModel>(item);
+
+                mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                mappedList.Add(mappedItem);
+            }
+
+            return Ok(mappedList);
         }
 
 

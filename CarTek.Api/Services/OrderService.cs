@@ -383,7 +383,7 @@ namespace CarTek.Api.Services
                 var date = startDate.Date.AddDays(-1);
                 Expression<Func<Order, bool>> filterBy = x => x.DueDate.Value.Date >= date;
 
-                var tresult = _dbContext.Orders.Where(filterBy);
+                var tresult = _dbContext.Orders.Include(t => t.Client).Where(filterBy);
 
                 result = tresult.ToList();
             }
