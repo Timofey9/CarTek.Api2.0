@@ -29,6 +29,9 @@ namespace CarTek.Api.Model.Dto
         public DriverInfoModel Driver { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
+
+        public int SubTasksCount { get; set; }
+
     }
 
     public class DriverTaskExportModel
@@ -46,6 +49,8 @@ namespace CarTek.Api.Model.Dto
 
         public DateTime StartDate { get; set; }
 
+        public DateTime DateCreated { get; set; }
+
         public int Volume { get; set; }
 
         public Address LocationA { get; set; }
@@ -61,5 +66,10 @@ namespace CarTek.Api.Model.Dto
         public CarInfoModel Car { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
+
+        public ICollection<SubTaskModel> SubTasks { get; set; }
+
+        public int SubTasksCount { get; set; }
+
     }
 }

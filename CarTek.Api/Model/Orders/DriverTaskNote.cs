@@ -12,6 +12,8 @@
 
         public string S3Links { get; set; }
 
-        public long DriverTaskId { get; set; }
+        public long? DriverTaskId { get; set; }
+
+        public long? SubTaskId { get; set; }
     }
 }

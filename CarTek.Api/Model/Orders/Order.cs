@@ -24,13 +24,6 @@ namespace CarTek.Api.Model
 
         public string? Name { get; set; }
 
-        // public DateTime DateCreated { get; set; }
-
-        //Грузополучатель - это компания, поэтому можно их брать из клиентов
-        //Грузоотправитель - в случае Поставки - это картек, в случае перевозки -> Брать из клиентов, может быть null
-
-        //Приемщик - просто строка (имя + номер телефона)
-
         public string? ClientName { get; set; }
 
         public double? Volume { get; set; }

@@ -81,7 +81,7 @@ namespace CarTek.Api.Controllers
         public IActionResult GetOrders(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             var list = _orderService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
-            var totalNumber = _orderService.GetAllBetweenDates(startDate, endDate).Count();
+            var totalNumber = _orderService.GetAllBetweenDates(searchColumn, search, startDate, endDate).Count();
 
             var mappedList = new List<OrderModel>();
 
@@ -129,7 +129,7 @@ namespace CarTek.Api.Controllers
         {
             try
             {
-                var orders = _orderService.GetAllBetweenDates(startDate, endDate);
+                var orders = _orderService.GetAllBetweenDates(null, null, startDate, endDate);
 
                 var fileStream = _reportGeneratorService.GenerateOrdersReport(orders);
 
@@ -169,7 +169,7 @@ namespace CarTek.Api.Controllers
         [HttpPost("updatedrivertask")]
         public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
         {
-            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId, model.AdminComment);
+            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId, model.AdminComment, model.StartDate, model.Shift);
             
             return Ok(result);
         }
@@ -224,5 +224,18 @@ namespace CarTek.Api.Controllers
             return Ok(res);
         }
 
+
+        [HttpPost("createsubtask")]
+        public IActionResult CreateSubTask([FromBody]CreateSubTaskModel model)
+        {
+            var res = _driverTaskService.CreateSubTask(model.DriverTaskId);
+
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res);
+            }
+
+            return Ok(res);
+        }
     }
 }

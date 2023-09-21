@@ -102,13 +102,13 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpGet("getdrivertasks")]
-        public IActionResult GetDriverTasks(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId)
+        public IActionResult GetDriverTasks(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString)
         {
-            var list = _driverTaskService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId);
+            var list = _driverTaskService.GetDriverTasksFiltered(pageNumber, pageSize, startDate, endDate, driverId, searchBy, searchString);
 
             var listRes = _driverTaskService.MapAndExtractLocationsInfo(list);
 
-            var totalNumber = _driverTaskService.GetDriverTasksAll(startDate, endDate, driverId).Count();
+            var totalNumber = _driverTaskService.GetDriverTasksAll(startDate, endDate, driverId, searchBy, searchString).Count();
 
             return Ok(new PagedResult<DriverTaskOrderModel>()
             {
@@ -152,7 +152,14 @@ namespace CarTek.Api.Controllers
         {
             var res = _driverTaskService.StartDocument(model);
 
-            var saveNote = await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            if (model.IsSubtask)
+            {
+                await _driverTaskService.UpdateDriverSubTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            }
+            else
+            {
+                await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            }
 
             if (res.IsSuccess)
             {
@@ -167,7 +174,14 @@ namespace CarTek.Api.Controllers
         {
             var res = _driverTaskService.FinalizeDocument(model);
 
-            var saveNote = await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            if (model.IsSubtask)
+            {
+                await _driverTaskService.UpdateDriverSubTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            }
+            else
+            {
+                await _driverTaskService.UpdateDriverTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+            }
 
             if (res.IsSuccess)
             {
@@ -175,6 +189,24 @@ namespace CarTek.Api.Controllers
             }
 
             return BadRequest(res);
+        }
+
+        [HttpPost("updatesubtask")]
+        public async Task<IActionResult> UpdateSubTask([FromForm] UpdateDriverTaskModel driverTaskModel)
+        {
+            var result = await _driverTaskService.UpdateDriverSubTask(driverTaskModel.DriverTaskId,
+                driverTaskModel.Files,
+                driverTaskModel.UpdatedStatus,
+                driverTaskModel.Note);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
         }
     }
 }

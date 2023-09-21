@@ -11,8 +11,6 @@ namespace CarTek.Api.Services.Interfaces
 
         Task<ApiResponse> CreateDriverTask(CreateDriverTaskModel model);
 
-        IEnumerable<Order> GetAll(string searchColumn, string search);
-
         IEnumerable<Order> GetAllActive(DateTime startDate);
 
         IEnumerable<Material> GetMaterials();
@@ -33,6 +31,6 @@ namespace CarTek.Api.Services.Interfaces
 
         ApiResponse UpdateOrder(long orderId, JsonPatchDocument<Order> orderModel);
 
-        IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate);
+        IEnumerable<Order> GetAllBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate);
     }
 }

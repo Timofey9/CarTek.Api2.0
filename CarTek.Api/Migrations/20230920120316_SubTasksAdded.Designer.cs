@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230920120316_SubTasksAdded")]
+    partial class SubTasksAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,7 +321,7 @@ namespace CarTek.Api.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long?>("DriverTaskId")
+                    b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("S3Links")
@@ -370,9 +373,6 @@ namespace CarTek.Api.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<long>("DriverTaskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("SequenceNumber")
@@ -506,7 +506,7 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("DriverTaskId")
+                    b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("DropOffArrivalDate")
@@ -725,7 +725,9 @@ namespace CarTek.Api.Migrations
                 {
                     b.HasOne("CarTek.Api.Model.Orders.DriverTask", null)
                         .WithMany("Notes")
-                        .HasForeignKey("DriverTaskId");
+                        .HasForeignKey("DriverTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CarTek.Api.Model.Orders.SubTask", null)
                         .WithMany("Notes")
@@ -772,7 +774,9 @@ namespace CarTek.Api.Migrations
                 {
                     b.HasOne("CarTek.Api.Model.Orders.DriverTask", "DriverTask")
                         .WithOne("TN")
-                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId");
+                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CarTek.Api.Model.Orders.SubTask", "SubTask")
                         .WithOne("TN")

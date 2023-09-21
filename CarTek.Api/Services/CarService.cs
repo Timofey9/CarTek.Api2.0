@@ -4,13 +4,13 @@ using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Dto.Driver;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
-using NuGet.DependencyResolver;
-using System.Drawing.Printing;
 using System.Linq.Expressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CarTek.Api.Services
 {
@@ -20,13 +20,15 @@ namespace CarTek.Api.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IQuestionaryService _questionaryService;
         private readonly IMapper _mapper;
+        private readonly Interfaces.IClientService _clientService;
 
-        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IMapper mapper)
+        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IMapper mapper, Interfaces.IClientService clientService)
         {
             _logger = logger;
             _dbContext = dbContext;
             _questionaryService = questionaryService;
             _mapper = mapper;
+            _clientService = clientService;
         }
 
         public ApiResponse CreateCar(CreateCarModel car)
@@ -228,14 +230,14 @@ namespace CarTek.Api.Services
             try
             {
                 var tresult = _dbContext.Cars
-                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.AddHours(15).Date == date.Date))
                             .ThenInclude(dt => dt.Order)                            
-                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.Date == date.Date))
-                            .ThenInclude(dt => dt.Driver);
+                        .Include(c => c.DriverTasks.Where(dt => dt.StartDate.AddHours(15).Date == date.Date))
+                            .ThenInclude(dt => dt.Driver).ToList();
 
                 foreach(var car in tresult)
                 {
-                    result.Add(new CarDriverTaskModel
+                    var a = new CarDriverTaskModel
                     {
                         Id = car.Id,
                         Model = car.Model,
@@ -251,9 +253,18 @@ namespace CarTek.Api.Services
                             Status = dt.Status,
                             StartDate = dt.StartDate,
                             Volume = dt.Volume,
-                            Unit = dt.Unit
+                            Unit = dt.Unit,
                         }).ToList(),
-                    });
+                    };
+
+                    foreach (var driverTask in a.DriverTasks)
+                    {
+                        var gp = _clientService.GetClient(driverTask.Order.GpId);
+
+                        driverTask.Order.Gp = _mapper.Map<ClientModel>(gp);
+                    }
+
+                    result.Add(a);
                 }
             }
             catch (Exception ex)

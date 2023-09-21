@@ -26,6 +26,7 @@ namespace CarTek.Api.Mapper
             CreateMap<DriverTask, DriverTaskExportModel>();
             CreateMap<Client, ClientModel>();
             CreateMap<Order, OrderModel>();
+            CreateMap<SubTask, SubTaskModel>();
         }
     }
 }

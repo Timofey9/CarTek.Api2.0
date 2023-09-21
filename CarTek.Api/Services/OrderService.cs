@@ -190,11 +190,6 @@ namespace CarTek.Api.Services
             }
         }
 
-        public IEnumerable<Order> GetAll(string searchColumn, string search)
-        {
-            return GetAll(null, null, 0, 0, searchColumn, search);
-        }
-
         public IEnumerable<Order> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
         {
             pageNumber = pageNumber > 0 ? pageNumber : 1;
@@ -205,6 +200,7 @@ namespace CarTek.Api.Services
             try
             {
                 Expression<Func<Order, bool>> filterBy = x => true;
+
                 if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
                 {
                     switch (searchColumn)
@@ -212,8 +208,8 @@ namespace CarTek.Api.Services
                         case "clientname":
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim());
                             break;
-                        case "name":
-                            filterBy = x => x.Name.ToLower().Contains(search.ToLower().Trim());
+                        case "material":
+                            filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim());
                             break;
                         default:
                             break;
@@ -283,12 +279,12 @@ namespace CarTek.Api.Services
                 {
                     switch (searchColumn)
                     {
-                        case "clientname":
+                        case "clientName":
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
                             && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
                             break;
-                        case "name":
-                            filterBy = x => x.Name.ToLower().Contains(search.ToLower().Trim())
+                        case "material":
+                            filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
                             && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
                             break;
                         default:
@@ -348,7 +344,7 @@ namespace CarTek.Api.Services
             return result;
         }
 
-        public IEnumerable<Order> GetAllBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<Order> GetAllBetweenDates(string? searchColumn, string search, DateTime startDate, DateTime endDate)
         {
             var result = new List<Order>();
 
@@ -357,6 +353,23 @@ namespace CarTek.Api.Services
                 Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
+
+                if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
+                {
+                    switch (searchColumn)
+                    {
+                        case "clientName":
+                            filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
+                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
+                            break;
+                        case "material":
+                            filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
+                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
 
                 var tresult = _dbContext.Orders

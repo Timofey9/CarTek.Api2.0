@@ -4,6 +4,10 @@ namespace CarTek.Api.Model.Dto
 {
     public class FillDocumentModel
     {
+        public bool IsSubtask { get; set; }
+
+        public long? SubTaskId { get; set; }
+
         public int UpdatedStatus { get; set; }
 
         public ICollection<IFormFile>? Files { get; set; }

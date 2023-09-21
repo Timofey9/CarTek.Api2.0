@@ -8,6 +8,8 @@ namespace CarTek.Api.Model.Dto
 
         public string Name { get; set; }
 
+        public long GpId { get; set; }
+
         public ClientModel Client { get; set; }
 
         public ClientModel Gp { get; set; }

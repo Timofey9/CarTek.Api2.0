@@ -4,13 +4,14 @@
     {
         Assigned,
         Confirmed,
-        Loading,
-        Loaded,
         OnRoute,
+        Loading,
+        DocumentSigning1,
+        Loaded,
+        OutLoad,
+        ArrivedToUnload,
         Unloading,
-        Unloaded,
-        DocsSent,
-        OriginalReceived,
+        DocumentSigning2,
         Done
     }
 
@@ -49,6 +50,8 @@
 
         public string? AdminComment { get; set; }
 
+        public int SubTasksCount { get; set; }
+
         public TN? TN { get; set; }
 
         public Car Car { get; set; }
@@ -58,5 +61,7 @@
         public Order Order{ get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
+
+        public ICollection<SubTask> SubTasks { get; set; }
     }
 }

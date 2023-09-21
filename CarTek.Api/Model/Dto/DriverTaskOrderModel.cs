@@ -36,5 +36,8 @@ namespace CarTek.Api.Model.Dto
         public CarModel Car { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }
+
+        public int SubTasksCount { get; set; }
+
     }
 }

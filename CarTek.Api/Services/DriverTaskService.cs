@@ -32,12 +32,12 @@ namespace CarTek.Api.Services
             _mapper = mapper;
         }
 
-        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId)
+        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString)
         {
-            return GetDriverTasksFiltered(0, 0, startDate, endDate, driverId);
+            return GetDriverTasksFiltered(0, 0, startDate, endDate, driverId, searchBy, searchString);
         }
 
-        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId)
+        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString)
         {
             pageNumber = pageNumber > 0 ? pageNumber : 1;
             pageSize = pageSize >= 0 ? pageSize : 10;
@@ -54,6 +54,25 @@ namespace CarTek.Api.Services
                     var date2 = endDate.Value;
                     filterBy = x => x.DriverId == driverId && x.StartDate.Date >= date1.Date.AddDays(-1) && x.StartDate.Date <= date2.Date;
                 }
+
+
+                if (!string.IsNullOrEmpty(searchBy) && !string.IsNullOrEmpty(searchString))
+                {
+                    switch (searchBy)
+                    {
+                        case "clientName":
+                            filterBy = x => x.DriverId == driverId && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
+                            && x.StartDate.Date >= startDate.Value.Date.AddDays(-1) && x.StartDate.Date <= endDate.Value.Date;
+                            break;
+                        case "material":
+                            filterBy = x => x.DriverId == driverId && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
+                            && x.StartDate.Date >= startDate.Value.Date.AddDays(-1) && x.StartDate.Date <= endDate.Value.Date;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
 
                 Expression<Func<DriverTask, object>> orderBy = x => x.StartDate;
 
@@ -116,12 +135,6 @@ namespace CarTek.Api.Services
             return mappedResult;
         }
 
-        //TODO: add pagination
-        public IEnumerable<DriverTask> GetAllDriverTasks(long driverId)
-        {
-            return GetDriverTasksAll(null, null, driverId);
-        }
-
         public DriverTask GetDriverTaskById(long driverTaskId)
         {
             var task = _dbContext.DriverTasks
@@ -132,6 +145,8 @@ namespace CarTek.Api.Services
                 .Include(dt => dt.Car)
                 .Include(dt => dt.Driver)
                 .Include(dt => dt.Notes)
+                .Include(dt => dt.SubTasks)
+                .ThenInclude(st => st.Notes)
                 .FirstOrDefault(dt => dt.Id == driverTaskId);
 
             return task;
@@ -176,8 +191,8 @@ namespace CarTek.Api.Services
                     var taskNote = new DriverTaskNote
                     {
                         DriverTaskId = taskId,
-                        Status = (DriverTaskStatus)task.Status,
-                        Text = string.IsNullOrEmpty(comment) ? "-" : comment,
+                        Status = (DriverTaskStatus)status,
+                        Text = string.IsNullOrEmpty(comment) ? " " : comment,
                         DateCreated = DateTime.UtcNow,
                     };
                     
@@ -234,7 +249,7 @@ namespace CarTek.Api.Services
         }
 
 
-        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment)
+        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift)
         {
             try
             {
@@ -260,7 +275,19 @@ namespace CarTek.Api.Services
                     if (!string.IsNullOrEmpty(adminComment))
                     {
                         task.AdminComment = adminComment;
-                        await _notificationService.SendNotification("Комментарий", $"Обновлен комментарий по задаче на {task.DateCreated}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        await _notificationService.SendNotification("Комментарий", $"Обновлен комментарий по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                    }
+
+                    if (startDate != null && startDate.Value.Date != task.StartDate.Date)
+                    {
+                        await _notificationService.SendNotification("Смена даты", $"Обновлена дата по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        task.StartDate = startDate.Value;
+                    }
+
+                    if (shift != null && shift.Value != task.Shift)
+                    {
+                        await _notificationService.SendNotification("Изменена смена", $"Изменена смена по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        task.Shift = shift.Value;
                     }
 
                     _dbContext.Update(task);
@@ -431,14 +458,23 @@ namespace CarTek.Api.Services
                         DriverId = task.DriverId
                     };
 
-                    if (task.TN == null)
+                    if (model.IsSubtask)
                     {
+                        Tn.SubTaskId = model.SubTaskId;
+                        Tn.DriverTaskId = null;
                         _dbContext.TNs.Add(Tn);
                     }
                     else
                     {
-                        var updTn = task.TN;
-                        _dbContext.Update(updTn).CurrentValues.SetValues(Tn);
+                        if (task.TN == null)
+                        {
+                            _dbContext.TNs.Add(Tn);
+                        }
+                        else
+                        {
+                            var updTn = task.TN;
+                            _dbContext.Update(updTn).CurrentValues.SetValues(Tn);
+                        }
                     }
 
                     _dbContext.SaveChanges();
@@ -471,6 +507,31 @@ namespace CarTek.Api.Services
         {
             try
             {
+                if (model.IsSubtask)
+                {
+                    var TN = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
+
+                    if (TN != null)
+                    {
+                        TN.UnloadVolume = model.UnloadVolume;
+                        TN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        TN.LocationBId = model.LocationBId;
+                        TN.DropOffDepartureDate = model.DropOffDepartureDate;
+                        TN.DropOffArrivalTime = model.DropOffArrivalTime;
+                        TN.DropOffDepartureTime = model.DropOffDepartureTime;
+
+                        _dbContext.Update(TN);
+                    }
+
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Данные сохранены"
+                    };
+                }
+
                 var task = _dbContext.DriverTasks
                     .Include(t => t.TN)
                     .FirstOrDefault(dt => dt.Id == model.DriverTaskId);
@@ -513,6 +574,126 @@ namespace CarTek.Api.Services
                     Message = "Ошибка сохранения данных"
                 };
             }
+        }
+
+        public ApiResponse CreateSubTask(long driverTaskId)
+        {
+            try
+            {
+                var dt = _dbContext.DriverTasks.Include(d => d.SubTasks).FirstOrDefault(t => t.Id == driverTaskId);
+
+                if (dt == null)
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Задача не существует"
+                    };
+
+                var subTask = new SubTask
+                {
+                    DriverTaskId = driverTaskId,
+                    Status = DriverTaskStatus.Confirmed,
+                    SequenceNumber = dt.SubTasks.Count + 1,
+                    OrderId = dt.OrderId
+                };
+
+                dt.SubTasksCount++;
+
+                _dbContext.SubTasks.Add(subTask);
+                _dbContext.DriverTasks.Update(dt);
+                _dbContext.SaveChanges();
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Создана подзадача"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Невозможно создать позадачу. {ex.Message}");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Задача не создана"
+                };
+            }
+        }
+
+        public async Task<ApiResponse> UpdateDriverSubTask(long taskId, ICollection<IFormFile>? files, int status, string comment)
+        {
+            try
+            {
+                var task = _dbContext.SubTasks.FirstOrDefault(t => t.Id == taskId);
+
+                if (task != null)
+                {
+                    var taskNote = new DriverTaskNote
+                    {
+                        SubTaskId = taskId,
+                        Status = (DriverTaskStatus)task.Status,
+                        Text = string.IsNullOrEmpty(comment) ? " " : comment,
+                        DateCreated = DateTime.UtcNow,
+                    };
+
+                    task.Status = (DriverTaskStatus)status;
+
+                    var links = new List<string>();
+
+                    if (files != null)
+                    {
+                        foreach (var file in files)
+                        {
+                            if (file.Length > 1e+7)
+                            {
+                                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
+                            }
+
+                            var path = task.OrderId + "/" + task.Id + "/" + task.Status.ToString();
+
+                            links.Add("cartek/" + path + "/" + file.FileName);
+
+                            await _AWSS3Service.UploadFileToS3(file, path, file.FileName, "cartek");
+                        }
+                    }
+
+                    var stringLinks = JsonConvert.SerializeObject(links);
+
+                    taskNote.S3Links = stringLinks;
+
+                    _dbContext.DriverTaskNotes.Add(taskNote);
+
+                    _dbContext.Update(task);
+
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                //путь до файла в бакете клиент/orderId/taskId/statusId
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Статус обновлен"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Статус не обновлен"
+                };
+            }
+        }
+
+        public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId)
+        {
+            var tasks = _dbContext.SubTasks.Where(t => t.DriverTaskId == driverTaskId);
+            var map = _mapper.Map<List<SubTaskModel>>(tasks);
+
+            return map;
         }
     }
 }

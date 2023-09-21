@@ -9,15 +9,13 @@ namespace CarTek.Api.Services.Interfaces
     {
         public DriverTask GetDriverTaskById(long driverTaskId);
 
-        public IEnumerable<DriverTask> GetAllDriverTasks(long driverId);
+        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString);
 
-        public IEnumerable<DriverTask> GetDriverTasksAll(DateTime? startDate, DateTime? endDate, long driverId);
-
-        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId);
+        public IEnumerable<DriverTask> GetDriverTasksFiltered(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString);
 
         public Task<ApiResponse> UpdateDriverTask(long taskId, ICollection<IFormFile>? file, int status, string comment);
 
-        public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment);
+        public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift);
 
         public ApiResponse DeleteDriverTask(long taskId);
         
@@ -27,8 +25,14 @@ namespace CarTek.Api.Services.Interfaces
 
         public ApiResponse FinalizeDocument(FillDocumentModel model);
 
+        public ApiResponse CreateSubTask(long driverTaskId);
+
+        public Task<ApiResponse> UpdateDriverSubTask(long taskId, ICollection<IFormFile>? file, int status, string comment);
+
         List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert);
 
         public void DriverTaskExportModelSetLocations(DriverTaskExportModel model);
+
+        public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId);
     }
 }

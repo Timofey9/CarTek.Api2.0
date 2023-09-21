@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230920125717_SubTaskUpdated")]
+    partial class SubTaskUpdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -506,7 +509,7 @@ namespace CarTek.Api.Migrations
                     b.Property<long>("DriverId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("DriverTaskId")
+                    b.Property<long>("DriverTaskId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("DropOffArrivalDate")
@@ -772,7 +775,9 @@ namespace CarTek.Api.Migrations
                 {
                     b.HasOne("CarTek.Api.Model.Orders.DriverTask", "DriverTask")
                         .WithOne("TN")
-                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId");
+                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CarTek.Api.Model.Orders.SubTask", "SubTask")
                         .WithOne("TN")

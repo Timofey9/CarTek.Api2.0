@@ -9,7 +9,9 @@ namespace CarTek.Api.Model
         public string? Number { get; set; }
 
         //чтобы понять, к чему привязана
-        public long DriverTaskId { get; set; }
+        public long? DriverTaskId { get; set; }
+
+        public long? SubTaskId { get; set; }
 
         public long DriverId { get; set; }
 
@@ -46,6 +48,8 @@ namespace CarTek.Api.Model
 
         public string? DropOffDepartureTime { get; set; }
 
-        public DriverTask DriverTask { get; set; }
+        public DriverTask? DriverTask { get; set; }
+
+        public SubTask? SubTask { get; set; }
     }
 }
