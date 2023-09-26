@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Amazon.S3.Model;
+using AutoMapper;
 using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using NPOI.SS.Formula.Functions;
 using System.Drawing.Printing;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
 {
@@ -275,41 +277,7 @@ namespace CarTek.Api.Services
             {
                 Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
 
-                if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
-                {
-                    switch (searchColumn)
-                    {
-                        case "clientName":
-                            filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
-                            break;
-                        case "material":
-                            filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                Expression<Func<Order, object>> orderBy = x => x.Id;
-
-                //if (sortColumn != null)
-                //{
-                //    switch (sortColumn)
-                //    {
-                //        case "lastname":
-                //            orderBy = x => x.LastName;
-                //            break;
-                //        case "phone":
-                //            orderBy = x => x.Phone;
-                //            break;
-                //        default:
-                //            break;
-                //    }
-                //}
-
-                var test = _dbContext.Orders.ToList();
+                Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
                 var tresult = _dbContext.Orders
                         .Include(o => o.DriverTasks)
@@ -317,6 +285,7 @@ namespace CarTek.Api.Services
                         .Include(o => o.DriverTasks)
                         .ThenInclude(dt => dt.Driver)
                         .Include(t => t.Client)
+                        .Include(t => t.Material)
                         .Where(filterBy);
 
                 if (sortDirection == "asc")
@@ -333,7 +302,75 @@ namespace CarTek.Api.Services
                     tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
                 }
 
-                result = tresult.ToList();
+                var a = tresult.ToList();
+
+                foreach (var item in tresult.ToList())
+                {
+                    var gp = _clientService.GetClient(item.GpId);
+
+                    var locationA = _addressService.GetAddress(item.LocationAId ?? 0);
+
+                    var locationB = _addressService.GetAddress(item.LocationBId ?? 0);
+
+                    if (locationA != null)
+                    {
+                        item.LocationA = locationA.TextAddress;
+                    }
+
+                    if (locationB != null)
+                    {
+                        item.LocationB = locationB.TextAddress;
+                    }
+
+                    var mappedItem = _mapper.Map<OrderModel>(item);
+
+                    mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                    if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
+                    {
+                        switch (searchColumn)
+                        {
+                            case "clientName":
+                                if (item.Service == ServiceType.Supply)
+                                {
+                                    if (gp.ClientName.ToLower().Contains(search.ToLower().Trim()))
+                                    {
+                                        result.Add(item);
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.Client.ClientName.ToLower().Contains(search.ToLower().Trim()))
+                                    {
+                                        result.Add(item);
+                                    }
+                                }
+                                break;
+
+                            case "material":
+                                if (item.Material.Name.ToLower().Contains(search.ToLower().Trim()))
+                                {
+                                    result.Add(item);
+                                }
+                                break;
+
+                            case "service":
+                                if (((int)item.Service).ToString() == search.ToLower())
+                                {
+                                    result.Add(item);
+                                }
+                                break;
+                            default:
+                                result.Add(item);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        result.Add(item);
+                    }
+                }
+
 
             }
             catch (Exception ex)
@@ -362,6 +399,7 @@ namespace CarTek.Api.Services
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
                             && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
                             break;
+
                         case "material":
                             filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
                             && x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
@@ -371,14 +409,31 @@ namespace CarTek.Api.Services
                     }
                 }
 
-
                 var tresult = _dbContext.Orders
                         .Include(o => o.DriverTasks)
                         .Include(t => t.Material)
+                        .Include(t => t.Client)
                         .Where(filterBy);
 
                 result = tresult.ToList();
 
+                var filtered = new List<Order>();
+
+                foreach (var item in result)
+                {
+                    var locationA = _addressService.GetAddress(item.LocationAId ?? 0);
+                    var locationB = _addressService.GetAddress(item.LocationBId ?? 0);
+
+                    if(locationA != null)
+                    {
+                        item.LocationA = locationA.TextAddress;
+                    }
+
+                    if (locationB != null)
+                    {
+                        item.LocationB = locationB.TextAddress;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -491,20 +546,20 @@ namespace CarTek.Api.Services
                         Note = order.Note,
                         Client = new ClientModel
                         {
-                            Id = order.Client.Id,
-                            Inn = order.Client.Inn,
+                            Id = order.Client?.Id,
+                            Inn = order.Client?.Inn,
                             //Kpp = order.Client.Kpp,
-                            ClientName = order.Client.ClientName,
-                            ClientAddress = order.Client.ClientAddress,
+                            ClientName = order.Client?.ClientName,
+                            ClientAddress = order.Client?.ClientAddress,
                             //Ogrn = order.Client.Ogrn
                         },
                         Gp = new ClientModel
                         {
-                            Id = gp.Id,
-                            Inn = gp.Inn,
+                            Id = gp?.Id,
+                            Inn = gp?.Inn,
                             //Kpp = order.Client.Kpp,
-                            ClientName = gp.ClientName,
-                            ClientAddress = gp.ClientAddress,
+                            ClientName = gp?.ClientName,
+                            ClientAddress = gp?.ClientAddress,
                             //Ogrn = order.Client.Ogrn
                         },
                         LocationA = locationA,
@@ -582,10 +637,17 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var order = _dbContext.Orders.FirstOrDefault(o => o.Id == orderId);
+                var order = _dbContext.Orders.Include(o => o.DriverTasks).ThenInclude(dt => dt.TN).FirstOrDefault(o => o.Id == orderId);
                 if(order != null)
                 {
                     _dbContext.Orders.Remove(order);
+
+                    foreach(var dt in order.DriverTasks)
+                    {
+                        _dbContext.DriverTaskNotes.RemoveRange(_dbContext.DriverTaskNotes.Where(dn => dn.DriverTaskId == dt.Id));
+                        _dbContext.SubTasks.RemoveRange(_dbContext.SubTasks.Include(st => st.TN).Include(st => st.Notes).Where(st => st.DriverTaskId == dt.Id));
+                    }
+
                     _dbContext.SaveChanges();
 
                     return new ApiResponse
@@ -605,6 +667,101 @@ namespace CarTek.Api.Services
                 IsSuccess = false,
                 Message = "Ошибка удаления заявки"
             };
+        }
+
+        public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
+        {
+            var result = new List<Order>();
+            var filtered = new List<OrderModel>();
+
+            try
+            {
+                Expression<Func<Order, bool>> filterBy = x => x.StartDate.Date >= startDate.Date.AddDays(-1) && x.StartDate.Date <= endDate.Date;
+
+                Expression<Func<Order, object>> orderBy = x => x.StartDate;
+
+                var tresult = _dbContext.Orders
+                        .Include(o => o.DriverTasks)
+                        .Include(t => t.Material)
+                        .Include(t => t.Client)
+                        .Where(filterBy);
+
+                result = tresult.ToList();
+
+
+                foreach (var item in result)
+                {
+                    var gp = _clientService.GetClient(item.GpId);
+
+                    var locationA = _addressService.GetAddress(item.LocationAId ?? 0);
+                    
+                    var locationB = _addressService.GetAddress(item.LocationBId ?? 0);
+
+                    if (locationA != null)
+                    {
+                        item.LocationA = locationA.TextAddress;
+                    }
+
+                    if (locationB != null)
+                    {
+                        item.LocationB = locationB.TextAddress;
+                    }
+
+                    var mappedItem = _mapper.Map<OrderModel>(item);
+
+                    mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                    if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
+                    {
+                        switch (searchColumn)
+                        {
+                            case "clientName":
+                                if (item.Service == ServiceType.Supply)
+                                {
+                                    if (gp.ClientName.ToLower().Contains(search.ToLower().Trim()))
+                                    {
+                                        filtered.Add(mappedItem);
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.Client.ClientName.ToLower().Contains(search.ToLower().Trim()))
+                                    {
+                                        filtered.Add(mappedItem);
+                                    }
+                                }
+                                break;
+
+                            case "material":
+                                if (item.Material.Name.ToLower().Contains(search.ToLower().Trim()))
+                                {
+                                    filtered.Add(mappedItem);
+                                }
+                                break;
+
+                            case "service":
+                                if (((int)item.Service).ToString() == search.ToLower())
+                                {
+                                    filtered.Add(mappedItem);
+                                }
+                                break;
+                            default:
+                                filtered.Add(mappedItem);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        filtered.Add(mappedItem);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список заявок");
+            }
+
+            return filtered;
         }
     }
 }

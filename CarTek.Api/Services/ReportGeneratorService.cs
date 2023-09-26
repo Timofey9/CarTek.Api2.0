@@ -1,4 +1,7 @@
 ﻿using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using NPOI.SS.UserModel;
@@ -16,7 +19,7 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
-        public MemoryStream GenerateOrdersReport(IEnumerable<Order> orders)
+        public MemoryStream GenerateOrdersReport(IEnumerable<OrderModel> orders)
         {
             IWorkbook workbook;
 
@@ -27,16 +30,25 @@ namespace CarTek.Api.Services
 
             // Получение листа
             ISheet sheet = workbook.GetSheetAt(0);
-            int rowIndex = 3;
+            int rowIndex = 2;
             
             foreach(var order in orders)
             {
                 var row = sheet.CreateRow(rowIndex);
-                row.CreateCell(0).SetCellValue(order.Id.ToString());
-                row.CreateCell(1).SetCellValue(order.ClientName);
-                row.CreateCell(2).SetCellValue(order.StartDate.ToShortDateString());
-                row.CreateCell(3).SetCellValue(order.Material.Name);
-                row.CreateCell(4).SetCellValue($"{order.DriverTasks.Count}/{order.CarCount}");
+                row.CreateCell(0).SetCellValue(order.StartDate.ToShortDateString());
+                row.CreateCell(1).SetCellValue(order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                if(order.Client != null)
+                {
+                    row.CreateCell(2).SetCellValue(order.Client.ClientName);
+                }
+                if (order.Gp != null)
+                {
+                    row.CreateCell(3).SetCellValue(order.Gp.ClientName);
+                }
+                row.CreateCell(4).SetCellValue(order.LocationA);
+                row.CreateCell(5).SetCellValue(order.LocationB);
+                row.CreateCell(6).SetCellValue(order.Material.Name);
+                row.CreateCell(7).SetCellValue($"{order.DriverTasks.Count}/{order.CarCount}");
 
                 rowIndex++;
             }
@@ -45,6 +57,63 @@ namespace CarTek.Api.Services
 
             workbook.Write(stream, true);
 
+            return stream;
+        }
+
+
+        private string ShiftToString(ShiftType shift)
+        {
+            switch (shift)
+            {
+                case ShiftType.Day:
+                    return "День (08:00 - 20:00)";
+                case ShiftType.Night:
+                    return "Ночь (20:00 - 08:00)";
+                case ShiftType.Fullday:
+                    return "Сутки";
+                case ShiftType.Unlimited:
+                    return "Сутки (не ограничено)";
+                default:
+                    return " ";
+            }
+        }
+
+        public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> cars)
+        {
+            IWorkbook workbook;
+
+            using (FileStream fileStream = new FileStream("/data/Templates/tasksReport.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
+
+            // Получение листа
+            ISheet sheet = workbook.GetSheetAt(0);
+
+            int rowIndex = 4;
+
+            var daterow = sheet.CreateRow(1);
+
+            daterow.CreateCell(1).SetCellValue(date.ToString("dd.MM.yyyy"));
+
+            foreach (var car in cars)
+            {
+                var row = sheet.CreateRow(rowIndex);
+
+                foreach(var task in car.DriverTasks)
+                {
+                    row.CreateCell(0).SetCellValue(car.Plate);
+                    row.CreateCell(1).SetCellValue(task.Driver.FullName);
+                    row.CreateCell(2).SetCellValue(ShiftToString(task.Shift));
+                    row.CreateCell(3).SetCellValue(task.LocationA?.TextAddress);
+                    row.CreateCell(4).SetCellValue(task.LocationB?.TextAddress);
+
+                    rowIndex++;
+                }
+            }
+
+            var stream = new MemoryStream();
+            workbook.Write(stream, true);
             return stream;
         }
 

@@ -2,6 +2,7 @@
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarTek.Api.Services
 {
@@ -50,7 +51,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var material = _dbContext.Materials.FirstOrDefault(t => t.Id == id);
+                var material = _dbContext.Materials.Include(m => m.Orders).FirstOrDefault(t => t.Id == id);
                 if (material != null)
                 {
                     _dbContext.Materials.Remove(material);

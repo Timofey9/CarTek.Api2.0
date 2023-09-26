@@ -2,6 +2,7 @@
 using CarTek.Api.Model;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarTek.Api.Services
 {
@@ -52,7 +53,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var client = _dbContext.Clients.FirstOrDefault(c => c.Id == id);
+                var client = _dbContext.Clients.Include(o => o.Orders).FirstOrDefault(c => c.Id == id);
 
                 if (client != null)
                 {

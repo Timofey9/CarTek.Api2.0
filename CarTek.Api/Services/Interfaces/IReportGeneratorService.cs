@@ -1,4 +1,6 @@
 ﻿using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarTek.Api.Services.Interfaces
@@ -7,7 +9,9 @@ namespace CarTek.Api.Services.Interfaces
     {
         public MemoryStream TestGenerateReport(string input);
 
-        public MemoryStream GenerateOrdersReport(IEnumerable<Order> orders);
+        public MemoryStream GenerateOrdersReport(IEnumerable<OrderModel> orders);
+
+        public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> tasks);
 
         public MemoryStream GenerateTn(TNModel model);
     }

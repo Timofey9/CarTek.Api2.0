@@ -30,6 +30,10 @@ namespace CarTek.Api.Model.Dto
 
         public ICollection<DriverTaskNote> Notes { get; set; }
 
+        public Address LocationA { get; set; }
+
+        public Address LocationB { get; set; }
+
         public int SubTasksCount { get; set; }
 
     }

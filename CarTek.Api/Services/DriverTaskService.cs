@@ -275,18 +275,18 @@ namespace CarTek.Api.Services
                     if (!string.IsNullOrEmpty(adminComment))
                     {
                         task.AdminComment = adminComment;
-                        await _notificationService.SendNotification("Комментарий", $"Обновлен комментарий по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        await _notificationService.SendNotification("Комментарий", $"Обновлен комментарий по задаче от {task.StartDate:dd.MM.yyyy}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
                     }
 
                     if (startDate != null && startDate.Value.Date != task.StartDate.Date)
                     {
-                        await _notificationService.SendNotification("Смена даты", $"Обновлена дата по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        await _notificationService.SendNotification("Смена даты", $"Обновлена дата по задаче от {task.StartDate:dd.MM.yyyy}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
                         task.StartDate = startDate.Value;
                     }
 
                     if (shift != null && shift.Value != task.Shift)
                     {
-                        await _notificationService.SendNotification("Изменена смена", $"Изменена смена по задаче от {task.StartDate}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
+                        await _notificationService.SendNotification("Изменена смена", $"Изменена смена по задаче от {task.StartDate:dd.MM.yyyy}", task.DriverId, true, "http://localhost:3000/driver-dashboard");
                         task.Shift = shift.Value;
                     }
 
@@ -323,11 +323,15 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
+                var task = _dbContext.DriverTasks.Include(dt => dt.TN).FirstOrDefault(t => t.Id == taskId);
 
                 if (task != null)
                 {
                     _dbContext.DriverTasks.Remove(task);
+
+                    _dbContext.SubTasks.RemoveRange(_dbContext.SubTasks.Include(st => st.TN).Include(st => st.Notes).Where(st => st.DriverTaskId == taskId));
+                    _dbContext.DriverTaskNotes.RemoveRange(_dbContext.DriverTaskNotes.Where(dn => dn.DriverTaskId == taskId));
+
                     _dbContext.SaveChanges();
                     _notificationService.SendNotification($"Задача удалена", $"Ваша задача на {task.StartDate} была отменена", task.DriverId, true);
 
@@ -396,7 +400,7 @@ namespace CarTek.Api.Services
                         MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
                         CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
                         CarPlate = tn.DriverTask.Car.Plate,
-                        TrailerPlate = tn.DriverTask.Car?.Trailer.Plate,
+                        TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
                         LocationA = locationA?.TextAddress,
                         LocationB = locationB?.TextAddress,
                         PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")} {tn.PickUpArrivalTime}",

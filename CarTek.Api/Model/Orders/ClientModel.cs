@@ -2,7 +2,7 @@
 {
     public class ClientModel
     {
-        public long Id { get; set; }
+        public long? Id { get; set; }
         
         public string ClientName { get; set; }
 

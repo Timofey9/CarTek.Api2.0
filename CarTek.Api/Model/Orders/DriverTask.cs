@@ -18,7 +18,9 @@
     public enum ShiftType
     {
         Night = 0,
-        Day = 1
+        Day = 1,
+        Fullday = 2,
+        Unlimited = 3 
     }
 
     public class DriverTask

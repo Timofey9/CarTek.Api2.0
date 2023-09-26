@@ -7,6 +7,7 @@ using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace CarTek.Api.Controllers
 {
@@ -18,13 +19,14 @@ namespace CarTek.Api.Controllers
         private readonly IOrderService _orderService;
         private readonly IClientService _clientService;
         private readonly IAddressService _addressService;
+        private readonly ICarService _carService;
         private readonly IMapper _mapper;
         private readonly IReportGeneratorService _reportGeneratorService;
         private readonly IDriverTaskService _driverTaskService;
 
         public OrderController(IOrderService orderService, IClientService clientService,
             IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService,
-            IDriverTaskService driverTaskService)
+            IDriverTaskService driverTaskService, ICarService carService)
         {
             _orderService = orderService;
             _addressService = addresSservice;
@@ -32,6 +34,7 @@ namespace CarTek.Api.Controllers
             _mapper = mapper;
             _reportGeneratorService = reportGeneratorService;
             _driverTaskService = driverTaskService;
+            _carService = carService;
         }
 
         [HttpPost("create")]
@@ -81,7 +84,7 @@ namespace CarTek.Api.Controllers
         public IActionResult GetOrders(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             var list = _orderService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
-            var totalNumber = _orderService.GetAllBetweenDates(searchColumn, search, startDate, endDate).Count();
+            var totalNumber = _orderService.GetOrderModelsBetweenDates(searchColumn, search, startDate, endDate).Count();
 
             var mappedList = new List<OrderModel>();
 
@@ -124,14 +127,48 @@ namespace CarTek.Api.Controllers
         }
 
 
+        [HttpGet("gettasksreport")]
+        public IActionResult DownloadTasksList(DateTime startDate)
+        {
+            try
+            {
+                var tasks = _carService.GetCarsWithTasks(startDate);
+
+                var fileStream = _reportGeneratorService.GenerateTasksReport(startDate, tasks);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("getxls")]
         public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)
         {
             try
             {
-                var orders = _orderService.GetAllBetweenDates(null, null, startDate, endDate);
+                var orders = _orderService.GetOrderModelsBetweenDates(null, null, startDate, endDate);
 
-                var fileStream = _reportGeneratorService.GenerateOrdersReport(orders);
+                var mappedList = new List<OrderModel>();
+
+                foreach (var item in orders)
+                {
+                    var gp = _clientService.GetClient(item.GpId);
+
+                    var mappedItem = _mapper.Map<OrderModel>(item);
+
+                    mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                    mappedList.Add(mappedItem);
+                }
+
+                var fileStream = _reportGeneratorService.GenerateOrdersReport(mappedList);
 
                 var contentType = "application/octet-stream";
 
@@ -159,6 +196,22 @@ namespace CarTek.Api.Controllers
                 var result = new FileContentResult(fileStream.ToArray(), contentType);
 
                 return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpGet("viewtn/{driverTaskId}")]
+        public IActionResult ViewTN(long driverTaskId)
+        {
+            try
+            {
+                var tnModel = _driverTaskService.GetTnModel(driverTaskId);
+
+                return Ok(tnModel);
             }
             catch (Exception ex)
             {

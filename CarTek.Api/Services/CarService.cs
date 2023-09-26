@@ -254,6 +254,8 @@ namespace CarTek.Api.Services
                             StartDate = dt.StartDate,
                             Volume = dt.Volume,
                             Unit = dt.Unit,
+                            LocationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationAId),
+                            LocationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationBId),
                         }).ToList(),
                     };
 
