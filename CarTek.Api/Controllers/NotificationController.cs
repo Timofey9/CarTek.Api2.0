@@ -33,11 +33,11 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPost("savedeviceinfo")]
-        public IActionResult SaveDeviceInfo([FromBody] AddTokenModel model)
+        public async Task<IActionResult> SaveDeviceInfo([FromBody] AddTokenModel model)
         {
             _notificationService.SaveToken(model.UserId, model.Token, model.IsDriver);
 
-            _notificationService.SendNotification("Новое устройство", "Добавлено новое устройство", model.UserId, model.IsDriver);
+            await _notificationService.SendNotification("Новое устройство", "Добавлено новое устройство", model.UserId, model.IsDriver);
 
             return Ok();
         }

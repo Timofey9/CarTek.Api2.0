@@ -52,7 +52,7 @@ namespace CarTek.Api.Services
                 {
                     var date1 = startDate.Value;
                     var date2 = endDate.Value;
-                    filterBy = x => x.DriverId == driverId && x.StartDate.Date >= date1.Date.AddDays(-1) && x.StartDate.Date <= date2.Date;
+                    filterBy = x => x.DriverId == driverId && x.StartDate.Date >= date1.Date && x.StartDate.Date <= date2.Date;
                 }
 
 
@@ -247,7 +247,6 @@ namespace CarTek.Api.Services
                 };
             }
         }
-
 
         public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift)
         {

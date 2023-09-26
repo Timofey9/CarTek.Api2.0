@@ -64,6 +64,7 @@ namespace CarTek.Api.Services
             _dbContext.UserDevices.Add(newUserDevice);
 
             _dbContext.SaveChanges();
+
         }
 
         private void InitializeFirebase()
