@@ -52,7 +52,14 @@ namespace CarTek.Api.Services
                 {
                     var date1 = startDate.Value;
                     var date2 = endDate.Value;
-                    filterBy = x => x.DriverId == driverId && x.StartDate.Date >= date1.Date && x.StartDate.Date <= date2.Date;
+                    filterBy = x => x.DriverId == driverId &&
+                            x.StartDate.Day >= date1.Day
+                            && x.StartDate.Month >= date1.Month
+                            && x.StartDate.Year >= date1.Year
+
+                            && x.StartDate.Day <= date2.Day
+                            && x.StartDate.Month <= date2.Month
+                            && x.StartDate.Year <= date2.Year;
                 }
 
 
@@ -62,11 +69,23 @@ namespace CarTek.Api.Services
                     {
                         case "clientName":
                             filterBy = x => x.DriverId == driverId && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Date >= startDate.Value.Date.AddDays(-1) && x.StartDate.Date <= endDate.Value.Date;
+                            && x.StartDate.Day >= startDate.Value.Day
+                            && x.StartDate.Month >= startDate.Value.Month
+                            && x.StartDate.Year >= startDate.Value.Year
+
+                            && x.StartDate.Day <= endDate.Value.Day
+                            && x.StartDate.Month <= endDate.Value.Month
+                            && x.StartDate.Year <= endDate.Value.Year;
                             break;
                         case "material":
                             filterBy = x => x.DriverId == driverId && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Date >= startDate.Value.Date.AddDays(-1) && x.StartDate.Date <= endDate.Value.Date;
+                            && x.StartDate.Day >= startDate.Value.Day
+                            && x.StartDate.Month >= startDate.Value.Month
+                            && x.StartDate.Year >= startDate.Value.Year
+
+                            && x.StartDate.Day <= endDate.Value.Day
+                            && x.StartDate.Month <= endDate.Value.Month
+                            && x.StartDate.Year <= endDate.Value.Year;
                             break;
                         default:
                             break;

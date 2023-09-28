@@ -17,9 +17,6 @@ namespace CarTek.Api.Services.Interfaces
         IEnumerable<Material> GetMaterials();
 
         IEnumerable<Order> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,
-            string searchColumn, string search);
-
-        IEnumerable<Order> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize,
             string searchColumn, string search, DateTime startDate, DateTime endDate);
 
         Order GetOrderById(long orderId);
