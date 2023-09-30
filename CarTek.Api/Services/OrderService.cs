@@ -198,17 +198,13 @@ namespace CarTek.Api.Services
             pageSize = pageSize >= 0 ? pageSize : 10;
 
             var result = new List<Order>();
-
+            var date1 = startDate.Date;
+            var date2 = endDate.Date;
             try
             {
                 Expression<Func<Order, bool>> filterBy = x =>
-                            x.StartDate.Day >= startDate.Day
-                            && x.StartDate.Month >= startDate.Month
-                            && x.StartDate.Year >= startDate.Year
-
-                            && x.StartDate.Day <= endDate.Day
-                            && x.StartDate.Month <= endDate.Month
-                            && x.StartDate.Year <= endDate.Year;
+                            x.StartDate.Date >= date1
+                            && x.StartDate.Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
@@ -220,6 +216,8 @@ namespace CarTek.Api.Services
                         .Include(t => t.Client)
                         .Include(t => t.Material)
                         .Where(filterBy);
+
+                var q = tresult.ToQueryString();
 
                 if (sortDirection == "asc")
                 {
@@ -320,14 +318,12 @@ namespace CarTek.Api.Services
 
             try
             {
-                Expression<Func<Order, bool>> filterBy = x =>
-                            x.StartDate.Day >= startDate.Day
-                            && x.StartDate.Month >= startDate.Month
-                            && x.StartDate.Year >= startDate.Year
+                var date1 = startDate.Date;
+                var date2 = endDate.Date;
 
-                            && x.StartDate.Day <= endDate.Day
-                            && x.StartDate.Month <= endDate.Month
-                            && x.StartDate.Year <= endDate.Year;
+                Expression<Func<Order, bool>> filterBy = x =>
+                        x.StartDate.Date >= date1
+                        && x.StartDate.Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
@@ -337,24 +333,14 @@ namespace CarTek.Api.Services
                     {
                         case "clientName":
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Day <= startDate.Day
-                            && x.StartDate.Month <= startDate.Month
-                            && x.StartDate.Year <= startDate.Year
-
-                            && x.StartDate.Day <= endDate.Day
-                            && x.StartDate.Month <= endDate.Month
-                            && x.StartDate.Year <= endDate.Year;
+                            && x.StartDate.Date >= date1
+                            && x.StartDate.Date <= date2;
                             break;
 
                         case "material":
                             filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Day >= startDate.Day
-                            && x.StartDate.Month >= startDate.Month
-                            && x.StartDate.Year >= startDate.Year
-
-                            && x.StartDate.Day <= endDate.Day
-                            && x.StartDate.Month <= endDate.Month
-                            && x.StartDate.Year <= endDate.Year;
+                            && x.StartDate.Date >= date1
+                            && x.StartDate.Date <= date2;
                             break;
                         default:
                             break;
@@ -628,14 +614,12 @@ namespace CarTek.Api.Services
 
             try
             {
-                Expression<Func<Order, bool>> filterBy = x => 
-                            x.StartDate.Day >= startDate.Day
-                            && x.StartDate.Month >= startDate.Month
-                            && x.StartDate.Year >= startDate.Year
+                var date1 = startDate.Date;
+                var date2 = endDate.Date;
 
-                            && x.StartDate.Day <= endDate.Day
-                            && x.StartDate.Month <= endDate.Month
-                            && x.StartDate.Year <= endDate.Year;
+                Expression<Func<Order, bool>> filterBy = x =>
+                        && x.StartDate.Date >= date1
+                        && x.StartDate.Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 

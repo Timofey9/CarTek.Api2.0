@@ -7,7 +7,6 @@
         OnRoute,
         Loading,
         DocumentSigning1,
-        Loaded,
         OutLoad,
         ArrivedToUnload,
         Unloading,

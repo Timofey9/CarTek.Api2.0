@@ -22,7 +22,7 @@ namespace CarTek.Api.Services
         private readonly INotificationService _notificationService;
         private readonly IMapper _mapper;
 
-        public DriverTaskService(ILogger<DriverTaskService> logger, 
+        public DriverTaskService(ILogger<DriverTaskService> logger,
             ApplicationDbContext dbContext, IAWSS3Service aWSS3Service, INotificationService notificationService, IMapper mapper)
         {
             _logger = logger;
@@ -48,20 +48,17 @@ namespace CarTek.Api.Services
             {
                 Expression<Func<DriverTask, bool>> filterBy = x => x.DriverId == driverId;
 
-                if (startDate != null && endDate != null)
+                if (startDate == null || endDate == null)
                 {
-                    var date1 = startDate.Value;
-                    var date2 = endDate.Value;
-                    filterBy = x => x.DriverId == driverId &&
-                            x.StartDate.Day >= date1.Day
-                            && x.StartDate.Month >= date1.Month
-                            && x.StartDate.Year >= date1.Year
-
-                            && x.StartDate.Day <= date2.Day
-                            && x.StartDate.Month <= date2.Month
-                            && x.StartDate.Year <= date2.Year;
+                    return result;
                 }
 
+                var date1 = startDate.Value.Date;
+                var date2 = endDate.Value.Date;
+
+                filterBy = x => x.DriverId == driverId &&
+                        x.StartDate.Date >= date1
+                        && x.StartDate.Date <= date2;
 
                 if (!string.IsNullOrEmpty(searchBy) && !string.IsNullOrEmpty(searchString))
                 {
@@ -69,23 +66,14 @@ namespace CarTek.Api.Services
                     {
                         case "clientName":
                             filterBy = x => x.DriverId == driverId && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Day >= startDate.Value.Day
-                            && x.StartDate.Month >= startDate.Value.Month
-                            && x.StartDate.Year >= startDate.Value.Year
+                            && x.StartDate.Date >= date1
+                            && x.StartDate.Date <= date2;
 
-                            && x.StartDate.Day <= endDate.Value.Day
-                            && x.StartDate.Month <= endDate.Value.Month
-                            && x.StartDate.Year <= endDate.Value.Year;
                             break;
                         case "material":
                             filterBy = x => x.DriverId == driverId && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Day >= startDate.Value.Day
-                            && x.StartDate.Month >= startDate.Value.Month
-                            && x.StartDate.Year >= startDate.Value.Year
-
-                            && x.StartDate.Day <= endDate.Value.Day
-                            && x.StartDate.Month <= endDate.Value.Month
-                            && x.StartDate.Year <= endDate.Value.Year;
+                            && x.StartDate.Date >= date1
+                            && x.StartDate.Date <= date2;
                             break;
                         default:
                             break;
@@ -146,7 +134,7 @@ namespace CarTek.Api.Services
                     mappedResult[i].LocationB = locationB;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Не удалось получить адреса, {ex.Message}");
             }
@@ -191,7 +179,7 @@ namespace CarTek.Api.Services
                 model.LocationA = locationA;
                 model.LocationB = locationB;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Не удалось получить адреса, {ex.Message}");
             }
@@ -203,9 +191,9 @@ namespace CarTek.Api.Services
             {
                 var task = _dbContext.DriverTasks
                     .Include(dt => dt.Order)
-                    .FirstOrDefault(t => t.Id== taskId);  
-                
-                if(task != null)
+                    .FirstOrDefault(t => t.Id == taskId);
+
+                if (task != null)
                 {
                     var taskNote = new DriverTaskNote
                     {
@@ -214,12 +202,12 @@ namespace CarTek.Api.Services
                         Text = string.IsNullOrEmpty(comment) ? " " : comment,
                         DateCreated = DateTime.UtcNow,
                     };
-                    
+
                     task.Status = (DriverTaskStatus)status;
 
                     var links = new List<string>();
 
-                    if(files != null)
+                    if (files != null)
                     {
                         foreach (var file in files)
                         {
@@ -230,7 +218,7 @@ namespace CarTek.Api.Services
 
                             var path = task.Order.Id + "/" + task.Id + "/" + task.Status.ToString();
 
-                            links.Add("cartek/" + path + "/"+ file.FileName);
+                            links.Add("cartek/" + path + "/" + file.FileName);
 
                             await _AWSS3Service.UploadFileToS3(file, path, file.FileName, "cartek");
                         }
@@ -255,7 +243,7 @@ namespace CarTek.Api.Services
                     Message = "Статус обновлен"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
 
@@ -273,7 +261,7 @@ namespace CarTek.Api.Services
             {
                 var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
 
-                if(task != null)
+                if (task != null)
                 {
                     if (carId != null)
                     {
@@ -284,7 +272,7 @@ namespace CarTek.Api.Services
                     if (driverId != null)
                     {
                         await _notificationService.SendNotification("Отмена задачи", $"С вас снята задача. Подробности в личном кабинете", task.DriverId, true, "http://localhost:3000/driver-dashboard");
-                        
+
                         task.DriverId = driverId.Value;
 
                         await _notificationService.SendNotification("Новая задача", $"На вас назначена новая задача. Подробности в личном кабинете", driverId.Value, true, "http://localhost:3000/driver-dashboard");
@@ -325,7 +313,7 @@ namespace CarTek.Api.Services
                     Message = $"Задача {taskId} не найдена"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError("Ошибка редактирования задачи", ex);
 
@@ -354,9 +342,9 @@ namespace CarTek.Api.Services
                     _notificationService.SendNotification($"Задача удалена", $"Ваша задача на {task.StartDate} была отменена", task.DriverId, true);
 
                     return new ApiResponse
-                    { 
+                    {
                         IsSuccess = true,
-                        Message = "Задача удалена" 
+                        Message = "Задача удалена"
                     };
                 }
 
@@ -366,10 +354,10 @@ namespace CarTek.Api.Services
                     Message = "Задача не найдена"
                 };
             }
-            catch(Exception ex)
-            { 
+            catch (Exception ex)
+            {
                 _logger.LogError(ex.Message, ex);
-                return new ApiResponse { IsSuccess = false, Message = "Ошибка удаления задачи"};                
+                return new ApiResponse { IsSuccess = false, Message = "Ошибка удаления задачи" };
             }
         }
 
@@ -389,7 +377,7 @@ namespace CarTek.Api.Services
                     .Include(dt => dt.Driver)
                     .FirstOrDefault(t => t.Id == driverTaskId);
 
-                if(tn != null)
+                if (tn != null)
                 {
                     var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
                     var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
@@ -430,7 +418,7 @@ namespace CarTek.Api.Services
                     return result;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ошибка сохранения: {ex.Message}", ex.Message);
             }
@@ -461,7 +449,7 @@ namespace CarTek.Api.Services
                     .Include(t => t.TN)
                     .FirstOrDefault(dt => dt.Id == model.DriverTaskId);
 
-                if(task != null)
+                if (task != null)
                 {
                     var Tn = new TN
                     {
@@ -514,7 +502,7 @@ namespace CarTek.Api.Services
                     Message = "Задача не найдена"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ошибка заполнения ТН.{ex.Message}");
                 return new ApiResponse
@@ -565,7 +553,7 @@ namespace CarTek.Api.Services
                         task.TN.UnloadVolume = model.UnloadVolume;
                         task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         task.TN.LocationBId = model.LocationBId;
-                        task.TN.DropOffDepartureDate= model.DropOffDepartureDate;
+                        task.TN.DropOffDepartureDate = model.DropOffDepartureDate;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
 
@@ -631,7 +619,7 @@ namespace CarTek.Api.Services
                     Message = "Создана подзадача"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Невозможно создать позадачу. {ex.Message}");
                 return new ApiResponse
