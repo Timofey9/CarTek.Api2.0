@@ -90,7 +90,7 @@ namespace CarTek.Api.Services
                         Shift = model.Shift,
                         UniqueId = Guid.NewGuid(),
                         OrderId = model.OrderId,
-                        StartDate = model.TaskDate,
+                        StartDate = model.TaskDate.ToUniversalTime(),
                         DateCreated = DateTime.UtcNow,
                         AdminComment = model.Comment,
                     };
@@ -203,8 +203,8 @@ namespace CarTek.Api.Services
             try
             {
                 Expression<Func<Order, bool>> filterBy = x =>
-                            x.StartDate.Date >= date1
-                            && x.StartDate.Date <= date2;
+                            x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
@@ -322,8 +322,8 @@ namespace CarTek.Api.Services
                 var date2 = endDate.Date;
 
                 Expression<Func<Order, bool>> filterBy = x =>
-                        x.StartDate.Date >= date1
-                        && x.StartDate.Date <= date2;
+                        x.StartDate.AddHours(4).Date >= date1
+                        && x.StartDate.AddHours(4).Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
@@ -333,14 +333,14 @@ namespace CarTek.Api.Services
                     {
                         case "clientName":
                             filterBy = x => x.ClientName.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Date >= date1
-                            && x.StartDate.Date <= date2;
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
                             break;
 
                         case "material":
                             filterBy = x => x.Material.Name.ToLower().Contains(search.ToLower().Trim())
-                            && x.StartDate.Date >= date1
-                            && x.StartDate.Date <= date2;
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
                             break;
                         default:
                             break;
@@ -618,8 +618,8 @@ namespace CarTek.Api.Services
                 var date2 = endDate.Date;
 
                 Expression<Func<Order, bool>> filterBy = x =>
-                        && x.StartDate.Date >= date1
-                        && x.StartDate.Date <= date2;
+                         x.StartDate.AddHours(4).Date >= date1
+                        && x.StartDate.AddHours(4).Date <= date2;
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CarTek.Api.Services
 {
@@ -57,8 +58,8 @@ namespace CarTek.Api.Services
                 var date2 = endDate.Value.Date;
 
                 filterBy = x => x.DriverId == driverId &&
-                        x.StartDate.Date >= date1
-                        && x.StartDate.Date <= date2;
+                        x.StartDate.AddHours(4).Date >= date1
+                        && x.StartDate.AddHours(4).Date <= date2;
 
                 if (!string.IsNullOrEmpty(searchBy) && !string.IsNullOrEmpty(searchString))
                 {
@@ -66,14 +67,14 @@ namespace CarTek.Api.Services
                     {
                         case "clientName":
                             filterBy = x => x.DriverId == driverId && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Date >= date1
-                            && x.StartDate.Date <= date2;
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
 
                             break;
                         case "material":
                             filterBy = x => x.DriverId == driverId && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
-                            && x.StartDate.Date >= date1
-                            && x.StartDate.Date <= date2;
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
                             break;
                         default:
                             break;
