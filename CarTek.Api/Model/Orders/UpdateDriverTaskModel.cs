@@ -10,4 +10,13 @@
 
         public string? Note { get; set; } 
     }
+
+    public class PostNoteModel
+    {
+        public long DriverTaskId { get; set; }
+
+        public ICollection<IFormFile>? Files { get; set; }
+
+        public string Note { get; set; }
+    }
 }

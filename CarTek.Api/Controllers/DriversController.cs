@@ -124,7 +124,10 @@ namespace CarTek.Api.Controllers
 
             var res = _mapper.Map<DriverTaskExportModel>(task);
 
-            _driverTaskService.DriverTaskExportModelSetLocations(res);
+            if(task != null)
+            {
+                _driverTaskService.DriverTaskExportModelSetLocations(res);
+            }
 
             return Ok(res);
         }        
@@ -135,6 +138,23 @@ namespace CarTek.Api.Controllers
             var result = await _driverTaskService.UpdateDriverTask(driverTaskModel.DriverTaskId, 
                 driverTaskModel.Files,
                 driverTaskModel.UpdatedStatus,
+                driverTaskModel.Note);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
+        }
+
+        [HttpPost("postnote")]
+        public async Task<IActionResult> PostDriverTaskNote([FromForm] PostNoteModel driverTaskModel)
+        {
+            var result = await _driverTaskService.SubmitDtNote(driverTaskModel.DriverTaskId,
+                driverTaskModel.Files,
                 driverTaskModel.Note);
 
             if (result.IsSuccess)

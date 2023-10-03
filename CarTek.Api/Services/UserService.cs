@@ -157,8 +157,7 @@ namespace CarTek.Api.Services
             {
                 throw new InvalidPasswordException();
             }
-
-            return userInstance;
+            return userInstance;        
         }
 
 
@@ -306,7 +305,7 @@ namespace CarTek.Api.Services
                     };
                 }
 
-                var token = _jwtService.GenerateToken(claims, 24, 0);
+                var token = _jwtService.GenerateToken(claims, 3120, 0);
 
                 return new UserAuthResult
                 {

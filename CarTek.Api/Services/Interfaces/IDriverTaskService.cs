@@ -34,5 +34,7 @@ namespace CarTek.Api.Services.Interfaces
         public void DriverTaskExportModelSetLocations(DriverTaskExportModel model);
 
         public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId);
+
+        Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment);
     }
 }

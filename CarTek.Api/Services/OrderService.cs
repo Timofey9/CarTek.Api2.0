@@ -486,19 +486,15 @@ namespace CarTek.Api.Services
                         {
                             Id = order.Client?.Id,
                             Inn = order.Client?.Inn,
-                            //Kpp = order.Client.Kpp,
                             ClientName = order.Client?.ClientName,
                             ClientAddress = order.Client?.ClientAddress,
-                            //Ogrn = order.Client.Ogrn
                         },
                         Gp = new ClientModel
                         {
                             Id = gp?.Id,
                             Inn = gp?.Inn,
-                            //Kpp = order.Client.Kpp,
                             ClientName = gp?.ClientName,
-                            ClientAddress = gp?.ClientAddress,
-                            //Ogrn = order.Client.Ogrn
+                            ClientAddress = gp?.ClientAddress,                           
                         },
                         LocationA = locationA,
                         LocationB = locationB,
@@ -527,7 +523,6 @@ namespace CarTek.Api.Services
                 _logger.LogError($"Не удалось получить заявку {orderId}.{ex.Message}");
                 return null;
             }
-
         }
 
         public ApiResponse UpdateOrder(long orderId, JsonPatchDocument<Order> orderModel)

@@ -308,11 +308,6 @@ namespace CarTek.Api.Services
 
             string fullPath = $"{path}/{newFileName}";
 
-            if(file.Length > 1e+7)
-            {
-                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
-            }
-
             // сохраняем файл в папку uploads
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
             {

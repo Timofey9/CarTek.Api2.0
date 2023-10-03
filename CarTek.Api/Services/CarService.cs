@@ -9,11 +9,64 @@ using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Linq.Expressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CarTek.Api.Services
 {
+    public class SemiNumericComparer : IComparer<string>
+    {
+        /// <summary>
+        /// Method to determine if a string is a number
+        /// </summary>
+        /// <param name="value">String to test</param>
+        /// <returns>True if numeric</returns>
+        public static bool IsNumeric(string value)
+        {
+            return int.TryParse(value, out _);
+        }
+
+        /// <inheritdoc />
+        public int Compare(string s1, string s2)
+        {
+            const int S1GreaterThanS2 = 1;
+            const int S2GreaterThanS1 = -1;
+
+            var IsNumeric1 = IsNumeric(s1);
+            var IsNumeric2 = IsNumeric(s2);
+
+            if (IsNumeric1 && IsNumeric2)
+            {
+                var i1 = Convert.ToInt32(s1);
+                var i2 = Convert.ToInt32(s2);
+
+                if (i1 > i2)
+                {
+                    return S1GreaterThanS2;
+                }
+
+                if (i1 < i2)
+                {
+                    return S2GreaterThanS1;
+                }
+
+                return 0;
+            }
+
+            if (IsNumeric1)
+            {
+                return S2GreaterThanS1;
+            }
+
+            if (IsNumeric2)
+            {
+                return S1GreaterThanS2;
+            }
+
+            return string.Compare(s1, s2, true, CultureInfo.InvariantCulture);
+        }
+    }
     public class CarService : ICarService
     {
         private readonly ILogger<CarService> _logger;
@@ -234,12 +287,16 @@ namespace CarTek.Api.Services
                 var tresult = _dbContext.Cars
                         .Include(c => c.DriverTasks.Where(dt => 
                             dt.StartDate.AddHours(4).Date == date1))
-                            .ThenInclude(dt => dt.Order)                            
+                            .ThenInclude(dt => dt.Order)                         
+                            
                         .Include(c => c.DriverTasks.Where(dt =>
                             dt.StartDate.AddHours(4).Date == date1))
-                        .ThenInclude(dt => dt.Driver).ToList();
+                        .ThenInclude(dt => dt.Driver)
+                        .ToList();
 
-                foreach(var car in tresult)
+                var ordered = tresult.OrderBy(t => t.Plate.Substring(1, 3), new SemiNumericComparer());
+
+                foreach (var car in ordered)
                 {
                     var a = new CarDriverTaskModel
                     {

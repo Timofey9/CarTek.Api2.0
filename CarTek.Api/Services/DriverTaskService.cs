@@ -8,10 +8,7 @@ using CarTek.Api.Services.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq.Expressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CarTek.Api.Services
 {
@@ -167,12 +164,12 @@ namespace CarTek.Api.Services
                 Address locationA = new Address();
                 Address locationB = new Address();
 
-                if (model.Order?.LocationAId != null)
+                if (model?.Order?.LocationAId != null)
                 {
                     locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationAId);
                 }
 
-                if (model.Order?.LocationBId != null)
+                if (model?.Order?.LocationBId != null)
                 {
                     locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationBId);
                 }
@@ -212,11 +209,6 @@ namespace CarTek.Api.Services
                     {
                         foreach (var file in files)
                         {
-                            if (file.Length > 1e+7)
-                            {
-                                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
-                            }
-
                             var path = task.Order.Id + "/" + task.Id + "/" + task.Status.ToString();
 
                             links.Add("cartek/" + path + "/" + file.FileName);
@@ -413,7 +405,7 @@ namespace CarTek.Api.Services
                         PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")} {tn.PickUpArrivalTime}",
                         PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")} {tn.PickUpDepartureTime}",
                         DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")} {tn.DropOffArrivalTime}",
-                        DropOffDepartureTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")} {tn.DropOffArrivalTime}",
+                        DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")} {tn.DropOffDepartureTime}",
                     };
 
                     return result;
@@ -484,7 +476,21 @@ namespace CarTek.Api.Services
                         else
                         {
                             var updTn = task.TN;
-                            _dbContext.Update(updTn).CurrentValues.SetValues(Tn);
+                            _dbContext.Update(updTn).CurrentValues.SetValues(new {
+                                Number = model.Number,
+                                GoId = model.GoId,
+                                GpId = model.GpId,
+                                LoadVolume = model.LoadVolume,
+                                Unit = model.Unit,
+                                LocationAId = model.LocationAId,
+                                LocationBId = model.LocationBId,
+                                PickUpArrivalDate = model.PickUpArrivalDate,
+                                PickUpArrivalTime = model.PickUpArrivalTime,
+                                PickUpDepartureDate = model.PickUpDepartureDate,
+                                PickUpDepartureTime = model.PickUpDepartureTime,
+                                DriverTaskId = task.Id,
+                                DriverId = task.DriverId
+                            });
                         }
                     }
 
@@ -631,6 +637,69 @@ namespace CarTek.Api.Services
             }
         }
 
+        public async Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment)
+        {
+            try {
+                var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
+
+                if (task != null)
+                {
+                    var taskNote = new DriverTaskNote
+                    {
+                        DriverTaskId = taskId,
+                        Status = task.Status,
+                        Text = string.IsNullOrEmpty(comment) ? " " : comment,
+                        DateCreated = DateTime.UtcNow,
+                    };
+
+                    var links = new List<string>();
+
+                    if (files != null)
+                    {
+                        foreach (var file in files)
+                        {
+                            var path = task.OrderId + "/" + task.Id + "/" + task.Status.ToString();
+
+                            links.Add("cartek/" + path + "/" + file.FileName);
+
+                            await _AWSS3Service.UploadFileToS3(file, path, file.FileName, "cartek");
+                        }
+                    }
+
+                    var stringLinks = JsonConvert.SerializeObject(links);
+
+                    taskNote.S3Links = stringLinks;
+
+                    _dbContext.DriverTaskNotes.Add(taskNote);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Комментарий добавлен"
+                    };
+
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Комментарий не добавлен"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Комментарий не добавлен"
+                };
+            }
+        }
+
         public async Task<ApiResponse> UpdateDriverSubTask(long taskId, ICollection<IFormFile>? files, int status, string comment)
         {
             try
@@ -655,11 +724,6 @@ namespace CarTek.Api.Services
                     {
                         foreach (var file in files)
                         {
-                            if (file.Length > 1e+7)
-                            {
-                                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
-                            }
-
                             var path = task.OrderId + "/" + task.Id + "/" + task.Status.ToString();
 
                             links.Add("cartek/" + path + "/" + file.FileName);
