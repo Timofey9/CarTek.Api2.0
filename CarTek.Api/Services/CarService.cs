@@ -286,12 +286,15 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.Cars
                         .Include(c => c.DriverTasks.Where(dt => 
-                            dt.StartDate.AddHours(4).Date == date1))
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
                             .ThenInclude(dt => dt.Order)                         
                             
                         .Include(c => c.DriverTasks.Where(dt =>
-                            dt.StartDate.AddHours(4).Date == date1))
-                        .ThenInclude(dt => dt.Driver)
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited))).ThenInclude(dt => dt.Driver)
                         .ToList();
 
                 var ordered = tresult.OrderBy(t => t.Plate.Substring(1, 3), new SemiNumericComparer());

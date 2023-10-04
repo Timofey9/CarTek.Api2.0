@@ -146,6 +146,27 @@ namespace CarTek.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }        
+        
+        [HttpGet("gettasksreportshort")]
+        public IActionResult DownloadTasksListShort(DateTime startDate)
+        {
+            try
+            {
+                var tasks = _carService.GetCarsWithTasks(startDate);
+
+                var fileStream = _reportGeneratorService.GenerateTasksReportShort(startDate, tasks);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("getxls")]

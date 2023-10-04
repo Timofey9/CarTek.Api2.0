@@ -387,7 +387,7 @@ namespace CarTek.Api.Services
             try
             {
                 var date = startDate.Date.AddDays(-1);
-                Expression<Func<Order, bool>> filterBy = x => x.DueDate.Value.Date >= date;
+                Expression<Func<Order, bool>> filterBy = x => x.StartDate.AddHours(4).Date >= date;
 
                 var tresult = _dbContext.Orders.Include(t => t.Client).Where(filterBy);
 
@@ -482,6 +482,7 @@ namespace CarTek.Api.Services
                         Id = order.Id,
                         Name = order.Name,
                         Note = order.Note,
+                        Shift = order.Shift,
                         Client = new ClientModel
                         {
                             Id = order.Client?.Id,

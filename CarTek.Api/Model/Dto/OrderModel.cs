@@ -12,6 +12,8 @@ namespace CarTek.Api.Model.Dto
 
         public ClientModel Client { get; set; }
 
+        public ShiftType Shift { get; set; }
+
         public ClientModel Gp { get; set; }
 
         public string? ClientName { get; set; }

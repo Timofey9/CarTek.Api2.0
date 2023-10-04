@@ -28,6 +28,8 @@ namespace CarTek.Api.Model
 
         public double? Volume { get; set; }
         
+        public ShiftType Shift { get; set; }
+
         public Unit LoadUnit { get; set; }
 
         public bool IsComplete { get; set; }
