@@ -248,7 +248,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift)
+        public async Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift, long? orderId)
         {
             try
             {
@@ -269,6 +269,18 @@ namespace CarTek.Api.Services
                         task.DriverId = driverId.Value;
 
                         await _notificationService.SendNotification("Новая задача", $"На вас назначена новая задача. Подробности в личном кабинете", driverId.Value, true, "http://localhost:3000/driver-dashboard");
+                    }
+
+                    if (orderId != null)
+                    {
+                        task.OrderId = orderId.Value;
+                        var subtasks = _dbContext.SubTasks.Where(t => t.DriverTaskId == taskId);
+                        foreach(var subtask in subtasks)
+                        {
+                            subtask.OrderId = orderId.Value;
+                        }
+
+                        _dbContext.UpdateRange(subtasks);
                     }
 
                     if (!string.IsNullOrEmpty(adminComment))
@@ -716,7 +728,7 @@ namespace CarTek.Api.Services
                         DateCreated = DateTime.UtcNow,
                     };
 
-                    task.Status = (DriverTaskStatus)status;
+                    task.Status = (DriverTaskStatus)(status + 1);
 
                     var links = new List<string>();
 

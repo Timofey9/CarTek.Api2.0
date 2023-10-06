@@ -46,7 +46,7 @@ namespace CarTek.Api.Model.Dto
 
         public string Mileage { get; set; }
 
-        public long MaterialId { get; set; }
+        public long? MaterialId { get; set; }
 
         public ServiceType Service { get; set; }
 

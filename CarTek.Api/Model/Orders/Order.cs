@@ -54,7 +54,7 @@ namespace CarTek.Api.Model
 
         public int CarCount { get; set; }
 
-        public long MaterialId { get; set; }
+        public long? MaterialId { get; set; }
 
         public long? ClientId { get; set; }
 

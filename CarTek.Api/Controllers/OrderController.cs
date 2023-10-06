@@ -243,7 +243,7 @@ namespace CarTek.Api.Controllers
         [HttpPost("updatedrivertask")]
         public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
         {
-            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId, model.AdminComment, model.StartDate, model.Shift);
+            var result = await _driverTaskService.AdminUpdateDriverTask(model.TaskId, model.CarId, model.DriverId, model.AdminComment, model.StartDate, model.Shift, model.OrderId);
             
             return Ok(result);
         }

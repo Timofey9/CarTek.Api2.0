@@ -6,7 +6,7 @@
 
         public string ClientName { get; set; }
  
-        public long MaterialId { get; set; }
+        public long? MaterialId { get; set; }
 
         public double? Volume { get; set; }
 

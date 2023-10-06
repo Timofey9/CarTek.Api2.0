@@ -10,6 +10,8 @@ namespace CarTek.Api.Model
 
         public long? CarId { get; set; }
 
+        public long? OrderId { get; set; }
+
         public string? AdminComment { get; set; }
 
         public DateTime? StartDate { get; set; }
