@@ -7,9 +7,16 @@
         public DateTime Date { get; set; }
 
         public string LoadVolume { get; set; }
+        public string LoadVolume2 { get; set; }
+
         public string UnloadVolume { get; set; }
+        public string UnloadVolume2 { get; set; }
 
         public string Unit { get; set; }
+        public string Unit2 { get; set; }
+
+        public string UnloadUnit { get; set; }
+        public string UnloadUnit2 { get; set; }
 
         public string PickUpArrivalTime { get; set; }
         public string PickUpDepartureTime { get; set; }

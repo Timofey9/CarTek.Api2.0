@@ -3,6 +3,7 @@ using System;
 using CarTek.Api.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CarTek.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231009110542_MaterialColumnAddedToTN")]
+    partial class MaterialColumnAddedToTN
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -567,12 +570,6 @@ namespace CarTek.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int?>("Unit2")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("UnloadUnit")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("UnloadUnit2")
                         .HasColumnType("integer");
 
                     b.Property<double?>("UnloadVolume")

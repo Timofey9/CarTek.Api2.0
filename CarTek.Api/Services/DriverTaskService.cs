@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
 {
@@ -370,7 +371,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var tn = _dbContext.TNs.FirstOrDefault(t => t.DriverTaskId == driverTaskId);
+                var tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
 
                 var task = _dbContext.DriverTasks
                     .Include(t => t.Order)
@@ -405,9 +406,12 @@ namespace CarTek.Api.Services
                         GpInfo = gpInfo,
                         Accepter = "",
                         Unit = UnitToString(tn.Unit),
+                        Unit2 = UnitToString(tn.Unit2),
                         LoadVolume = tn.LoadVolume.ToString(),
+                        LoadVolume2 = tn.LoadVolume2?.ToString(),
                         UnloadVolume = tn.UnloadVolume.ToString(),
-                        Material = tn.DriverTask.Order.Material.Name,
+                        UnloadVolume2 = tn.UnloadVolume2?.ToString(),
+                        Material = tn.Material.Name,
                         MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
                         CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
                         CarPlate = tn.DriverTask.Car.Plate,
@@ -470,7 +474,8 @@ namespace CarTek.Api.Services
                         PickUpDepartureDate = model.PickUpDepartureDate,
                         PickUpDepartureTime = model.PickUpDepartureTime,
                         DriverTaskId = task.Id,
-                        DriverId = task.DriverId
+                        DriverId = task.DriverId,
+                        MaterialId = model.MaterialId
                     };
 
                     if (model.IsSubtask)
@@ -501,7 +506,8 @@ namespace CarTek.Api.Services
                                 PickUpDepartureDate = model.PickUpDepartureDate,
                                 PickUpDepartureTime = model.PickUpDepartureTime,
                                 DriverTaskId = task.Id,
-                                DriverId = task.DriverId
+                                DriverId = task.DriverId,
+                                MaterialId = model.MaterialId
                             });
                         }
                     }
@@ -543,12 +549,15 @@ namespace CarTek.Api.Services
                     if (TN != null)
                     {
                         TN.UnloadVolume = model.UnloadVolume;
+                        TN.UnloadUnit = model.UnloadUnit;
                         TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         TN.LocationBId = model.LocationBId;
                         TN.DropOffDepartureDate = model.DropOffDepartureDate;
                         TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         TN.DropOffDepartureTime = model.DropOffDepartureTime;
 
+                        TN.UnloadVolume2 = model.UnloadVolume2;
+                        TN.UnloadUnit2 = model.UnloadUnit2;
                         _dbContext.Update(TN);
                     }
 
@@ -570,11 +579,14 @@ namespace CarTek.Api.Services
                     if (task.TN != null)
                     {
                         task.TN.UnloadVolume = model.UnloadVolume;
+                        task.TN.UnloadUnit = model.UnloadUnit;
                         task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         task.TN.LocationBId = model.LocationBId;
                         task.TN.DropOffDepartureDate = model.DropOffDepartureDate;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
+                        task.TN.UnloadVolume2 = model.UnloadVolume2;
+                        task.TN.UnloadUnit2 = model.UnloadUnit2;
 
                         _dbContext.Update(task.TN);
                     }

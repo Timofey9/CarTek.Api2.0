@@ -505,14 +505,18 @@ namespace CarTek.Api.Services
                         Service = order.Service,
                         CarCount = order.CarCount,
                         Mileage = order.Mileage,
-                        Material = new Model.Dto.MaterialModel
-                        {
-                            Id = order.Material.Id,
-                            Name = order.Material.Name
-                        },
                         Volume = order?.Volume,
                         DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
                     };
+
+                    if(order.Material != null)
+                    {
+                        exportModel.Material = new Model.Dto.MaterialModel
+                        {
+                            Id = order.Material.Id,
+                            Name = order.Material.Name
+                        };
+                    }
 
                     return exportModel;
                 }
