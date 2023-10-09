@@ -409,9 +409,9 @@ namespace CarTek.Api.Services
                         Unit2 = UnitToString(tn.Unit2),
                         LoadVolume = tn.LoadVolume.ToString(),
                         LoadVolume2 = tn.LoadVolume2?.ToString(),
-                        UnloadVolume = tn.UnloadVolume.ToString(),
+                        UnloadVolume = tn.UnloadVolume?.ToString(),
                         UnloadVolume2 = tn.UnloadVolume2?.ToString(),
-                        Material = tn.Material.Name,
+                        Material = tn.Material?.Name,
                         MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
                         CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
                         CarPlate = tn.DriverTask.Car.Plate,
@@ -429,7 +429,7 @@ namespace CarTek.Api.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ошибка сохранения: {ex.Message}", ex.Message);
+                _logger.LogError($"Ошибка получения: {ex.Message}", ex.Message);
             }
 
             return new TNModel();
