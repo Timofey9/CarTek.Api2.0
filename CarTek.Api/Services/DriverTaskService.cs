@@ -407,6 +407,8 @@ namespace CarTek.Api.Services
                         Accepter = "",
                         Unit = UnitToString(tn.Unit),
                         Unit2 = UnitToString(tn.Unit2),
+                        UnloadUnit = UnitToString(tn.UnloadUnit),
+                        UnloadUnit2 = UnitToString(tn.UnloadUnit2),
                         LoadVolume = tn.LoadVolume.ToString(),
                         LoadVolume2 = tn.LoadVolume2?.ToString(),
                         UnloadVolume = tn.UnloadVolume?.ToString(),
