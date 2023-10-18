@@ -1,5 +1,10 @@
 ﻿namespace CarTek.Api.Model.Dto
 {
+    public class DriverTaskUpdateModel
+    {
+        public long DriverTaskId { get; set; }
+    }
+
     public class CreateDriverModel
     {
         public string FirstName { get; set; }

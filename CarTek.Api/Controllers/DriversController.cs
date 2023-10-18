@@ -130,8 +130,22 @@ namespace CarTek.Api.Controllers
             }
 
             return Ok(res);
-        }        
-        
+        }
+
+
+        [HttpPost("taskgetback")]
+        public IActionResult TaskGetBack([FromBody] DriverTaskUpdateModel model)
+        {
+            var res = _driverTaskService.TaskGetBack(model.DriverTaskId);
+
+            if (res.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return BadRequest(res);
+        }
+
         [HttpPost("updateDriverTask")]
         public async Task<IActionResult> CreateDriverTasks([FromForm] UpdateDriverTaskModel driverTaskModel)
         {

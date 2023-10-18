@@ -796,5 +796,47 @@ namespace CarTek.Api.Services
 
             return map;
         }
+
+        public ApiResponse TaskGetBack(long taskId)
+        {
+            try
+            {
+                var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
+
+                if (task != null)
+                {
+                    if (task.Status != DriverTaskStatus.Assigned)
+                    {
+                        var enInt = ((int)task.Status) - 1;
+                        task.Status = (DriverTaskStatus)enInt;
+
+                        _dbContext.Update(task);
+
+                        _dbContext.SaveChanges();
+                    }
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Статус обновлен"
+                    };
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Статус не обновлен"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Невозможно обновить статус");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Статус не обновлен"
+                };
+            }
+        }
     }
 }
