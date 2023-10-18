@@ -742,8 +742,6 @@ namespace CarTek.Api.Services
                         DateCreated = DateTime.UtcNow,
                     };
 
-                    task.Status = (DriverTaskStatus)(status + 1);
-
                     var links = new List<string>();
 
                     if (files != null)
