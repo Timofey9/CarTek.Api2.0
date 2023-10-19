@@ -11,6 +11,8 @@ namespace CarTek.Api.Services.Interfaces
 
         public MemoryStream GenerateOrdersReport(IEnumerable<OrderModel> orders);
 
+        public MemoryStream GenerateTnsReport(IEnumerable<OrderModel> orders);
+
         public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> tasks);
 
         public MemoryStream GenerateTasksReportShort(DateTime date, IEnumerable<CarDriverTaskModel> tasks);

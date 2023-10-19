@@ -19,6 +19,71 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
+
+        public MemoryStream GenerateTnsReport(IEnumerable<OrderModel> orders)
+        {
+            IWorkbook workbook;
+
+            using (FileStream fileStream = new FileStream("/data/Templates/tnReportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
+
+            // Получение листа
+            ISheet sheet = workbook.GetSheetAt(0);
+            int rowIndex = 4;
+
+
+            foreach (var order in orders)
+            {
+                if(order.DriverTasks.Count > 0)
+                {
+                    foreach(var task in order.DriverTasks.Where(dt => dt.Status == DriverTaskStatus.Done))
+                    {
+                        var row = sheet.CreateRow(rowIndex);
+                        row.CreateCell(0).SetCellValue(order.StartDate.ToString("dd.MM.yyyy"));
+                        var customer = order.Service == ServiceType.Supply ? order.Gp?.ClientName : order.Client?.ClientName;
+                        row.CreateCell(1).SetCellValue(customer);
+
+                        row.CreateCell(2).SetCellValue("КарТэк");
+
+                        row.CreateCell(3).SetCellValue(order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                        row.CreateCell(4).SetCellValue(task.TN?.Number);
+                        row.CreateCell(5).SetCellValue(task.TN?.LocationA);
+                        row.CreateCell(6).SetCellValue(task.TN?.LocationB);
+                        row.CreateCell(7).SetCellValue(task.Car?.Plate);
+                        row.CreateCell(8).SetCellValue(task.TN?.DriverInfo);
+                        row.CreateCell(9).SetCellValue(task.TN?.Material);
+                        row.CreateCell(10).SetCellValue(task.TN?.UnloadVolume);
+                        row.CreateCell(11).SetCellValue(task.TN?.UnloadUnit);
+                        row.CreateCell(12).SetCellValue(task.TN?.UnloadVolume2);
+                        row.CreateCell(13).SetCellValue(task.TN?.UnloadUnit2);
+
+                        row.CreateCell(14).SetCellValue(order.Price.ToString());
+
+                        if(order.Service == ServiceType.Supply)
+                        {
+                            row.CreateCell(15).SetCellType(CellType.Formula);
+                            row.GetCell(15).SetCellFormula($"O{rowIndex+1}*K{rowIndex+1}");
+                            row.CreateCell(16).SetCellFormula(order.MaterialPrice.ToString());
+                            row.CreateCell(17).SetCellFormula($"Q{rowIndex+1}+O{rowIndex+1}");
+                            row.CreateCell(18).SetCellFormula($"K{rowIndex+1}*R{rowIndex+1}");
+                        }
+
+                        rowIndex++;
+                    }
+                }
+            }
+
+            var stream = new MemoryStream();
+
+            XSSFFormulaEvaluator.EvaluateAllFormulaCells(workbook);
+
+            workbook.Write(stream, true);
+
+            return stream;
+        }
+
         public MemoryStream GenerateOrdersReport(IEnumerable<OrderModel> orders)
         {
             IWorkbook workbook;

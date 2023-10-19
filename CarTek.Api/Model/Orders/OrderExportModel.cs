@@ -33,6 +33,8 @@ namespace CarTek.Api.Model.Orders
 
         public double? Price { get; set; }
 
+        public double? MaterialPrice { get; set; }
+
         public string? Note { get; set; }
 
         public int CarCount { get; set; }

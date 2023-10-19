@@ -142,6 +142,7 @@ namespace CarTek.Api.Services
                     StartDate = model.StartDate.ToUniversalTime(),
                     DueDate = model.DueDate?.ToUniversalTime(),
                     Price = model.Price ?? 0,
+                    MaterialPrice = model.MaterialPrice ?? 0,
                     GpId = model.GpId,
                     Note = model.Note,
                     CarCount = model.CarCount,
@@ -217,8 +218,6 @@ namespace CarTek.Api.Services
                         .Include(t => t.Material)
                         .Where(filterBy);
 
-                var q = tresult.ToQueryString();
-
                 if (sortDirection == "asc")
                 {
                     tresult = tresult.OrderBy(orderBy);
@@ -232,8 +231,6 @@ namespace CarTek.Api.Services
                 {
                     tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
                 }
-
-                var a = tresult.ToList();
 
                 foreach (var item in tresult.ToList())
                 {
@@ -430,6 +427,26 @@ namespace CarTek.Api.Services
             return order;
         }
 
+        public List<TNModel> GetFullTnsCollection(DateTime startDate, DateTime endDate)
+        {
+            var result = new List<TNModel>();
+            //1 - получаем заявки
+            var orders = GetOrderModelsBetweenDates(null, null, startDate, endDate);
+            var mappedList = new List<OrderModel>();
+            foreach (var item in orders)
+            {
+                var gp = _clientService.GetClient(item.GpId);
+
+                var mappedItem = _mapper.Map<OrderModel>(item);
+
+                mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                mappedList.Add(mappedItem);
+            }            
+
+            return result;
+        }
+
         public ApiResponse AddMaterial(string name)
         {
             try
@@ -502,6 +519,7 @@ namespace CarTek.Api.Services
                         StartDate = order.StartDate,
                         DueDate = order?.DueDate,
                         Price = order.Price,
+                        MaterialPrice = order.MaterialPrice,
                         Service = order.Service,
                         CarCount = order.CarCount,
                         Mileage = order.Mileage,
@@ -511,7 +529,7 @@ namespace CarTek.Api.Services
 
                     if(order.Material != null)
                     {
-                        exportModel.Material = new Model.Dto.MaterialModel
+                        exportModel.Material = new MaterialModel
                         {
                             Id = order.Material.Id,
                             Name = order.Material.Name
@@ -607,7 +625,7 @@ namespace CarTek.Api.Services
             };
         }
 
-        public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
+        public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate, bool isExport = false)
         {
             var result = new List<Order>();
             var filtered = new List<OrderModel>();
@@ -623,14 +641,29 @@ namespace CarTek.Api.Services
 
                 Expression<Func<Order, object>> orderBy = x => x.StartDate;
 
-                var tresult = _dbContext.Orders
-                        .Include(o => o.DriverTasks)
-                        .Include(t => t.Material)
-                        .Include(t => t.Client)
-                        .Where(filterBy);
+                if (isExport)
+                {
+                    var tresult = _dbContext.Orders
+                     .Include(o => o.DriverTasks)
+                     .ThenInclude(dt => dt.TN)
+                     .Include(o => o.DriverTasks)
+                     .ThenInclude(dt => dt.SubTasks)
+                     .Include(t => t.Material)
+                     .Include(t => t.Client)
+                     .Where(filterBy);
 
-                result = tresult.ToList();
+                    result = tresult.ToList();
+                }
+                else
+                {
+                    var tresult = _dbContext.Orders
+                            .Include(o => o.DriverTasks)
+                            .Include(t => t.Material)
+                            .Include(t => t.Client)
+                            .Where(filterBy);
 
+                    result = tresult.ToList();
+                };
 
                 foreach (var item in result)
                 {

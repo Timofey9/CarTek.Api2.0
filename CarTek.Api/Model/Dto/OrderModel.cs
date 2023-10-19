@@ -38,7 +38,9 @@ namespace CarTek.Api.Model.Dto
         public string? LocationB { get; set; }
         public long? LocationBId { get; set; }
 
-        public double Price { get; set; }
+        public double Price { get; set; } // себестоимость перевозки
+
+        public double MaterialPrice { get; set; }  // себестоимость материала
 
         public string? Note { get; set; }
 

@@ -420,10 +420,10 @@ namespace CarTek.Api.Services
                         TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
                         LocationA = locationA?.TextAddress,
                         LocationB = locationB?.TextAddress,
-                        PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")} {tn.PickUpArrivalTime}",
-                        PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")} {tn.PickUpDepartureTime}",
-                        DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")} {tn.DropOffArrivalTime}",
-                        DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")} {tn.DropOffDepartureTime}",
+                        PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
+                        PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                        DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
+                        DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
                     };
 
                     return result;
@@ -469,6 +469,8 @@ namespace CarTek.Api.Services
                         GpId = model.GpId,
                         LoadVolume = model.LoadVolume,
                         Unit = model.Unit,
+                        LoadVolume2 = model.LoadVolume2,
+                        Unit2 = model.Unit2,
                         LocationAId = model.LocationAId,
                         LocationBId = model.LocationBId,
                         PickUpArrivalDate = model.PickUpArrivalDate,
@@ -552,6 +554,8 @@ namespace CarTek.Api.Services
                     {
                         TN.UnloadVolume = model.UnloadVolume;
                         TN.UnloadUnit = model.UnloadUnit;
+                        TN.UnloadVolume2 = model.UnloadVolume2;
+                        TN.UnloadUnit2 = model.UnloadUnit2;
                         TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         TN.LocationBId = model.LocationBId;
                         TN.DropOffDepartureDate = model.DropOffDepartureDate;
@@ -582,6 +586,8 @@ namespace CarTek.Api.Services
                     {
                         task.TN.UnloadVolume = model.UnloadVolume;
                         task.TN.UnloadUnit = model.UnloadUnit;
+                        task.TN.UnloadVolume2 = model.UnloadVolume2;
+                        task.TN.UnloadUnit2 = model.UnloadUnit2;
                         task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         task.TN.LocationBId = model.LocationBId;
                         task.TN.DropOffDepartureDate = model.DropOffDepartureDate;

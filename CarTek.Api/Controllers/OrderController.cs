@@ -169,6 +169,45 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [HttpGet("gettnxls")]
+        public IActionResult DownloadTNsList(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var orders = _orderService.GetOrderModelsBetweenDates(null, null, startDate, endDate, true);
+
+                var mappedList = new List<OrderModel>();
+
+                foreach (var item in orders)
+                {
+                    var gp = _clientService.GetClient(item.GpId);
+
+                    var mappedItem = _mapper.Map<OrderModel>(item);
+
+                    mappedItem.Gp = _mapper.Map<ClientModel>(gp);
+
+                    foreach(var task in mappedItem.DriverTasks.Where(dt => dt.Status == DriverTaskStatus.Done))
+                    {
+                        task.TN = _driverTaskService.GetTnModel(task.Id);
+                    }
+
+                    mappedList.Add(mappedItem);
+                }
+
+                var fileStream = _reportGeneratorService.GenerateTnsReport(mappedList);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("getxls")]
         public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)
         {

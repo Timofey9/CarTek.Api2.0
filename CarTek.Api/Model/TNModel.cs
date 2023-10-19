@@ -33,6 +33,8 @@
 
         public string Accepter { get; set; }
 
+        public long? TransporterId { get; set; } //Id из таблицы Clients, если null => КарТэк
+
         public string Material { get; set; }
 
         public string MaterialAmount { get; set; }  
@@ -46,5 +48,7 @@
         public string LocationA { get; set; }
 
         public string LocationB { get; set; }
+
+        public Order Order { get; set; }
     }
 }
