@@ -23,9 +23,13 @@ namespace CarTek.Api.Services.Interfaces
         
         public TNModel GetTnModel(long driverTaskId);
 
+        public EditTNModel GetEditTnModel(long driverTaskId);
+
         public ApiResponse StartDocument(FillDocumentModel model);
 
         public ApiResponse FinalizeDocument(FillDocumentModel model);
+
+        public ApiResponse UpdateTN(FillDocumentModel model);
 
         public ApiResponse CreateSubTask(long driverTaskId);
 

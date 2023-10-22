@@ -10,6 +10,7 @@ namespace CarTek.Api.Model.Orders
 
         //Грузоотправитель
         public ClientModel Client { get; set; }
+
         public ShiftType Shift { get; set; }
 
         //Грузополучатель

@@ -136,6 +136,7 @@ namespace CarTek.Api.Services
                 {
                     Name = model.Name,
                     ClientName = model.ClientName,
+                    Shift = model.Shift,
                     Volume = model.Volume,
                     LoadUnit = model.LoadUnit,
                     IsComplete = model.IsComplete,

@@ -265,16 +265,23 @@ namespace CarTek.Api.Services
 
         public Car GetByPlate(string plate)
         {
-            var car = _dbContext.Cars
-                .Include(q => q.Questionaries)
-                .Include(t => t.Drivers)
-                .Include(t => t.Trailer)
-                .FirstOrDefault(car => car.Plate.ToLower().Equals(plate.ToLower()));
-           
-            if (car != null)
-                car.Plate = car.Plate.ToUpper();
+            try
+            {
+                var car = _dbContext.Cars
+                    .Include(q => q.Questionaries)
+                    .Include(t => t.Drivers)
+                    .Include(t => t.Trailer)
+                    .FirstOrDefault(car => car.Plate.ToLower() == plate.ToLower());
 
-            return car;
+                if (car != null)
+                    car.Plate = car.Plate.ToUpper();
+
+                return car;
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
         }
 
         public IEnumerable<CarDriverTaskModel> GetCarsWithTasks(DateTime date)
@@ -288,13 +295,16 @@ namespace CarTek.Api.Services
                         .Include(c => c.DriverTasks.Where(dt => 
                             dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
                          || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
-                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(-1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
                             .ThenInclude(dt => dt.Order)                         
                             
                         .Include(c => c.DriverTasks.Where(dt =>
                             dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
                          || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
-                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited))).ThenInclude(dt => dt.Driver)
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(-1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                        .ThenInclude(dt => dt.Driver)
                         .ToList();
 
                 var ordered = tresult.OrderBy(t => t.Plate.Substring(1, 3), new SemiNumericComparer());

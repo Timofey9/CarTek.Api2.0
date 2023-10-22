@@ -49,8 +49,8 @@ namespace CarTek.Api.Controllers
         public IActionResult GetClients()
         {
             var list = _clientService.GetClients();
-
-            return Ok(list);
+            var mappedList = _mapper.Map<List<ClientModel>>(list);
+            return Ok(mappedList);
         }
 
         [HttpPost("createclient")]

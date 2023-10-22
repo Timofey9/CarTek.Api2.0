@@ -225,6 +225,20 @@ namespace CarTek.Api.Controllers
 
             return BadRequest(res);
         }
+                
+        
+        [HttpPost("updatetn")]
+        public IActionResult UpdateTn([FromForm] FillDocumentModel model)
+        {
+            var res = _driverTaskService.UpdateTN(model);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
 
         [HttpPost("updatesubtask")]
         public async Task<IActionResult> UpdateSubTask([FromForm] UpdateDriverTaskModel driverTaskModel)

@@ -279,6 +279,21 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [HttpGet("viewedittn/{driverTaskId}")]
+        public IActionResult ViewEditTN(long driverTaskId)
+        {
+            try
+            {
+                var tnModel = _driverTaskService.GetEditTnModel(driverTaskId);
+
+                return Ok(tnModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("updatedrivertask")]
         public async Task<IActionResult> UpdateDriverTask([FromBody] AdminUpdateTaskModel model)
         {

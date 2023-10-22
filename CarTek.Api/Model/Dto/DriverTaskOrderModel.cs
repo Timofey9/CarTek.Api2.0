@@ -17,6 +17,7 @@ namespace CarTek.Api.Model.Dto
 
         public Address LocationB { get; set; }
 
+        public string Material { get; set; }
         public DateTime StartDate { get; set; }
 
         public int Volume { get; set; }
