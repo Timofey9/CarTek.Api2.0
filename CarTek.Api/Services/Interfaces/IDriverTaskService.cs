@@ -17,13 +17,15 @@ namespace CarTek.Api.Services.Interfaces
 
         public Task<ApiResponse> AdminUpdateDriverTask(long taskId, long? carId, long? driverId, string? adminComment, DateTime? startDate, ShiftType? shift, long? orderId);
 
-        public ApiResponse TaskGetBack(long taskId);
+        public ApiResponse TaskGetBack(long taskId, bool isSubTaks = false);
 
         public ApiResponse DeleteDriverTask(long taskId);
         
-        public TNModel GetTnModel(long driverTaskId);
+        public TNModel GetTnModel(long driverTaskId, bool isSubTask = false);
 
-        public EditTNModel GetEditTnModel(long driverTaskId);
+        public ApiResponse VerifyTn(long driverTaskId, bool isSubTask = false);
+
+        public EditTNModel GetEditTnModel(long driverTaskId, bool isSubtask = false);
 
         public ApiResponse StartDocument(FillDocumentModel model);
 

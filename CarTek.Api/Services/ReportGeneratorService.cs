@@ -4,6 +4,7 @@ using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using NPOI.SS.Formula;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.IO;
@@ -33,6 +34,14 @@ namespace CarTek.Api.Services
             ISheet sheet = workbook.GetSheetAt(0);
             int rowIndex = 4;
 
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
 
             foreach (var order in orders)
             {
@@ -41,21 +50,44 @@ namespace CarTek.Api.Services
                     foreach(var task in order.DriverTasks.Where(dt => dt.Status == DriverTaskStatus.Done))
                     {
                         var row = sheet.CreateRow(rowIndex);
+                        
                         row.CreateCell(0).SetCellValue(order.StartDate.ToString("dd.MM.yyyy"));
+                        row.GetCell(0).CellStyle = cellStyle;
+
                         var customer = order.Service == ServiceType.Supply ? order.Gp?.ClientName : order.Client?.ClientName;
                         row.CreateCell(1).SetCellValue(customer);
+                        row.GetCell(1).CellStyle = cellStyle;
 
                         row.CreateCell(2).SetCellValue("КарТэк");
+                        row.GetCell(2).CellStyle = cellStyle;
 
                         row.CreateCell(3).SetCellValue(order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                        row.GetCell(3).CellStyle = cellStyle;
+
                         row.CreateCell(4).SetCellValue(task.TN?.Number);
+                        row.GetCell(4).CellStyle = cellStyle;
+
                         row.CreateCell(5).SetCellValue(task.TN?.LocationA);
+                        row.GetCell(5).CellStyle = cellStyle;
+
                         row.CreateCell(6).SetCellValue(task.TN?.LocationB);
+                        row.GetCell(6).CellStyle = cellStyle;
+
                         row.CreateCell(7).SetCellValue(task.Car?.Plate);
+                        row.GetCell(7).CellStyle = cellStyle;
+
                         row.CreateCell(8).SetCellValue(task.TN?.DriverInfo);
+                        row.GetCell(8).CellStyle = cellStyle;
+
                         row.CreateCell(9).SetCellValue(task.TN?.Material);
+                        row.GetCell(9).CellStyle = cellStyle;
+
                         row.CreateCell(10).SetCellValue(task.TN?.UnloadVolume);
+                        row.GetCell(10).CellStyle = cellStyle;
+
                         row.CreateCell(11).SetCellValue(task.TN?.UnloadUnit);
+                        row.GetCell(11).CellStyle = cellStyle;
+
                         row.CreateCell(12).SetCellValue(task.TN?.UnloadVolume2);
                         row.CreateCell(13).SetCellValue(task.TN?.UnloadUnit2);
 
@@ -65,6 +97,7 @@ namespace CarTek.Api.Services
                         {
                             row.CreateCell(15).SetCellType(CellType.Formula);
                             row.GetCell(15).SetCellFormula($"O{rowIndex+1}*K{rowIndex+1}");
+                            row.GetCell(15).CellStyle.WrapText = true;
                             row.CreateCell(16).SetCellFormula(order.MaterialPrice.ToString());
                             row.CreateCell(17).SetCellFormula($"Q{rowIndex+1}+O{rowIndex+1}");
                             row.CreateCell(18).SetCellFormula($"K{rowIndex+1}*R{rowIndex+1}");
@@ -96,8 +129,16 @@ namespace CarTek.Api.Services
             // Получение листа
             ISheet sheet = workbook.GetSheetAt(0);
             int rowIndex = 2;
-            
-            foreach(var order in orders)
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
+
+            foreach (var order in orders)
             {
                 var row = sheet.CreateRow(rowIndex);
                 row.CreateCell(0).SetCellValue(order.StartDate.ToShortDateString());
@@ -105,17 +146,31 @@ namespace CarTek.Api.Services
                 if(order.Client != null)
                 {
                     row.CreateCell(2).SetCellValue(order.Client.ClientName);
+                    row.GetCell(2).CellStyle = cellStyle;
                 }
                 if (order.Gp != null)
                 {
                     row.CreateCell(3).SetCellValue(order.Gp.ClientName);
+                    row.GetCell(3).CellStyle = cellStyle;
                 }
                 row.CreateCell(4).SetCellValue(order.LocationA);
+                row.GetCell(4).CellStyle = cellStyle;
+
                 row.CreateCell(5).SetCellValue(order.LocationB);
+                row.GetCell(5).CellStyle = cellStyle;
+
                 row.CreateCell(6).SetCellValue(order.Material.Name);
+                row.GetCell(6).CellStyle = cellStyle;
+
                 row.CreateCell(7).SetCellValue($"{order.DriverTasks.Count}/{order.CarCount}");
+                row.GetCell(7).CellStyle = cellStyle;
 
                 rowIndex++;
+            }
+
+            for (var i = 2; i < 7; i++)
+            {
+                sheet.SetColumnWidth(i, 255 * 50);
             }
 
             var stream = new MemoryStream();
@@ -159,6 +214,13 @@ namespace CarTek.Api.Services
 
             var daterow = sheet.CreateRow(1);
 
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
             daterow.CreateCell(1).SetCellValue(date.ToString("dd.MM.yyyy"));
 
             foreach (var car in cars)
@@ -169,19 +231,34 @@ namespace CarTek.Api.Services
                 {
                     row = sheet.CreateRow(rowIndex);
                     row.CreateCell(0).SetCellValue(car.Plate);
-                    row.CreateCell(1).SetCellValue(task.Driver.FullName);
-                    row.CreateCell(2).SetCellValue(ShiftToString(task.Shift));
-                    row.CreateCell(3).SetCellValue(task.LocationA?.TextAddress);
-                    row.CreateCell(4).SetCellValue(task.LocationB?.TextAddress);
+                    row.GetCell(0).CellStyle = cellStyle;
 
+                    row.CreateCell(1).SetCellValue(task.Driver.FullName);
+                    row.GetCell(1).CellStyle = cellStyle;
+
+                    row.CreateCell(2).SetCellValue(ShiftToString(task.Shift));
+                    row.GetCell(2).CellStyle = cellStyle;
+
+                    row.CreateCell(3).SetCellValue(task.LocationA?.TextAddress);
+                    row.GetCell(3).CellStyle = cellStyle;
+
+                    row.CreateCell(4).SetCellValue(task.LocationB?.TextAddress);
+                    row.GetCell(4).CellStyle = cellStyle;
                     rowIndex++;
                 }
             }
+
+            for(var i = 1; i < 5; i++)
+            {
+                sheet.SetColumnWidth(i, 255 * 50);
+            }
+
 
             var stream = new MemoryStream();
             workbook.Write(stream, true);
             return stream;
         }
+
 
         public MemoryStream GenerateTasksReportShort(DateTime date, IEnumerable<CarDriverTaskModel> cars)
         {
@@ -192,8 +269,20 @@ namespace CarTek.Api.Services
                 workbook = new XSSFWorkbook(fileStream);
             }
 
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
+
             // Получение листа
             ISheet sheet = workbook.GetSheetAt(0);
+
+            int numb = 1;
 
             int rowIndex = 4;
 
@@ -204,32 +293,71 @@ namespace CarTek.Api.Services
             foreach (var car in cars)
             {
                 var row = sheet.CreateRow(rowIndex);
-                row.CreateCell(0).SetCellValue(car.Plate);
+
+                row.CreateCell(0).SetCellValue(numb);
+                row.GetCell(0).CellStyle = cellStyle;
+
+                row.CreateCell(1).SetCellValue(car.Plate);
+                row.GetCell(1).CellStyle = cellStyle;
+
+                int driverRowIndex = rowIndex;
+
+                for (var i = 2; i < 8; i++)
+                {
+                    row.CreateCell(i);
+                    row.GetCell(i).CellStyle = cellStyle;
+                }
 
                 foreach (var task in car.DriverTasks)
                 {
-                    row.CreateCell(1).SetCellValue(task.Driver.FullName);
+                    //var driverRow = sheet.CreateRow(driverRowIndex);
+                    
+                    var client = task.Order.Service == ServiceType.Supply ? task.Order.Gp.ClientName : task.Order.ClientName;
+
+                    row.GetCell(2).SetCellValue(task.Driver.FullName);
+
+                    row.GetCell(3).SetCellValue(client);
 
                     if (task.Shift == ShiftType.Night)
                     {
-                        row.CreateCell(2).SetCellValue("+");
+                        row.GetCell(4).SetCellValue("+");
+
+                        //driverRow.CreateCell(3).SetCellValue("+");
+                        //driverRow.GetCell(3).CellStyle = cellStyle;
                     }
 
                     if (task.Shift == ShiftType.Day)
                     {
-                        row.CreateCell(3).SetCellValue("+");
+                        row.GetCell(5).SetCellValue("+");
+
+                        //driverRow.CreateCell(4).SetCellValue("+");
+                        //driverRow.GetCell(4).CellStyle = cellStyle;
                     }
 
-                    if (task.Shift == ShiftType.Fullday || task.Shift == ShiftType.Unlimited)
+                    if (task.Shift == ShiftType.Fullday)
                     {
-                        row.CreateCell(2).SetCellValue("+");
-                        row.CreateCell(3).SetCellValue("+");
+                        row.GetCell(6).SetCellValue("+");
+
+                        //driverRow.CreateCell(5).SetCellValue("+");
+                        //driverRow.GetCell(5).CellStyle = cellStyle;
                     }
+
+                    if (task.Shift == ShiftType.Unlimited)
+                    {
+                        row.GetCell(7).SetCellValue("+");
+
+                        //driverRow.CreateCell(6).SetCellValue("+");
+                        //driverRow.GetCell(6).CellStyle = cellStyle;
+                    }
+
+                   // driverRowIndex++;
                 }
 
+                numb++;
                 rowIndex++;
             }
 
+            sheet.SetColumnWidth(1, 255 * 50);
             var stream = new MemoryStream();
             workbook.Write(stream, true);
             return stream;
@@ -244,28 +372,40 @@ namespace CarTek.Api.Services
                 workbook = new XSSFWorkbook(fileStream);
             }
 
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+
             ISheet sheet = workbook.GetSheetAt(0);
 
             IRow row = sheet.GetRow(8);
             row.GetCell(6).SetCellValue(model.Date.ToString("dd.MM.yyyy"));
+
             row.GetCell(28).SetCellValue(model.Number);
 
             row = sheet.GetRow(14);
             row.GetCell(1).SetCellValue(model.GoInfo);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(19);
             row.GetCell(1).SetCellValue(model.GpInfo);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(21);
             row.GetCell(1).SetCellValue(model.LocationB);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(24);
             row.GetCell(1).SetCellValue(model.Material);
+            row.GetCell(1).CellStyle = cellStyle;
+
             row.GetCell(57).SetCellValue(model.LoadVolume);
 
             row = sheet.GetRow(43);
             row.GetCell(1).SetCellValue("ООО \"КарТэк\"");
             row.GetCell(57).SetCellValue(model.DriverInfo);
+            row.GetCell(57).CellStyle = cellStyle;
 
             row = sheet.GetRow(47);
             row.GetCell(1).SetCellValue(model.CarModel);
@@ -273,9 +413,11 @@ namespace CarTek.Api.Services
 
             row = sheet.GetRow(55);
             row.GetCell(1).SetCellValue(model.GoInfo);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(59);
             row.GetCell(1).SetCellValue(model.LocationA);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(61);
             row.GetCell(1).SetCellValue(model.PickUpArrivalTime);
@@ -284,6 +426,7 @@ namespace CarTek.Api.Services
             sheet = workbook.GetSheetAt(1);
             row = sheet.GetRow(2);
             row.GetCell(1).SetCellValue(model.LocationB);
+            row.GetCell(1).CellStyle = cellStyle;
 
             row = sheet.GetRow(4);
             row.GetCell(1).SetCellValue(model.DropOffArrivalTime);
@@ -314,36 +457,6 @@ namespace CarTek.Api.Services
             var stream = new MemoryStream();
             workbook.Write(stream, true);
             return stream;
-        }
-
-        public MemoryStream TestGenerateReport(string input)
-        {
-            IWorkbook workbook;
-         
-            using (FileStream fileStream = new FileStream("/data/Templates/reportTemplate.xlsx", FileMode.Open, FileAccess.ReadWrite))
-            {
-                workbook = new XSSFWorkbook(fileStream);
-            }
-
-            // Получение листа
-            ISheet sheet = workbook.GetSheetAt(0);
-
-            // Обновление данных ячейки
-            IRow row = sheet.GetRow(0);
-            row.GetCell(5).SetCellValue(input);
-
-            var stream = new MemoryStream();
-
-            workbook.Write(stream, true);
-
-            return stream;
-
-            //using (MemoryStream ms = new MemoryStream())
-            //{
-            //    workbook.Write(ms, false);
-
-            //    return ms.ToArray();
-            //}
         }
     }
 }

@@ -7,8 +7,6 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface IReportGeneratorService
     {
-        public MemoryStream TestGenerateReport(string input);
-
         public MemoryStream GenerateOrdersReport(IEnumerable<OrderModel> orders);
 
         public MemoryStream GenerateTnsReport(IEnumerable<OrderModel> orders);

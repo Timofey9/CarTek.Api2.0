@@ -352,6 +352,17 @@ namespace CarTek.Api.Controllers
             return Ok(res);
         }
 
+        [HttpPost("verifyTn")]
+        public IActionResult VerifyTn([FromBody]VerifyTnModel model)
+        {
+            var res = _driverTaskService.VerifyTn(model.DriverTaskId, model.IsSubtask ?? false);
+
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res);
+            }
+            return Ok();
+        }
 
         [HttpPost("createsubtask")]
         public IActionResult CreateSubTask([FromBody]CreateSubTaskModel model)

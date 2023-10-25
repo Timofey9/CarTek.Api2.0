@@ -370,7 +370,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public EditTNModel GetEditTnModel(long driverTaskId)
+        public EditTNModel GetEditTnModel(long driverTaskId, bool isSubtask = false)
         {
             try
             {
@@ -448,7 +448,7 @@ namespace CarTek.Api.Services
         }
 
 
-        public TNModel GetTnModel(long driverTaskId)
+        public TNModel GetTnModel(long driverTaskId, bool isSubtask = false)
         {
             try
             {
@@ -961,8 +961,10 @@ namespace CarTek.Api.Services
                     }
 
                     var stringLinks = JsonConvert.SerializeObject(links);
-
+                    
                     taskNote.S3Links = stringLinks;
+                    
+                    task.Status = (DriverTaskStatus)task.Status + 1;
 
                     _dbContext.DriverTaskNotes.Add(taskNote);
 
@@ -999,7 +1001,7 @@ namespace CarTek.Api.Services
             return map;
         }
 
-        public ApiResponse TaskGetBack(long taskId)
+        public ApiResponse TaskGetBack(long taskId, bool isSubtask = false)
         {
             try
             {
@@ -1037,6 +1039,54 @@ namespace CarTek.Api.Services
                 {
                     IsSuccess = false,
                     Message = "Статус не обновлен"
+                };
+            }
+        }
+
+        public ApiResponse VerifyTn(long driverTaskId, bool isSubTask = false)
+        {
+            var response = new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "ТН подтверждена"
+            };
+
+            try
+            {
+                if (isSubTask)
+                {
+                    var tn = _dbContext.SubTasks.Include(t => t.TN).FirstOrDefault(tn => tn.Id == driverTaskId)?.TN;
+                    if (tn != null)
+                    {
+                        tn.IsVerified = true;
+                        _dbContext.Update(tn);
+                        _dbContext.SaveChanges();
+
+                        response.IsSuccess = true;
+                    }
+                }
+                else
+                {
+                    var tn = _dbContext.TNs.FirstOrDefault(tn => tn.DriverTaskId == driverTaskId);
+                    if (tn != null)
+                    {
+                        tn.IsVerified = true;
+                        _dbContext.Update(tn);
+                        _dbContext.SaveChanges();
+
+                        response.IsSuccess = true; 
+                    }
+                }
+
+                return response;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка подтверждения ТН. {ex.Message}", ex.Message);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка подтверждения ТН"
                 };
             }
         }
