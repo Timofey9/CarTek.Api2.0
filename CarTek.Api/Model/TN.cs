@@ -6,7 +6,7 @@ namespace CarTek.Api.Model
     {
         public long Id { get; set; }
 
-        public bool IsVerified { get; set; }
+        public bool? IsVerified { get; set; }
 
         public string? Number { get; set; }
 
