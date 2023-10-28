@@ -51,7 +51,7 @@ namespace CarTek.Api.Controllers
                 return BadRequest();
             }
 
-            return Ok(user);
+            return Ok(_mapper.Map<DriverModel>(user));
         }
 
 
@@ -188,7 +188,7 @@ namespace CarTek.Api.Controllers
 
             if (model.IsSubtask)
             {
-                await _driverTaskService.UpdateDriverSubTask(model.DriverTaskId, model.Files, model.UpdatedStatus, model.Note);
+                await _driverTaskService.UpdateDriverSubTask(model.SubTaskId.Value, model.Files, model.UpdatedStatus, model.Note);
             }
             else
             {

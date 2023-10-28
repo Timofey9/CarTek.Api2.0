@@ -86,13 +86,13 @@ namespace CarTek.Api.Services
 
         public ApiResponse CreateCar(CreateCarModel car)
         {
-            var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.Equals(car.Plate.ToLower()));
+            var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.ToUpper().Equals(car.Plate.ToUpper()));
             
             if(carInDb == null) {
                 var carModel = new Car
                 {
                     Brand = car.Brand,
-                    Plate = car.Plate.ToLower(),
+                    Plate = car.Plate,
                     Model = car.Model,
                     AxelsCount = car.AxelsCount,
                 };
@@ -315,7 +315,7 @@ namespace CarTek.Api.Services
                     {
                         Id = car.Id,
                         Model = car.Model,
-                        Plate = car.Plate,
+                        Plate = car.Plate.ToUpper(),
                         Brand = car.Brand,
                         DriverTasks = car.DriverTasks.Select(dt => new DriverTaskCarModel
                         {

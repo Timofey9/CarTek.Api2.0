@@ -5,6 +5,7 @@ using CarTek.Api.Services.Interfaces;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Notification = FirebaseAdmin.Messaging.Notification;
 
@@ -52,7 +53,7 @@ namespace CarTek.Api.Services
             return new Tuple<int, ICollection<Model.Notification>>(totalNumber, notifications.ToList()); 
         }
 
-        public void SaveToken(long userId, string token, bool isDriver)
+        public async Task SaveToken(long userId, string token, bool isDriver)
         {
             var newUserDevice = new UserDevice
             {
@@ -61,9 +62,9 @@ namespace CarTek.Api.Services
                 IsDriver = isDriver
             };
 
-            _dbContext.UserDevices.Add(newUserDevice);
+            await _dbContext.UserDevices.AddAsync(newUserDevice);
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
         }
 
@@ -89,7 +90,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var tokens = _dbContext.UserDevices.Where(ud => ud.IsDriver == isDriver && ud.UserId == userId).Select(t => t.Token).ToList();
+                var tokens = await _dbContext.UserDevices.Where(ud => ud.IsDriver == isDriver && ud.UserId == userId).Select(t => t.Token).ToListAsync();
 
                 if(tokens != null && tokens.Count > 0) { 
                     var message = new MulticastMessage()
@@ -114,7 +115,7 @@ namespace CarTek.Api.Services
                     Description = text
                 };
 
-                _dbContext.Notifications.Add(notification);
+                await _dbContext.Notifications.AddAsync(notification);
 
                 await _dbContext.SaveChangesAsync();
             }

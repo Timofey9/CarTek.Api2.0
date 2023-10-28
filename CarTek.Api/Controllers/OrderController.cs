@@ -263,13 +263,21 @@ namespace CarTek.Api.Controllers
             }
         }
 
-
-        [HttpGet("viewtn/{driverTaskId}")]
-        public IActionResult ViewTN(long driverTaskId)
+        [HttpGet("viewtn/{driverTaskId}/{isSubTask}")]
+        public IActionResult ViewTN(long driverTaskId, string isSubTask)
         {
             try
             {
-                var tnModel = _driverTaskService.GetTnModel(driverTaskId);
+                TNModel tnModel;
+
+                if (!string.IsNullOrEmpty(isSubTask) && isSubTask.Equals("true"))
+                {
+                    tnModel = _driverTaskService.GetTnModel(driverTaskId, true);
+                }
+                else
+                {
+                    tnModel = _driverTaskService.GetTnModel(driverTaskId);
+                }
 
                 return Ok(tnModel);
             }
@@ -279,12 +287,21 @@ namespace CarTek.Api.Controllers
             }
         }
 
-        [HttpGet("viewedittn/{driverTaskId}")]
-        public IActionResult ViewEditTN(long driverTaskId)
+        [HttpGet("viewedittn/{driverTaskId}/{isSubTask}")]
+        public IActionResult ViewEditTN(long driverTaskId, string isSubTask)
         {
             try
             {
-                var tnModel = _driverTaskService.GetEditTnModel(driverTaskId);
+                EditTNModel tnModel;
+
+                if (!string.IsNullOrEmpty(isSubTask) && isSubTask.Equals("true"))
+                {
+                    tnModel = _driverTaskService.GetEditTnModel(driverTaskId, true);
+                }
+                else
+                {
+                    tnModel = _driverTaskService.GetEditTnModel(driverTaskId);
+                }
 
                 return Ok(tnModel);
             }
@@ -352,10 +369,10 @@ namespace CarTek.Api.Controllers
             return Ok(res);
         }
 
-        [HttpPost("verifyTn")]
+        [HttpPost("verifytn")]
         public IActionResult VerifyTn([FromBody]VerifyTnModel model)
         {
-            var res = _driverTaskService.VerifyTn(model.DriverTaskId, model.IsSubtask ?? false);
+            var res = _driverTaskService.VerifyTn(model.DriverTaskId, model.IsOriginalReceived, model.IsSubtask ?? false);
 
             if (!res.IsSuccess)
             {

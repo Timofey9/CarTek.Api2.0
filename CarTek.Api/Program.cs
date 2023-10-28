@@ -36,7 +36,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAWSS3ClientFactory, AWSS3ClientFactory>();
 builder.Services.AddScoped<IAWSS3Service, AWSS3Service>();
 

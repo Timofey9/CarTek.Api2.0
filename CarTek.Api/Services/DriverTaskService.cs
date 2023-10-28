@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CarTek.Api.Services
 {
@@ -134,6 +135,8 @@ namespace CarTek.Api.Services
                     mappedResult[i].LocationB = locationB;
 
                     mappedResult[i].Material = list[i].Order?.Material?.Name;
+
+                    mappedResult[i].Price = list[i].Order.Price ?? 0;
                 }
             }
             catch (Exception ex)
@@ -205,7 +208,18 @@ namespace CarTek.Api.Services
                         DateCreated = DateTime.UtcNow,
                     };
 
-                    task.Status = (DriverTaskStatus)status;
+                    if(status > 9)
+                    {
+                        task.Status = DriverTaskStatus.Done;
+                    }
+                    else if(status == 8)
+                    {
+                        task.Status = DriverTaskStatus.Done;
+                    }
+                    else
+                    {
+                        task.Status = (DriverTaskStatus)status;
+                    }
 
                     var links = new List<string>();
 
@@ -374,70 +388,140 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
-
-                var task = _dbContext.DriverTasks
-                    .Include(t => t.Order)
-                    .ThenInclude(t => t.Material)
-                    .Include(t => t.Order)
-                    .ThenInclude(t => t.Client)
-                    .Include(t => t.Car)
-                    .ThenInclude(c => c.Trailer)
-                    .Include(dt => dt.Driver)
-                    .FirstOrDefault(t => t.Id == driverTaskId);
-
-                if (tn != null)
+                var result = new EditTNModel();
+                TN tn;
+                if (isSubtask)
                 {
-                    var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                    var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.SubTaskId == driverTaskId);
 
-                    var driverInfo = tn.DriverTask.Driver.FullName;
-
-                    var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
-                    var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
-
-                    var result = new EditTNModel
+                    if (tn != null)
                     {
-                        Go = new ClientModel
-                        {
-                            ClientName = go?.ClientName,
-                            ClientAddress = go?.ClientAddress,
-                            Id = go.Id,
-                            Inn = go?.Inn
-                        },
-                        Gp = new ClientModel
-                        {
-                            ClientName = gp?.ClientName,
-                            ClientAddress = gp?.ClientAddress,
-                            Id = gp.Id,
-                            Inn = gp?.Inn
-                        },
-                        Date = tn.DriverTask.StartDate,
-                        Number = tn.Number,
-                        Unit = UnitToString(tn.Unit),
-                        Unit2 = UnitToString(tn.Unit2),
-                        UnloadUnit = UnitToString(tn.UnloadUnit),
-                        UnloadUnit2 = UnitToString(tn.UnloadUnit2),
-                        LoadVolume = tn.LoadVolume.ToString(),
-                        LoadVolume2 = tn.LoadVolume2?.ToString(),
-                        UnloadVolume = tn.UnloadVolume?.ToString(),
-                        UnloadVolume2 = tn.UnloadVolume2?.ToString(),
-                        Material = new MaterialModel
-                        {
-                            Id = tn.Material.Id,
-                            Name = tn.Material.Name
-                        },
-                        MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
-                        LocationA = locationA,
-                        LocationB = locationB,
-                        PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
-                        PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
-                        DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
-                        DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                    };
+                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
 
-                    return result;
+                        //var driverInfo = tn.DriverTask.Driver.FullName;
+
+                        var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                        var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                        var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
+                        var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
+
+                        //TODO: грузоотправитель
+                        result = new EditTNModel
+                        {
+                            IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                            Go = new ClientModel
+                            {
+                                ClientName = go?.ClientName,
+                                ClientAddress = go?.ClientAddress,
+                                Id = go.Id,
+                                Inn = go?.Inn
+                            },
+                            Gp = new ClientModel
+                            {
+                                ClientName = gp?.ClientName,
+                                ClientAddress = gp?.ClientAddress,
+                                Id = gp.Id,
+                                Inn = gp?.Inn
+                            },
+                            //DriverInfo = driverInfo,
+                            //Date = tn.DriverTask.StartDate,
+                            Number = tn.Number,
+                            Unit = UnitToString(tn.Unit),
+                            Unit2 = UnitToString(tn.Unit2),
+                            UnloadUnit = UnitToString(tn.UnloadUnit),
+                            UnloadUnit2 = UnitToString(tn.UnloadUnit2),
+                            LoadVolume = tn.LoadVolume.ToString(),
+                            LoadVolume2 = tn.LoadVolume2?.ToString(),
+                            UnloadVolume = tn.UnloadVolume?.ToString(),
+                            UnloadVolume2 = tn.UnloadVolume2?.ToString(),
+                            Material = new MaterialModel
+                            {
+                                Id = tn.Material.Id,
+                                Name = tn.Material.Name
+                            },
+                            MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
+                            //CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
+                            //CarPlate = tn.DriverTask.Car.Plate,
+                            //TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
+                            LocationA = locationA,
+                            LocationB = locationB,
+                            PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
+                            PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                            DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
+                            DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                        };
+                    }
                 }
+                else
+                {
+                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
+
+                    var task = _dbContext.DriverTasks
+                        .Include(t => t.Order)
+                        .ThenInclude(t => t.Material)
+                        .Include(t => t.Order)
+                        .ThenInclude(t => t.Client)
+                        .Include(t => t.Car)
+                        .ThenInclude(c => c.Trailer)
+                        .Include(dt => dt.Driver)
+                        .FirstOrDefault(t => t.Id == driverTaskId);
+
+                    if (tn != null)
+                    {
+                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+
+                        var driverInfo = tn.DriverTask.Driver.FullName;
+
+                        var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                        var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                        result = new EditTNModel
+                        {
+                            IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                            Go = new ClientModel
+                            {
+                                ClientName = go?.ClientName,
+                                ClientAddress = go?.ClientAddress,
+                                Id = go.Id,
+                                Inn = go?.Inn
+                            },
+                            Gp = new ClientModel
+                            {
+                                ClientName = gp?.ClientName,
+                                ClientAddress = gp?.ClientAddress,
+                                Id = gp.Id,
+                                Inn = gp?.Inn
+                            },
+                            Date = tn.DriverTask.StartDate,
+                            Number = tn.Number,
+                            Unit = UnitToString(tn.Unit),
+                            Unit2 = UnitToString(tn.Unit2),
+                            UnloadUnit = UnitToString(tn.UnloadUnit),
+                            UnloadUnit2 = UnitToString(tn.UnloadUnit2),
+                            LoadVolume = tn.LoadVolume.ToString(),
+                            LoadVolume2 = tn.LoadVolume2?.ToString(),
+                            UnloadVolume = tn.UnloadVolume?.ToString(),
+                            UnloadVolume2 = tn.UnloadVolume2?.ToString(),
+                            Material = new MaterialModel
+                            {
+                                Id = tn.Material.Id,
+                                Name = tn.Material.Name
+                            },
+                            MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
+                            LocationA = locationA,
+                            LocationB = locationB,
+                            PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
+                            PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                            DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
+                            DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                        };
+                    }
+                }
+                    return result;
+                
             }
             catch (Exception ex)
             {
@@ -450,86 +534,155 @@ namespace CarTek.Api.Services
 
         public TNModel GetTnModel(long driverTaskId, bool isSubtask = false)
         {
+            var result = new TNModel();
+            TN tn;
             try
             {
-                var tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
-
-                var task = _dbContext.DriverTasks
-                    .Include(t => t.Order)
-                    .ThenInclude(t => t.Material)
-                    .Include(t => t.Order)
-                    .ThenInclude(t => t.Client)
-                    .Include(t => t.Car)
-                    .ThenInclude(c => c.Trailer)
-                    .Include(dt => dt.Driver)
-                    .FirstOrDefault(t => t.Id == driverTaskId);
-
-                if (tn != null)
+                if (isSubtask)
                 {
-                    var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                    var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.SubTaskId == driverTaskId);
 
-                    var driverInfo = tn.DriverTask.Driver.FullName;
-
-                    var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
-                    var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
-
-                    var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
-                    var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
-
-                    //TODO: грузоотправитель
-                    var result = new TNModel
+                    if (tn != null)
                     {
-                        GoInfo = goInfo,
-                        Go = new ClientModel
-                        {
-                            ClientName = go?.ClientName,
-                            ClientAddress = go?.ClientAddress,
-                            Id = go.Id,
-                            Inn = go?.Inn
-                        },
-                        Gp = new ClientModel
-                        {
-                            ClientName = gp?.ClientName,
-                            ClientAddress = gp?.ClientAddress,
-                            Id = gp.Id,
-                            Inn = gp?.Inn
-                        },
-                        DriverInfo = driverInfo,
-                        Date = tn.DriverTask.StartDate,
-                        Number = tn.Number,
-                        GpInfo = gpInfo,
-                        Accepter = "",
-                        Unit = UnitToString(tn.Unit),
-                        Unit2 = UnitToString(tn.Unit2),
-                        UnloadUnit = UnitToString(tn.UnloadUnit),
-                        UnloadUnit2 = UnitToString(tn.UnloadUnit2),
-                        LoadVolume = tn.LoadVolume.ToString(),
-                        LoadVolume2 = tn.LoadVolume2?.ToString(),
-                        UnloadVolume = tn.UnloadVolume?.ToString(),
-                        UnloadVolume2 = tn.UnloadVolume2?.ToString(),
-                        Material = tn.Material?.Name,
-                        MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
-                        CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
-                        CarPlate = tn.DriverTask.Car.Plate,
-                        TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
-                        LocationA = locationA?.TextAddress,
-                        LocationB = locationB?.TextAddress,
-                        PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
-                        PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
-                        DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
-                        DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                    };
+                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
 
-                    return result;
+                        //var driverInfo = tn.DriverTask.Driver.FullName;
+
+                        var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                        var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                        var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
+                        var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
+
+                        //TODO: грузоотправитель
+                        result = new TNModel
+                        {
+                            IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                            GoInfo = goInfo,
+                            Go = new ClientModel
+                            {
+                                ClientName = go?.ClientName,
+                                ClientAddress = go?.ClientAddress,
+                                Id = go.Id,
+                                Inn = go?.Inn
+                            },
+                            Gp = new ClientModel
+                            {
+                                ClientName = gp?.ClientName,
+                                ClientAddress = gp?.ClientAddress,
+                                Id = gp.Id,
+                                Inn = gp?.Inn
+                            },
+                            //DriverInfo = driverInfo,
+                            //Date = tn.DriverTask.StartDate,
+                            Number = tn.Number,
+                            GpInfo = gpInfo,
+                            Accepter = "",
+                            Unit = UnitToString(tn.Unit),
+                            Unit2 = UnitToString(tn.Unit2),
+                            UnloadUnit = UnitToString(tn.UnloadUnit),
+                            UnloadUnit2 = UnitToString(tn.UnloadUnit2),
+                            LoadVolume = tn.LoadVolume.ToString(),
+                            LoadVolume2 = tn.LoadVolume2?.ToString(),
+                            UnloadVolume = tn.UnloadVolume?.ToString(),
+                            UnloadVolume2 = tn.UnloadVolume2?.ToString(),
+                            Material = tn.Material?.Name,
+                            MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
+                            //CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
+                            //CarPlate = tn.DriverTask.Car.Plate,
+                            //TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
+                            LocationA = locationA?.TextAddress,
+                            LocationB = locationB?.TextAddress,
+                            PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
+                            PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                            DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
+                            DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                        };
+                    }
                 }
+                else
+                {
+                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
+
+                    var task = _dbContext.DriverTasks
+                        .Include(t => t.Order)
+                        .ThenInclude(t => t.Material)
+                        .Include(t => t.Order)
+                        .ThenInclude(t => t.Client)
+                        .Include(t => t.Car)
+                        .ThenInclude(c => c.Trailer)
+                        .Include(dt => dt.Driver)
+                        .FirstOrDefault(t => t.Id == driverTaskId);
+
+                    if (tn != null)
+                    {
+                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+
+                        var driverInfo = tn.DriverTask.Driver.FullName;
+
+                        var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                        var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                        var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
+                        var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
+
+                        //TODO: грузоотправитель
+                        result = new TNModel
+                        {
+                            IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                            GoInfo = goInfo,
+                            Go = new ClientModel
+                            {
+                                ClientName = go?.ClientName,
+                                ClientAddress = go?.ClientAddress,
+                                Id = go.Id,
+                                Inn = go?.Inn
+                            },
+                            Gp = new ClientModel
+                            {
+                                ClientName = gp?.ClientName,
+                                ClientAddress = gp?.ClientAddress,
+                                Id = gp.Id,
+                                Inn = gp?.Inn
+                            },
+                            DriverInfo = driverInfo,
+                            Date = tn.DriverTask.StartDate,
+                            Number = tn.Number,
+                            GpInfo = gpInfo,
+                            Accepter = "",
+                            Unit = UnitToString(tn.Unit),
+                            Unit2 = UnitToString(tn.Unit2),
+                            UnloadUnit = UnitToString(tn.UnloadUnit),
+                            UnloadUnit2 = UnitToString(tn.UnloadUnit2),
+                            LoadVolume = tn.LoadVolume.ToString(),
+                            LoadVolume2 = tn.LoadVolume2?.ToString(),
+                            UnloadVolume = tn.UnloadVolume?.ToString(),
+                            UnloadVolume2 = tn.UnloadVolume2?.ToString(),
+                            Material = tn.Material?.Name,
+                            MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
+                            CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
+                            CarPlate = tn.DriverTask.Car.Plate,
+                            TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
+                            LocationA = locationA?.TextAddress,
+                            LocationB = locationB?.TextAddress,
+                            PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
+                            PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                            DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
+                            DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                        };
+                    }
+
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ошибка получения: {ex.Message}", ex.Message);
+                return new TNModel();
             }
-
-            return new TNModel();
         }
 
         private string UnitToString(Unit? unit)
@@ -577,9 +730,35 @@ namespace CarTek.Api.Services
 
                     if (model.IsSubtask)
                     {
-                        Tn.SubTaskId = model.SubTaskId;
-                        Tn.DriverTaskId = null;
-                        _dbContext.TNs.Add(Tn);
+                        var sbTN = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
+
+                        if(sbTN != null)
+                        {
+                            _dbContext.Update(sbTN).CurrentValues.SetValues(new
+                            {
+                                Number = model.Number,
+                                GoId = model.GoId,
+                                GpId = model.GpId,
+                                LoadVolume = model.LoadVolume,
+                                Unit = model.Unit,
+                                SubTaskId = model.SubTaskId,
+                                LocationAId = model.LocationAId,
+                                LocationBId = model.LocationBId,
+                                PickUpArrivalDate = model.PickUpArrivalDate,
+                                PickUpArrivalTime = model.PickUpArrivalTime,
+                                PickUpDepartureDate = model.PickUpDepartureDate,
+                                PickUpDepartureTime = model.PickUpDepartureTime,
+                                DriverId = task.DriverId,
+                                MaterialId = model.MaterialId
+                            });
+                        }
+                        else
+                        {
+                            Tn.SubTaskId = model.SubTaskId;
+                            Tn.DriverTaskId = null;
+
+                            _dbContext.TNs.Add(Tn);
+                        }
                     }
                     else
                     {
@@ -751,7 +930,7 @@ namespace CarTek.Api.Services
 
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
-                        _dbContext.Update(TN);
+                        _dbContext.TNs.Update(TN);
                     }
 
                     _dbContext.SaveChanges();
@@ -793,7 +972,7 @@ namespace CarTek.Api.Services
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
                         task.TN.UnloadUnit2 = model.UnloadUnit2;
 
-                        _dbContext.Update(task.TN);
+                        _dbContext.TNs.Update(task.TN);
                     }
 
                     _dbContext.SaveChanges();
@@ -964,7 +1143,14 @@ namespace CarTek.Api.Services
                     
                     taskNote.S3Links = stringLinks;
                     
-                    task.Status = (DriverTaskStatus)task.Status + 1;
+                    if(status == 8)
+                    {
+                        task.Status = DriverTaskStatus.Done;
+                    }
+                    else
+                    {
+                        task.Status = (DriverTaskStatus)task.Status + 1;
+                    }
 
                     _dbContext.DriverTaskNotes.Add(taskNote);
 
@@ -1043,7 +1229,7 @@ namespace CarTek.Api.Services
             }
         }
 
-        public ApiResponse VerifyTn(long driverTaskId, bool isSubTask = false)
+        public ApiResponse VerifyTn(long driverTaskId, bool isOriginalReceived, bool isSubTask = false)
         {
             var response = new ApiResponse
             {
@@ -1059,7 +1245,10 @@ namespace CarTek.Api.Services
                     if (tn != null)
                     {
                         tn.IsVerified = true;
+                        tn.IsOrginalReceived = isOriginalReceived;
+
                         _dbContext.Update(tn);
+
                         _dbContext.SaveChanges();
 
                         response.IsSuccess = true;
@@ -1071,6 +1260,8 @@ namespace CarTek.Api.Services
                     if (tn != null)
                     {
                         tn.IsVerified = true;
+                        tn.IsOrginalReceived = isOriginalReceived;
+
                         _dbContext.Update(tn);
                         _dbContext.SaveChanges();
 

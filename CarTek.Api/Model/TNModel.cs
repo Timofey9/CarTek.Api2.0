@@ -7,6 +7,8 @@ namespace CarTek.Api.Model
     {
         public string Number { get; set; }
 
+        public bool IsOriginalReceived { get; set; }
+
         public DateTime Date { get; set; }
 
         public string LoadVolume { get; set; }
@@ -43,6 +45,8 @@ namespace CarTek.Api.Model
 
     public class TNModel
     {
+
+        public bool IsOriginalReceived { get; set; }
         public string Number { get; set; }
 
         public DateTime Date { get; set; }

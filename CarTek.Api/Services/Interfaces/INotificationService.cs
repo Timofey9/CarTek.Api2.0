@@ -8,6 +8,6 @@ namespace CarTek.Api.Services.Interfaces
 
         Tuple<int,ICollection<Notification>> GetUserNotifications(bool isDriver, long userId, int pageNumber, int pageSize);
 
-        void SaveToken(long userId, string token, bool isDriver);
+        Task SaveToken(long userId, string token, bool isDriver);
     }
 }

@@ -23,7 +23,7 @@ namespace CarTek.Api.Services.Interfaces
         
         public TNModel GetTnModel(long driverTaskId, bool isSubTask = false);
 
-        public ApiResponse VerifyTn(long driverTaskId, bool isSubTask = false);
+        public ApiResponse VerifyTn(long driverTaskId, bool isOriginalReceived, bool isSubTask = false);
 
         public EditTNModel GetEditTnModel(long driverTaskId, bool isSubtask = false);
 

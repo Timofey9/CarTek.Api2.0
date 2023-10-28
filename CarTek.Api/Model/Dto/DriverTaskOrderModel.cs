@@ -6,6 +6,8 @@ namespace CarTek.Api.Model.Dto
     {
         public long Id { get; set; }
 
+        public double Price { get; set; }
+
         public Guid UniqueId { get; set; }
 
         // night/day
