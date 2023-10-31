@@ -47,7 +47,6 @@ namespace CarTek.Api.Services
             }
         }
 
-
         public MemoryStream GenerateTnsReport(IEnumerable<TNModel> tns, DateTime startDate, DateTime endDate)
         {
             IWorkbook workbook;
@@ -310,7 +309,6 @@ namespace CarTek.Api.Services
             return stream;
         }
 
-
         private string ShiftToString(ShiftType shift)
         {
             switch (shift)
@@ -327,6 +325,68 @@ namespace CarTek.Api.Services
                     return " ";
             }
         }
+
+        //public MemoryStream GenerateFullTasksReport(DateTime startDate, DateTime endDate, IEnumerable<DriverTask> tasks)
+        //{
+        //    IWorkbook workbook;
+
+        //    using (FileStream fileStream = new FileStream("/data/Templates/fullTasksReport.xlsx", FileMode.Open, FileAccess.ReadWrite))
+        //    {
+        //        workbook = new XSSFWorkbook(fileStream);
+        //    }
+
+        //    // Получение листа
+        //    ISheet sheet = workbook.GetSheetAt(0);
+
+        //    int rowIndex = 4;
+
+        //    var daterow = sheet.CreateRow(1);
+
+        //    var cellStyle = workbook.CreateCellStyle();
+        //    cellStyle.WrapText = true;
+        //    cellStyle.VerticalAlignment = VerticalAlignment.Center;
+        //    cellStyle.BorderBottom = BorderStyle.Thin;
+        //    cellStyle.BorderTop = BorderStyle.Thin;
+        //    cellStyle.BorderLeft = BorderStyle.Thin;
+        //    cellStyle.BorderRight = BorderStyle.Thin;
+        //    daterow.CreateCell(1).SetCellValue(date.ToString("dd.MM.yyyy"));
+
+        //    foreach (var car in cars)
+        //    {
+        //        var row = sheet.CreateRow(rowIndex);
+
+        //        foreach (var task in car.DriverTasks)
+        //        {
+        //            row = sheet.CreateRow(rowIndex);
+        //            row.CreateCell(0).SetCellValue(car.Plate);
+        //            row.GetCell(0).CellStyle = cellStyle;
+
+        //            row.CreateCell(1).SetCellValue(task.Driver.FullName);
+        //            row.GetCell(1).CellStyle = cellStyle;
+
+        //            row.CreateCell(2).SetCellValue(ShiftToString(task.Shift));
+        //            row.GetCell(2).CellStyle = cellStyle;
+
+        //            row.CreateCell(3).SetCellValue(task.LocationA?.TextAddress);
+        //            row.GetCell(3).CellStyle = cellStyle;
+
+        //            row.CreateCell(4).SetCellValue(task.LocationB?.TextAddress);
+        //            row.GetCell(4).CellStyle = cellStyle;
+        //            rowIndex++;
+        //        }
+        //    }
+
+        //    for (var i = 1; i < 5; i++)
+        //    {
+        //        sheet.SetColumnWidth(i, 255 * 50);
+        //    }
+
+
+        //    var stream = new MemoryStream();
+        //    workbook.Write(stream, true);
+        //    return stream;
+        //}
+
 
         public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> cars)
         {
@@ -432,7 +492,7 @@ namespace CarTek.Api.Services
 
                 int driverRowIndex = rowIndex;
 
-                for (var i = 2; i < 8; i++)
+                for (var i = 2; i < 14; i++)
                 {
                     row.CreateCell(i);
                     row.GetCell(i).CellStyle = cellStyle;
@@ -446,11 +506,21 @@ namespace CarTek.Api.Services
 
                     row.GetCell(2).SetCellValue(task.Driver.FullName);
 
-                    row.GetCell(3).SetCellValue(client);
+                    row.GetCell(3).SetCellValue(task.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+
+                    row.GetCell(4).SetCellValue(task.Order.ClientName);
+                    row.GetCell(5).SetCellValue(task.Order.Gp.ClientName);
+
+                    row.GetCell(6).SetCellValue(client);
+
+                    row.GetCell(7).SetCellValue(task.Order.Material.Name);
+
+                    row.GetCell(8).SetCellValue(task.LocationA.TextAddress);
+                    row.GetCell(9).SetCellValue(task.LocationB.TextAddress);
 
                     if (task.Shift == ShiftType.Night)
                     {
-                        row.GetCell(4).SetCellValue("+");
+                        row.GetCell(10).SetCellValue("+");
 
                         //driverRow.CreateCell(3).SetCellValue("+");
                         //driverRow.GetCell(3).CellStyle = cellStyle;
@@ -458,7 +528,7 @@ namespace CarTek.Api.Services
 
                     if (task.Shift == ShiftType.Day)
                     {
-                        row.GetCell(5).SetCellValue("+");
+                        row.GetCell(11).SetCellValue("+");
 
                         //driverRow.CreateCell(4).SetCellValue("+");
                         //driverRow.GetCell(4).CellStyle = cellStyle;
@@ -466,7 +536,7 @@ namespace CarTek.Api.Services
 
                     if (task.Shift == ShiftType.Fullday)
                     {
-                        row.GetCell(6).SetCellValue("+");
+                        row.GetCell(12).SetCellValue("+");
 
                         //driverRow.CreateCell(5).SetCellValue("+");
                         //driverRow.GetCell(5).CellStyle = cellStyle;
@@ -474,7 +544,7 @@ namespace CarTek.Api.Services
 
                     if (task.Shift == ShiftType.Unlimited)
                     {
-                        row.GetCell(7).SetCellValue("+");
+                        row.GetCell(13).SetCellValue("+");
 
                         //driverRow.CreateCell(6).SetCellValue("+");
                         //driverRow.GetCell(6).CellStyle = cellStyle;

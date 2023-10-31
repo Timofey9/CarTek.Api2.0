@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using NPOI.SS.Formula.Functions;
 using System.Collections.Generic;
 
 namespace CarTek.Api.Controllers
@@ -135,6 +137,27 @@ namespace CarTek.Api.Controllers
                 var tasks = _carService.GetCarsWithTasks(startDate);
 
                 var fileStream = _reportGeneratorService.GenerateTasksReport(startDate, tasks);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }               
+        
+        [HttpGet("getfulltasksreport")]
+        public IActionResult DownloadFullTasksList(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var tasks = _driverTaskService.GetDriverTasksBetweenDates(startDate, endDate);
+
+                var fileStream = _reportGeneratorService.GenerateTasksReport(startDate, new List<CarDriverTaskModel>());
 
                 var contentType = "application/octet-stream";
 

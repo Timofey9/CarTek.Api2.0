@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CarTek.Api.Services
 {
@@ -105,6 +104,41 @@ namespace CarTek.Api.Services
 
             return result;
         }
+
+
+        public IEnumerable<DriverTask> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var result = new List<DriverTask>();
+
+            try
+            {
+                var date1 = startDate.Date;
+                var date2 = endDate.Date;
+
+                Expression<Func<DriverTask, bool>> filterBy = x =>
+                        x.StartDate.AddHours(4).Date >= date1
+                        && x.StartDate.AddHours(4).Date <= date2;
+
+                Expression<Func<DriverTask, object>> orderBy = x => x.StartDate;
+
+                var tresult = _dbContext.DriverTasks
+                    .Include(t => t.Car)
+                    .Include(t => t.Order)
+                    .ThenInclude(t => t.Material)
+                    .Where(filterBy);
+
+                tresult = tresult.OrderByDescending(orderBy);
+
+                result = tresult.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список задач");
+            }
+
+            return result;
+        }
+
 
         public List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert)
         {
@@ -531,7 +565,6 @@ namespace CarTek.Api.Services
             return new EditTNModel();
         }
 
-
         public TNModel GetTnModel(long driverTaskId, bool isSubtask = false)
         {
             var result = new TNModel();
@@ -901,7 +934,6 @@ namespace CarTek.Api.Services
             }
         }
 
-
         public ApiResponse UpdateTN(FillDocumentModel model)
         {
             try
@@ -1004,7 +1036,6 @@ namespace CarTek.Api.Services
                 };
             }
         }
-
 
         public ApiResponse CreateSubTask(long driverTaskId)
         {
