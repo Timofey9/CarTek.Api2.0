@@ -106,10 +106,11 @@ namespace CarTek.Api.Services
         }
 
 
-        public IEnumerable<DriverTask> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate)
         {
             var result = new List<DriverTask>();
 
+            var mappedResult = new List<DriverTaskReportModel>();
             try
             {
                 var date1 = startDate.Date;
@@ -123,20 +124,45 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
+                    .Include(dt => dt.Driver)
                     .Include(t => t.Order)
                     .ThenInclude(t => t.Material)
-                    .Where(filterBy);
+                    .Where(filterBy).AsEnumerable();
 
-                tresult = tresult.OrderByDescending(orderBy);
+                var ordered = tresult.OrderBy(t => t.Car.Plate.Substring(1, 3), new SemiNumericComparer());
 
-                result = tresult.ToList();
+                result = ordered.ToList();
+
+                foreach(var task in result)
+                {
+                    var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == task.Order.GpId);
+
+                    var client = task.Order.Service == ServiceType.Supply ? gp?.ClientName: task.Order.ClientName;
+
+                    var mappedTask = new DriverTaskReportModel
+                    {
+                        Driver = task.Driver.FullName,
+                        Plate = task.Car.Plate.ToUpper(),
+                        Service = task.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка",
+                        Go = task?.Order?.ClientName,
+                        Gp = gp?.ClientName,
+                        Client = client,
+                        LocationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationAId)?.TextAddress,
+                        LocationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == task.Order.LocationBId)?.TextAddress,
+                        Material = task.Order.Material?.Name,
+                        Shift = task.Shift,
+                        Status = task.Status
+                    };
+
+                    mappedResult.Add(mappedTask);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Не удалось получить список задач");
             }
 
-            return result;
+            return mappedResult;
         }
 
 

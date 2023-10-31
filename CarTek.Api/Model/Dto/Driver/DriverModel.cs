@@ -10,6 +10,8 @@ namespace CarTek.Api.Model.Dto
 
         public string MiddleName { get; set; }
 
+        public double Percentage { get; set; }
+
         public string LastName { get; set; }
 
         public string Password { get; set; }

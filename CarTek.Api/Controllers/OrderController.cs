@@ -157,7 +157,7 @@ namespace CarTek.Api.Controllers
             {
                 var tasks = _driverTaskService.GetDriverTasksBetweenDates(startDate, endDate);
 
-                var fileStream = _reportGeneratorService.GenerateTasksReport(startDate, new List<CarDriverTaskModel>());
+                var fileStream = _reportGeneratorService.GenerateTasksReportFull(startDate, endDate, tasks);
 
                 var contentType = "application/octet-stream";
 

@@ -18,6 +18,8 @@ namespace CarTek.Api.Model
 
         public string? Phone { get; set; }
 
+        public double Percentage { get; set; }
+
         public ICollection<Questionary> Questionaries { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }

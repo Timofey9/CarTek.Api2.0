@@ -45,6 +45,6 @@ namespace CarTek.Api.Services.Interfaces
 
         Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment);
 
-        IEnumerable<DriverTask> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate);
+        IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate);
     }
 }

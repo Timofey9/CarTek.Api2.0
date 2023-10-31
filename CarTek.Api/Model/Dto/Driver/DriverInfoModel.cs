@@ -3,6 +3,7 @@
     public class DriverInfoModel
     {
         public long Id { get; set; }
+        public double Percentage { get; set; }
 
         public string FirstName { get; set; }
 

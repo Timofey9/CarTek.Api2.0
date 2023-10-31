@@ -290,7 +290,7 @@ namespace CarTek.Api.Services
                     var cell = row.GetCell(10);
                     var cellStyle2 = workbook.CreateCellStyle();
 
-                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightOrange.Index;
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.Red.Index;
                     cellStyle2.FillPattern = FillPattern.SolidForeground;
 
                     cellStyle2.BorderBottom = BorderStyle.Thin;
@@ -326,66 +326,143 @@ namespace CarTek.Api.Services
             }
         }
 
-        //public MemoryStream GenerateFullTasksReport(DateTime startDate, DateTime endDate, IEnumerable<DriverTask> tasks)
-        //{
-        //    IWorkbook workbook;
+        public MemoryStream GenerateTasksReportFull(DateTime startDate, DateTime endDate, IEnumerable<DriverTaskReportModel> tasks)
+        {
+            IWorkbook workbook;
 
-        //    using (FileStream fileStream = new FileStream("/data/Templates/fullTasksReport.xlsx", FileMode.Open, FileAccess.ReadWrite))
-        //    {
-        //        workbook = new XSSFWorkbook(fileStream);
-        //    }
+            using (FileStream fileStream = new FileStream("/data/Templates/fullTasksReport.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
 
-        //    // Получение листа
-        //    ISheet sheet = workbook.GetSheetAt(0);
+            // Получение листа
+            ISheet sheet = workbook.GetSheetAt(0);
 
-        //    int rowIndex = 4;
+            int rowIndex = 4;
+            int num = 1;
 
-        //    var daterow = sheet.CreateRow(1);
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
 
-        //    var cellStyle = workbook.CreateCellStyle();
-        //    cellStyle.WrapText = true;
-        //    cellStyle.VerticalAlignment = VerticalAlignment.Center;
-        //    cellStyle.BorderBottom = BorderStyle.Thin;
-        //    cellStyle.BorderTop = BorderStyle.Thin;
-        //    cellStyle.BorderLeft = BorderStyle.Thin;
-        //    cellStyle.BorderRight = BorderStyle.Thin;
-        //    daterow.CreateCell(1).SetCellValue(date.ToString("dd.MM.yyyy"));
+            var daterow = sheet.GetRow(1);
+            daterow.GetCell(4).SetCellValue($"{startDate.ToString("dd.MM.yyyy")}-{endDate.ToString("dd.MM.yyyy")}");
 
-        //    foreach (var car in cars)
-        //    {
-        //        var row = sheet.CreateRow(rowIndex);
+            foreach (var task in tasks)
+            {
+                var row = sheet.CreateRow(rowIndex);
+                    
+                row = sheet.CreateRow(rowIndex);
+                
+                row.CreateCell(0).SetCellValue(num.ToString());                
+                row.GetCell(0).CellStyle = cellStyle;
 
-        //        foreach (var task in car.DriverTasks)
-        //        {
-        //            row = sheet.CreateRow(rowIndex);
-        //            row.CreateCell(0).SetCellValue(car.Plate);
-        //            row.GetCell(0).CellStyle = cellStyle;
+                row.CreateCell(1).SetCellValue(task.Plate);
+                row.GetCell(1).CellStyle = cellStyle;
 
-        //            row.CreateCell(1).SetCellValue(task.Driver.FullName);
-        //            row.GetCell(1).CellStyle = cellStyle;
+                row.CreateCell(2).SetCellValue(task.Driver);                
+                row.GetCell(2).CellStyle = cellStyle;
+                
+                row.CreateCell(3).SetCellValue(task.Service);                
+                row.GetCell(3).CellStyle = cellStyle;
 
-        //            row.CreateCell(2).SetCellValue(ShiftToString(task.Shift));
-        //            row.GetCell(2).CellStyle = cellStyle;
+                row.CreateCell(4).SetCellValue(task.Go);
+                row.GetCell(4).CellStyle = cellStyle;
 
-        //            row.CreateCell(3).SetCellValue(task.LocationA?.TextAddress);
-        //            row.GetCell(3).CellStyle = cellStyle;
+                row.CreateCell(5).SetCellValue(task.Gp);
+                row.GetCell(5).CellStyle = cellStyle;
 
-        //            row.CreateCell(4).SetCellValue(task.LocationB?.TextAddress);
-        //            row.GetCell(4).CellStyle = cellStyle;
-        //            rowIndex++;
-        //        }
-        //    }
+                row.CreateCell(6).SetCellValue(task.Client);
+                row.GetCell(6).CellStyle = cellStyle;
 
-        //    for (var i = 1; i < 5; i++)
-        //    {
-        //        sheet.SetColumnWidth(i, 255 * 50);
-        //    }
+                row.CreateCell(7).SetCellValue(task.LocationA);
+                row.GetCell(7).CellStyle = cellStyle;
+
+                row.CreateCell(8).SetCellValue(task.LocationB);
+                row.GetCell(8).CellStyle = cellStyle;
+
+                row.CreateCell(9).SetCellValue(task.Material);
+                row.GetCell(9).CellStyle = cellStyle;
+
+                row.CreateCell(10).SetCellValue(ShiftToString(task.Shift));
+                row.GetCell(10).CellStyle = cellStyle;
+
+                row.CreateCell(11).SetCellValue(StatusToString(task.Status));
+                row.GetCell(11).CellStyle = cellStyle;
+                
+                rowIndex++;
+                num++;       
+            }
+
+            for (var i = 1; i < 5; i++)
+            {
+                sheet.SetColumnWidth(i, 255 * 50);
+            }
+
+            var lst = tasks.ToList();
+
+            for (var i = 4; i < rowIndex; i++)
+            {
+                if (lst[i-4].Status == DriverTaskStatus.Done)
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(11);
+                    var cellStyle2 = workbook.CreateCellStyle();
 
 
-        //    var stream = new MemoryStream();
-        //    workbook.Write(stream, true);
-        //    return stream;
-        //}
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightGreen.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+                else if (lst[i-4].Status == DriverTaskStatus.Assigned)
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(11);
+                    var cellStyle2 = workbook.CreateCellStyle();
+
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.Red.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+                else
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(11);
+                    var cellStyle2 = workbook.CreateCellStyle();
+
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightYellow.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+            }
+
+
+            var stream = new MemoryStream();
+            workbook.Write(stream, true);
+            return stream;
+        }
 
 
         public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> cars)

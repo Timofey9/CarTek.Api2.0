@@ -48,7 +48,8 @@ namespace CarTek.Api.Services
                     Phone = driver.Phone,
                     Password = driver.Password,
                     CarId = car?.Id,
-                    Login = driver.Login
+                    Login = driver.Login,
+                    Percentage = driver.Percentage
                 };
 
                 var driverEntity = _dbContext.Drivers.Add(driverModel);
