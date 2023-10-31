@@ -174,27 +174,9 @@ namespace CarTek.Api.Controllers
         {
             try
             {
-                var orders = _orderService.GetOrderModelsBetweenDates(null, null, startDate, endDate, true);
+                var orders = _orderService.GetTNsBetweenDates(startDate, endDate);
 
-                var mappedList = new List<OrderModel>();
-
-                foreach (var item in orders)
-                {
-                    var gp = _clientService.GetClient(item.GpId);
-
-                    var mappedItem = _mapper.Map<OrderModel>(item);
-
-                    mappedItem.Gp = _mapper.Map<ClientModel>(gp);
-
-                    foreach(var task in mappedItem.DriverTasks.Where(dt => dt.Status == DriverTaskStatus.Done))
-                    {
-                        task.TN = _driverTaskService.GetTnModel(task.Id);
-                    }
-
-                    mappedList.Add(mappedItem);
-                }
-
-                var fileStream = _reportGeneratorService.GenerateTnsReport(mappedList);
+                var fileStream = _reportGeneratorService.GenerateTnsReport(orders, startDate, endDate);
 
                 var contentType = "application/octet-stream";
 
@@ -228,7 +210,7 @@ namespace CarTek.Api.Controllers
                     mappedList.Add(mappedItem);
                 }
 
-                var fileStream = _reportGeneratorService.GenerateOrdersReport(mappedList);
+                var fileStream = _reportGeneratorService.GenerateOrdersReport(mappedList, startDate, endDate);
 
                 var contentType = "application/octet-stream";
 

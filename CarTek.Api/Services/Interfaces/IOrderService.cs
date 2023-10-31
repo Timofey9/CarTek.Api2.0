@@ -29,6 +29,8 @@ namespace CarTek.Api.Services.Interfaces
 
         ApiResponse UpdateOrder(long orderId, JsonPatchDocument<Order> orderModel);
 
+        IEnumerable<TNModel> GetTNsBetweenDates(DateTime startDate, DateTime endDate);
+
         IEnumerable<Order> GetAllBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate);
        
         IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate, bool isExport = false);

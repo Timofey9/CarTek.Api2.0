@@ -626,6 +626,131 @@ namespace CarTek.Api.Services
             };
         }
 
+        private string UnitToString(Unit? unit)
+        {
+            switch (unit)
+            {
+                case Unit.t:
+                    return "тн";
+                case Unit.m3:
+                    return "m3";
+                default:
+                    return "m3";
+            }
+        }
+
+        public IEnumerable<TNModel> GetTNsBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var date1 = startDate.Date;
+            var date2 = endDate.Date;
+
+            var tnList = new List<TNModel>();
+
+            Expression<Func<TN, bool>> filterBy = x =>
+                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
+                 (x.PickUpDepartureDate.Value.AddHours(4).Date >= date1
+                && x.DropOffDepartureDate.Value.AddHours(4).Date <= date2);
+
+            Expression<Func<TN, object>> orderBy = x => x.DropOffDepartureDate;
+
+            var tresult = _dbContext.TNs
+                .Include(tn => tn.SubTask)
+                .Include(tn => tn.DriverTask)
+                    .ThenInclude(dt => dt.Car)
+                .Include(tn => tn.DriverTask)
+                    .ThenInclude(dt => dt.Driver)                                    
+                .Include(tn => tn.DriverTask)
+                    .ThenInclude(dt => dt.Order)
+                .Include(tn => tn.Material)
+                .Where(filterBy).ToList();
+
+
+            foreach(var tn in tresult)
+            {
+                var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+                string driverInfo = "";
+                string carInfo = "";
+                string client = "";
+                Order order = new Order();
+                DriverTaskStatus status = DriverTaskStatus.Assigned;
+
+                var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
+                var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+                if (tn.SubTask != null)
+                {
+                    var parent = _dbContext.DriverTasks
+                        .Include(dt => dt.Driver)
+                        .Include(dt => dt.Car)
+                        .Include(dt => dt.Order)
+                        .FirstOrDefault(t => t.Id == tn.SubTask.DriverTaskId);
+
+                    if(parent != null)
+                    {
+                        driverInfo = parent.Driver.FullName;
+                        carInfo = $"{parent.Car.Plate.ToUpper()} {parent.Car.Brand}";
+                        client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        order = parent.Order;
+                        status = parent.Status;
+                    }
+                }
+                else
+                {
+                    carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
+                    driverInfo = tn.DriverTask.Driver.FullName;
+
+                    client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+
+                    order = tn.DriverTask.Order;
+
+                    status = tn.DriverTask.Status;
+                }
+
+                //TODO: грузоотправитель
+                var model = new TNModel
+                {
+                    IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                    IsVerified = tn.IsVerified ?? false,
+                    Go = new ClientModel
+                    {
+                        ClientName = go?.ClientName,
+                        ClientAddress = go?.ClientAddress,
+                        Id = go.Id,
+                        Inn = go?.Inn
+                    },
+                    Client = client,
+                    Gp = new ClientModel
+                    {
+                        ClientName = gp?.ClientName,
+                        ClientAddress = gp?.ClientAddress,
+                        Id = gp.Id,
+                        Inn = gp?.Inn
+                    },
+                    DriverInfo = driverInfo,
+                    Number = tn.Number,
+                    Accepter = "",
+                    Unit = UnitToString(tn.Unit),
+                    UnloadUnit = UnitToString(tn.UnloadUnit),
+                    LoadVolume = tn.LoadVolume.ToString(),
+                    UnloadVolume = tn.UnloadVolume?.ToString(),
+                    Material = tn.Material?.Name,
+                    CarPlate = carInfo,
+                    LocationA = locationA?.TextAddress,
+                    LocationB = locationB?.TextAddress,
+                    PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
+                    DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                    Order = order,
+                    TaskStatus = status
+                };
+
+                tnList.Add(model);
+            }
+
+            return tnList;
+        }
+
+
         public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate, bool isExport = false)
         {
             var result = new List<Order>();

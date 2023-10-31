@@ -45,7 +45,8 @@ namespace CarTek.Api.Model
 
     public class TNModel
     {
-
+        public long Id { get; set; }
+        public bool IsVerified { get; set; }
         public bool IsOriginalReceived { get; set; }
         public string Number { get; set; }
 
@@ -76,6 +77,8 @@ namespace CarTek.Api.Model
 
         public ClientModel Go { get; set; }
 
+        public string Client { get; set; }
+
         public string GoInfo { get; set; }
 
         public string DriverInfo { get; set; }
@@ -97,6 +100,8 @@ namespace CarTek.Api.Model
         public string LocationA { get; set; }
 
         public string LocationB { get; set; }
+
+        public DriverTaskStatus TaskStatus { get; set; }
 
         public Order Order { get; set; }
     }

@@ -540,7 +540,10 @@ namespace CarTek.Api.Services
             {
                 if (isSubtask)
                 {
-                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.SubTaskId == driverTaskId);
+                    tn = _dbContext.TNs
+                        .Include(t => t.Material)
+                        .Include(t => t.SubTask)
+                        .FirstOrDefault(t => t.SubTaskId == driverTaskId);
 
                     if (tn != null)
                     {
@@ -559,6 +562,7 @@ namespace CarTek.Api.Services
                         result = new TNModel
                         {
                             IsOriginalReceived = tn.IsOrginalReceived ?? false,
+                            IsVerified = tn.IsVerified ?? false,
                             GoInfo = goInfo,
                             Go = new ClientModel
                             {
@@ -590,7 +594,7 @@ namespace CarTek.Api.Services
                             Material = tn.Material?.Name,
                             MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
                             //CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
-                            //CarPlate = tn.DriverTask.Car.Plate,
+                            CarPlate = tn.DriverTask.Car.Plate,
                             //TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
                             LocationA = locationA?.TextAddress,
                             LocationB = locationB?.TextAddress,
