@@ -12,6 +12,7 @@ using CarTek.Api.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using CarTek.Api.Model.Response;
+using Amazon.Runtime;
 
 namespace CarTek.Api.Services
 {
@@ -251,6 +252,8 @@ namespace CarTek.Api.Services
 
                 patchDoc.ApplyTo(existing);
 
+                existing.RefreshToken = null;
+
                 _dbContext.Users.Update(existing);
 
                 var modifiedEntries = _dbContext.ChangeTracker
@@ -276,15 +279,21 @@ namespace CarTek.Api.Services
             {
                 Claim[] claims;
                 User userInstance;
+                string token;
+                string refreshToken;
 
                 if (authModel.IsDriver == true)
                 {
                     var driver = GetDriver(authModel);
+
                     claims = new[]
                     {
                         new Claim(AuthConstants.ClaimTypeLogin, driver.Login),
-                        new Claim(AuthConstants.ClaimTypeIsDriver, "True")
+                        new Claim(AuthConstants.ClaimTypeIsDriver, "True"),
+                        new Claim(AuthConstants.ClaimTypeId, driver.Id.ToString())
                     };
+
+                    token = _jwtService.GenerateToken(claims, 3, 0);
 
                     userInstance = new User
                     {
@@ -294,6 +303,13 @@ namespace CarTek.Api.Services
                         LastName = driver.LastName,
                         MiddleName = driver.MiddleName,
                     };
+
+                    refreshToken = _jwtService.GenerateRefreshToken();
+
+                    driver.RefreshToken = refreshToken;
+                    driver.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+
+                    _dbContext.Drivers.Update(driver);
                 }
                 else
                 {
@@ -301,20 +317,30 @@ namespace CarTek.Api.Services
                     claims = new[]
                     {
                         new Claim(AuthConstants.ClaimTypeLogin, userInstance.Login),
-                        new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString())
+                        new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString()),                                                
+                        new Claim(AuthConstants.ClaimTypeId, userInstance.Id.ToString())
                     };
+
+                    token = _jwtService.GenerateToken(claims, 3, 0);
+                    refreshToken = _jwtService.GenerateRefreshToken();
+
+                    userInstance.RefreshToken = refreshToken;
+                    userInstance.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+                    _dbContext.Users.Update(userInstance);
                 }
 
-                var token = _jwtService.GenerateToken(claims, 3120, 0);
+                _dbContext.SaveChanges();
 
                 return new UserAuthResult
                 {
                     Token = token,
                     Identity = userInstance,
+                    RefreshToken = refreshToken,
                     IsDriver = authModel.IsDriver ?? false
                 };
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }

@@ -26,6 +26,10 @@ namespace CarTek.Api.Model
 
         public string Password { get; set; }
 
+        public string? RefreshToken { get; set; }
+
+        public DateTime RefreshTokenExpiryTime { get; set; }
+
         public ICollection<Questionary> Questionaries { get; set; }
     }
 }

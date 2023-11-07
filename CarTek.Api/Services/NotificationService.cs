@@ -62,7 +62,7 @@ namespace CarTek.Api.Services
                 IsDriver = isDriver
             };
 
-            await _dbContext.UserDevices.AddAsync(newUserDevice);
+            _dbContext.UserDevices.Add(newUserDevice);
 
             await _dbContext.SaveChangesAsync();
 
@@ -90,7 +90,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var tokens = await _dbContext.UserDevices.Where(ud => ud.IsDriver == isDriver && ud.UserId == userId).Select(t => t.Token).ToListAsync();
+                var tokens = _dbContext.UserDevices.Where(ud => ud.IsDriver == isDriver && ud.UserId == userId).Select(t => t.Token).ToList();
 
                 if(tokens != null && tokens.Count > 0) { 
                     var message = new MulticastMessage()
@@ -115,13 +115,13 @@ namespace CarTek.Api.Services
                     Description = text
                 };
 
-                await _dbContext.Notifications.AddAsync(notification);
+                _dbContext.Notifications.Add(notification);
 
                 await _dbContext.SaveChangesAsync();
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Ошибка отправки уведомления пользователю:{userId}, {ex.Message}", ex.Message);
+                _logger.LogError($"Ошибка отправки уведомления пользователю:{userId}, {ex.StackTrace}", ex.Message);
             }
         }
     }

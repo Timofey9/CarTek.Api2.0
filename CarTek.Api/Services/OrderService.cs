@@ -1,5 +1,4 @@
-﻿using Amazon.S3.Model;
-using AutoMapper;
+﻿using AutoMapper;
 using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
@@ -8,10 +7,7 @@ using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
-using System.Drawing.Printing;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
 {
@@ -81,7 +77,7 @@ namespace CarTek.Api.Services
                     updateTask = currentCarTask == null && currentDriverTask == null;
                 }
 
-                if (updateTask)
+                if (updateTask && model.DriverId != 0)
                 {
                     var driverTask = new DriverTask
                     {
@@ -96,10 +92,9 @@ namespace CarTek.Api.Services
                     };
 
                     _dbContext.DriverTasks.Add(driverTask);
+                    _dbContext.SaveChanges();
 
                     await _notificationService.SendNotification("Новая задача", $"Вам назначена новая задача на {model.TaskDate.ToShortDateString()}. Подробности смотри в ЛК", model.DriverId, true);
-
-                    await _dbContext.SaveChangesAsync();
 
                     message = "Задача создана";
 
@@ -208,7 +203,7 @@ namespace CarTek.Api.Services
                             x.StartDate.AddHours(4).Date >= date1
                             && x.StartDate.AddHours(4).Date <= date2;
 
-                Expression<Func<Order, object>> orderBy = x => x.StartDate;
+                Expression<Func<Order, object>> orderBy = x => x.Id;
 
                 var tresult = _dbContext.Orders
                         .Include(o => o.DriverTasks)
@@ -218,15 +213,8 @@ namespace CarTek.Api.Services
                         .Include(t => t.Client)
                         .Include(t => t.Material)
                         .Where(filterBy);
-
-                if (sortDirection == "asc")
-                {
-                    tresult = tresult.OrderBy(orderBy);
-                }
-                else
-                {
-                    tresult = tresult.OrderByDescending(orderBy);
-                }
+                    
+                tresult = tresult.OrderByDescending(orderBy);               
 
                 if (pageSize > 0)
                 {
@@ -765,7 +753,7 @@ namespace CarTek.Api.Services
                          x.StartDate.AddHours(4).Date >= date1
                         && x.StartDate.AddHours(4).Date <= date2;
 
-                Expression<Func<Order, object>> orderBy = x => x.StartDate;
+                Expression<Func<Order, object>> orderBy = x => x.Id;
 
                 if (isExport)
                 {
@@ -787,6 +775,8 @@ namespace CarTek.Api.Services
                             .Include(t => t.Material)
                             .Include(t => t.Client)
                             .Where(filterBy);
+
+                    tresult = tresult.OrderByDescending(orderBy);
 
                     result = tresult.ToList();
                 };

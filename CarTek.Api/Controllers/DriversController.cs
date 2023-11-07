@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CarTek.Api.Const;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace CarTek.Api.Controllers
 {
@@ -17,17 +19,20 @@ namespace CarTek.Api.Controllers
     [Route("api/[controller]")]
     public class DriversController : ControllerBase
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<DriversController> _logger;
         private readonly IDriverService _driverService;
         private readonly IDriverTaskService _driverTaskService;
         private readonly IMapper _mapper;
 
-        public DriversController(ILogger<DriversController> logger, IDriverService driverService, IMapper mapper, IDriverTaskService driverTaskService)
+        public DriversController(ILogger<DriversController> logger, IDriverService driverService, 
+            IMapper mapper, IDriverTaskService driverTaskService, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _driverService = driverService;
             _mapper = mapper;
             _driverTaskService = driverTaskService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("createdriver")]
@@ -122,6 +127,23 @@ namespace CarTek.Api.Controllers
         {
             var task = _driverTaskService.GetDriverTaskById(driverTaskId);
 
+            var user = _httpContextAccessor.HttpContext.User;
+            if (user != null)
+            {
+                var id = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeId);
+                var isAdmin = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeIsAdmin);
+                var isDriver = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeIsDriver);
+                if (isAdmin == null && id != null)
+                {
+                    double.TryParse(id.Value, out var dId);
+
+                    if (dId != task.DriverId)
+                    {
+                        return BadRequest("Нет прав!");
+                    }
+                }
+            }
+
             var res = _mapper.Map<DriverTaskExportModel>(task);
 
             if(task != null)
@@ -143,7 +165,7 @@ namespace CarTek.Api.Controllers
                 return Ok();
             }
 
-            return BadRequest(res);
+            return BadRequest(res.Message);
         }
 
         [HttpPost("updateDriverTask")]
@@ -160,7 +182,7 @@ namespace CarTek.Api.Controllers
             }
             else
             {
-                return BadRequest(result);
+                return BadRequest(result.Message);
             }
         }
 
@@ -200,7 +222,7 @@ namespace CarTek.Api.Controllers
                 return Ok(res);
             }
 
-            return BadRequest(res);
+            return BadRequest(res.Message);
         
         }
 
@@ -223,7 +245,7 @@ namespace CarTek.Api.Controllers
                 return Ok(res);
             }
 
-            return BadRequest(res);
+            return BadRequest(res.Message);
         }
                 
         
@@ -237,7 +259,7 @@ namespace CarTek.Api.Controllers
                 return Ok(res);
             }
 
-            return BadRequest(res);
+            return BadRequest(res.Message);
         }
 
         [HttpPost("updatesubtask")]
@@ -254,7 +276,7 @@ namespace CarTek.Api.Controllers
             }
             else
             {
-                return BadRequest(result);
+                return BadRequest(result.Message);
             }
         }
     }

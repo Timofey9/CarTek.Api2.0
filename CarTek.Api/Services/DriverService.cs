@@ -228,6 +228,8 @@ namespace CarTek.Api.Services
                 //    assignedDriver.CarId = null;
                 //}
 
+                existing.RefreshToken = null;
+
                 _dbContext.Drivers.Update(existing);
 
                 var modifiedEntries = _dbContext.ChangeTracker

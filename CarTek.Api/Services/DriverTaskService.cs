@@ -5,10 +5,12 @@ using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
@@ -80,15 +82,13 @@ namespace CarTek.Api.Services
                 }
 
 
-                Expression<Func<DriverTask, object>> orderBy = x => x.StartDate;
-
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
                     .Include(t => t.Order)
                     .ThenInclude(t => t.Material)
                     .Where(filterBy);
 
-                tresult = tresult.OrderByDescending(orderBy);
+                tresult = tresult.OrderByDescending(x => x.StartDate);
 
                 if (pageSize > 0)
                 {
@@ -303,7 +303,7 @@ namespace CarTek.Api.Services
 
                     _dbContext.Update(task);
 
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
 
                 //путь до файла в бакете клиент/orderId/taskId/statusId
@@ -316,7 +316,7 @@ namespace CarTek.Api.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, ex);
+                _logger.LogError($"Ошибка обновления статуса: {ex.Message}", ex);
 
                 return new ApiResponse
                 {
@@ -545,14 +545,14 @@ namespace CarTek.Api.Services
                             {
                                 ClientName = go?.ClientName,
                                 ClientAddress = go?.ClientAddress,
-                                Id = go.Id,
+                                Id = go?.Id,
                                 Inn = go?.Inn
                             },
                             Gp = new ClientModel
                             {
                                 ClientName = gp?.ClientName,
                                 ClientAddress = gp?.ClientAddress,
-                                Id = gp.Id,
+                                Id = gp?.Id,
                                 Inn = gp?.Inn
                             },
                             Date = tn.DriverTask.StartDate,
@@ -561,7 +561,7 @@ namespace CarTek.Api.Services
                             Unit2 = UnitToString(tn.Unit2),
                             UnloadUnit = UnitToString(tn.UnloadUnit),
                             UnloadUnit2 = UnitToString(tn.UnloadUnit2),
-                            LoadVolume = tn.LoadVolume.ToString(),
+                            LoadVolume = tn.LoadVolume?.ToString(),
                             LoadVolume2 = tn.LoadVolume2?.ToString(),
                             UnloadVolume = tn.UnloadVolume?.ToString(),
                             UnloadVolume2 = tn.UnloadVolume2?.ToString(),
@@ -899,10 +899,11 @@ namespace CarTek.Api.Services
 
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
+
                         _dbContext.Update(TN);
+                        _dbContext.SaveChanges();
                     }
 
-                    _dbContext.SaveChanges();
 
                     return new ApiResponse
                     {
@@ -932,9 +933,8 @@ namespace CarTek.Api.Services
                         task.TN.UnloadUnit2 = model.UnloadUnit2;
 
                         _dbContext.Update(task.TN);
+                        _dbContext.SaveChanges();
                     }
-
-                    _dbContext.SaveChanges();
 
                     return new ApiResponse
                     {
