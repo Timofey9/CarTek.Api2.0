@@ -154,11 +154,35 @@ namespace CarTek.Api.Controllers
             return Ok(res);
         }
 
+        [HttpGet("getsubtask/{subtaskId}")]
+        public IActionResult GetSubTask(long subtaskId)
+        {
+            var task = _driverTaskService.GetSubTask(subtaskId);
+
+            var user = _httpContextAccessor.HttpContext.User;
+            if (user != null)
+            {
+                var id = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeId);
+                var isAdmin = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeIsAdmin);
+                var isDriver = user.Claims.SingleOrDefault(t => t.Type == AuthConstants.ClaimTypeIsDriver);
+                if (isAdmin == null && id != null)
+                {
+                    double.TryParse(id.Value, out var dId);
+
+                    if (dId != task.DriverTask.Driver.Id)
+                    {
+                        return BadRequest("Нет прав!");
+                    }
+                }
+            }
+
+            return Ok(task);
+        }
 
         [HttpPost("taskgetback")]
         public IActionResult TaskGetBack([FromBody] DriverTaskUpdateModel model)
         {
-            var res = _driverTaskService.TaskGetBack(model.DriverTaskId);
+            var res = _driverTaskService.TaskGetBack(model.DriverTaskId, model.IsSubTask ?? false);
 
             if (res.IsSuccess)
             {

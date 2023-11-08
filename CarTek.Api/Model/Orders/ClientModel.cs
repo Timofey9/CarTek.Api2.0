@@ -8,6 +8,8 @@
 
         public string Inn { get; set; }
 
+        public Unit ClientUnit { get; set; }
+
         //public string Ogrn { get; set; }
 
         //public string Kpp { get; set; }

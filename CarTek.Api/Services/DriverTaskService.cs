@@ -5,12 +5,10 @@ using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
@@ -84,6 +82,7 @@ namespace CarTek.Api.Services
 
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
+                    .Include(t => t.SubTasks)
                     .Include(t => t.Order)
                     .ThenInclude(t => t.Material)
                     .Where(filterBy);
@@ -94,7 +93,7 @@ namespace CarTek.Api.Services
                 {
                     tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
                 }
-
+                
                 result = tresult.ToList();
             }
             catch (Exception ex)
@@ -178,25 +177,34 @@ namespace CarTek.Api.Services
 
                 for (var i = 0; i < list.Count; i++)
                 {
+                    var driverTask = list[i];
+
+                    driverTask.Order.DriverTasks = null;
+
                     Address locationA = new Address();
                     Address locationB = new Address();
 
-                    if (list[i].Order?.LocationAId != null)
+                    if (driverTask.Order?.LocationAId != null)
                     {
-                        locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == list[i].Order.LocationAId);
+                        locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == driverTask.Order.LocationAId);
                     }
 
-                    if (list[i].Order?.LocationBId != null)
+                    if (driverTask.Order?.LocationBId != null)
                     {
-                        locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == list[i].Order.LocationBId);
+                        locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == driverTask.Order.LocationBId);
                     }
 
                     mappedResult[i].LocationA = locationA;
                     mappedResult[i].LocationB = locationB;
 
-                    mappedResult[i].Material = list[i].Order?.Material?.Name;
+                    mappedResult[i].Material = driverTask.Order?.Material?.Name;
 
-                    mappedResult[i].Price = list[i].Order.Price ?? 0;
+                    mappedResult[i].Price = driverTask.Order.Price ?? 0;
+
+                    if (mappedResult[i].SubTasksCount > 0 && mappedResult[i].SubTasks != null)
+                    {
+                        mappedResult[i].SubTasks = mappedResult[i].SubTasks.OrderBy(t => t.SequenceNumber).ToList();
+                    }
                 }
             }
             catch (Exception ex)
@@ -653,7 +661,7 @@ namespace CarTek.Api.Services
                             Material = tn.Material?.Name,
                             MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
                             //CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
-                            CarPlate = tn.DriverTask.Car.Plate,
+                            //CarPlate = tn.DriverTask.Car.Plate,
                             //TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
                             LocationA = locationA?.TextAddress,
                             LocationB = locationB?.TextAddress,
@@ -1093,7 +1101,7 @@ namespace CarTek.Api.Services
                 return new ApiResponse
                 {
                     IsSuccess = true,
-                    Message = "Создана подзадача"
+                    Message = subTask.Id.ToString()
                 };
             }
             catch (Exception ex)
@@ -1252,25 +1260,51 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
-
-                if (task != null)
+                if (!isSubtask)
                 {
-                    if (task.Status != DriverTaskStatus.Assigned)
+                    var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
+
+                    if (task != null)
                     {
-                        var enInt = ((int)task.Status) - 1;
-                        task.Status = (DriverTaskStatus)enInt;
+                        if (task.Status != DriverTaskStatus.Assigned)
+                        {
+                            var enInt = ((int)task.Status) - 1;
+                            task.Status = (DriverTaskStatus)enInt;
 
-                        _dbContext.Update(task);
+                            _dbContext.Update(task);
 
-                        _dbContext.SaveChanges();
+                            _dbContext.SaveChanges();
+                        }
+
+                        return new ApiResponse
+                        {
+                            IsSuccess = true,
+                            Message = "Статус обновлен"
+                        };
                     }
+                }
+                else
+                {
+                    var task = _dbContext.SubTasks.FirstOrDefault(t => t.Id == taskId);
 
-                    return new ApiResponse
+                    if (task != null)
                     {
-                        IsSuccess = true,
-                        Message = "Статус обновлен"
-                    };
+                        if (task.Status != DriverTaskStatus.Assigned)
+                        {
+                            var enInt = ((int)task.Status) - 1;
+                            task.Status = (DriverTaskStatus)enInt;
+
+                            _dbContext.Update(task);
+
+                            _dbContext.SaveChanges();
+                        }
+
+                        return new ApiResponse
+                        {
+                            IsSuccess = true,
+                            Message = "Статус обновлен"
+                        };
+                    }
                 }
 
                 return new ApiResponse
@@ -1281,7 +1315,7 @@ namespace CarTek.Api.Services
             }
             catch(Exception ex)
             {
-                _logger.LogError("Невозможно обновить статус");
+                _logger.LogError($"Невозможно обновить статус.{ex.Message},Trace:{ex.StackTrace}");
                 return new ApiResponse
                 {
                     IsSuccess = false,
@@ -1341,6 +1375,28 @@ namespace CarTek.Api.Services
                     Message = "Ошибка подтверждения ТН"
                 };
             }
+        }
+
+        public SubTaskModel GetSubTask(long subTaskId)
+        {
+            var subTask = _dbContext.SubTasks.SingleOrDefault(t => t.Id == subTaskId);
+            var result = new SubTaskModel();
+
+            if (subTask != null)
+            {
+                var driverTask = GetDriverTaskById(subTask.DriverTaskId);
+                result = _mapper.Map<SubTaskModel>(subTask);
+
+                var dt = _mapper.Map<DriverTaskExportModel>(driverTask);
+
+                if (driverTask != null)
+                {
+                    DriverTaskExportModelSetLocations(dt);
+                    result.DriverTask = dt;
+                }
+            }
+
+            return result;
         }
     }
 }

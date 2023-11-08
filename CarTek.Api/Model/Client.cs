@@ -10,6 +10,8 @@
 
         public string ClientAddress { get; set; }
 
+        public Unit ClientUnit { get; set; }
+
         public ICollection<Order> Orders { get; set; }
     }
 
@@ -17,6 +19,7 @@
     {
         public long? Id { get; set; }
         public string ClientName { get; set; }
+        public Unit ClientUnit { get; set; }
 
         public string Inn { get; set; }
 

@@ -43,6 +43,8 @@ namespace CarTek.Api.Services.Interfaces
 
         public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId);
 
+        public SubTaskModel GetSubTask(long subTaskId);
+
         Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment);
 
         IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate);

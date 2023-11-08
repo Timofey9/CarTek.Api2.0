@@ -1,4 +1,5 @@
 ﻿using CarTek.Api.Model.Orders;
+using CarTek.Api.Services;
 
 namespace CarTek.Api.Model.Dto
 {
@@ -7,6 +8,8 @@ namespace CarTek.Api.Model.Dto
         public long Id { get; set; }
 
         public long DriverTaskId { get; set; }
+
+        public DriverTaskExportModel DriverTask { get; set; }
 
         public long OrderId { get; set; }
 

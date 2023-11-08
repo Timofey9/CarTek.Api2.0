@@ -3,6 +3,8 @@
     public class DriverTaskUpdateModel
     {
         public long DriverTaskId { get; set; }
+
+        public bool? IsSubTask { get; set; }
     }
 
     public class CreateDriverModel
