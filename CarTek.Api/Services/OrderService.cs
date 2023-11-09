@@ -7,6 +7,8 @@ using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using NPOI.POIFS.Properties;
+using System.Globalization;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
@@ -627,17 +629,20 @@ namespace CarTek.Api.Services
             }
         }
 
-        public IEnumerable<TNModel> GetTNsBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<TNModel> GetTNsBetweenDates(DateTime startDate, DateTime endDate, bool completedOnly = false)
         {
             var date1 = startDate.Date;
             var date2 = endDate.Date;
 
             var tnList = new List<TNModel>();
+            Expression<Func<TN, bool>> filterBy;
 
-            Expression<Func<TN, bool>> filterBy = x =>
-                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
-                 (x.PickUpDepartureDate.Value.AddHours(4).Date >= date1
-                && x.DropOffDepartureDate.Value.AddHours(4).Date <= date2);
+
+                filterBy = x =>
+                    x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
+                     (x.PickUpDepartureDate.Value.AddHours(4).Date >= date1
+                    && x.DropOffDepartureDate.Value.AddHours(4).Date <= date2);
+
 
             Expression<Func<TN, object>> orderBy = x => x.DropOffDepartureDate;
 
@@ -646,20 +651,27 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Car)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Driver)                                    
+                    .ThenInclude(dt => dt.Driver)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Order)
                 .Include(tn => tn.Material)
-                .Where(filterBy).ToList();
+                .Where(filterBy)
+                .OrderByDescending(orderBy)
+                .ToList();
 
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
 
-            foreach(var tn in tresult)
+            foreach (var tn in tresult)
             {
                 var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
                 var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
                 string driverInfo = "";
                 string carInfo = "";
                 string client = "";
+                Client clientObject = null;
+                double driverPercent = 0;
+                bool add = false;
                 Order order = new Order();
                 DriverTaskStatus status = DriverTaskStatus.Assigned;
 
@@ -668,6 +680,8 @@ namespace CarTek.Api.Services
 
                 if (tn.SubTask != null)
                 {
+                    add = tn.SubTask.Status == DriverTaskStatus.Done || !completedOnly;
+
                     var parent = _dbContext.DriverTasks
                         .Include(dt => dt.Driver)
                         .Include(dt => dt.Car)
@@ -677,22 +691,50 @@ namespace CarTek.Api.Services
                     if(parent != null)
                     {
                         driverInfo = parent.Driver.FullName;
+                        driverPercent = parent.Driver.Percentage;
                         carInfo = $"{parent.Car.Plate.ToUpper()} {parent.Car.Brand}";
                         client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
                         order = parent.Order;
                         status = parent.Status;
                     }
                 }
                 else
                 {
+                    add = tn.DriverTask.Status == DriverTaskStatus.Done || !completedOnly;
+
                     carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
                     driverInfo = tn.DriverTask.Driver.FullName;
+                    driverPercent = tn.DriverTask.Driver.Percentage;
 
                     client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                    clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
 
                     order = tn.DriverTask.Order;
 
                     status = tn.DriverTask.Status;
+                }
+
+                double volume1 = 0;
+
+                if(clientObject?.ClientUnit == tn.Unit)
+                {
+                    volume1 = tn.LoadVolume ?? 0;
+                }else               
+                if (clientObject?.ClientUnit == tn.Unit2)
+                {
+                    volume1 = tn.LoadVolume2 ?? 0;
+                }
+
+                double volume2 = 0;
+                if (clientObject?.ClientUnit == tn.UnloadUnit)
+                {
+                    volume2 = tn.UnloadVolume ?? 0;
+                }
+                else
+                if (clientObject?.ClientUnit == tn.UnloadUnit2)
+                {
+                    volume2 = tn.UnloadVolume2 ?? 0;
                 }
 
                 //TODO: грузоотправитель
@@ -718,10 +760,13 @@ namespace CarTek.Api.Services
                     DriverInfo = driverInfo,
                     Number = tn.Number,
                     Accepter = "",
-                    Unit = UnitToString(tn.Unit),
-                    UnloadUnit = UnitToString(tn.UnloadUnit),
-                    LoadVolume = tn.LoadVolume.ToString(),
-                    UnloadVolume = tn.UnloadVolume?.ToString(),
+                    Unit = UnitToString(clientObject?.ClientUnit),
+
+                    UnloadUnit = UnitToString(clientObject?.ClientUnit),
+
+                    LoadVolume = volume1.ToString(nfi),
+                    UnloadVolume = volume2.ToString(nfi),
+
                     Material = tn.Material?.Name,
                     CarPlate = carInfo,
                     LocationA = locationA?.TextAddress,
@@ -729,10 +774,12 @@ namespace CarTek.Api.Services
                     PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                     DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
                     Order = order,
-                    TaskStatus = status
+                    TaskStatus = status,
+                    DriverPercent = driverPercent
                 };
 
-                tnList.Add(model);
+                if(add)
+                    tnList.Add(model);
             }
 
             return tnList;

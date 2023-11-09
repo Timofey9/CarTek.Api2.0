@@ -1212,13 +1212,13 @@ namespace CarTek.Api.Services
                     
                     taskNote.S3Links = stringLinks;
                     
-                    if(status == 8)
+                    if(status >= 8)
                     {
                         task.Status = DriverTaskStatus.Done;
                     }
                     else
                     {
-                        task.Status = (DriverTaskStatus)task.Status + 1;
+                        task.Status = (DriverTaskStatus)status;
                     }
 
                     _dbContext.DriverTaskNotes.Add(taskNote);

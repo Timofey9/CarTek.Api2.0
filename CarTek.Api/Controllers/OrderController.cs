@@ -211,6 +211,27 @@ namespace CarTek.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }        
+        
+        [HttpGet("getaccountantreport")]
+        public IActionResult DownloadAccountantReportList(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var orders = _orderService.GetTNsBetweenDates(startDate, endDate, true);
+
+                var fileStream = _reportGeneratorService.GenerateSalariesReport(orders, startDate, endDate);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("getxls")]

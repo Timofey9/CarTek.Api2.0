@@ -32,6 +32,6 @@ namespace CarTek.Api.Model
 
         public DateTime RefreshTokenExpiryTime { get; set; }
 
-        public string FullName => $"{FirstName} {MiddleName} {LastName}";
+        public string FullName => $"{LastName} {FirstName} {MiddleName}";
     }
 }

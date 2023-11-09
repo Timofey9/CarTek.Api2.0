@@ -5,7 +5,7 @@ using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-
+using System.Globalization;
 
 namespace CarTek.Api.Services
 {
@@ -733,6 +733,149 @@ namespace CarTek.Api.Services
 
             var stream = new MemoryStream();
             workbook.Write(stream, true);
+            return stream;
+        }
+
+        public MemoryStream GenerateSalariesReport(IEnumerable<TNModel> tns, DateTime startDate, DateTime endDate)
+        {
+            IWorkbook workbook;
+
+            using (FileStream fileStream = new FileStream("/data/Templates/reportAccountant.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
+
+            // Получение листа
+            ISheet sheet = workbook.GetSheetAt(0);
+
+            var dateRow = sheet.GetRow(1);
+            dateRow.GetCell(2).SetCellValue($"{startDate.ToString("dd.MM.yyyy")}-{endDate.ToString("dd.MM.yyyy")}");
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
+            int rowIndex = 4;
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
+
+            foreach (var tn in tns)
+            {
+                var row = sheet.CreateRow(rowIndex);
+
+                row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
+                row.GetCell(0).CellStyle = cellStyle;
+                row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
+                row.GetCell(1).CellStyle = cellStyle;
+
+                row.CreateCell(2).SetCellValue(tn.Client);
+                row.GetCell(2).CellStyle = cellStyle;
+
+                //TODO:
+                row.CreateCell(3).SetCellValue("КарТэк");
+                row.GetCell(3).CellStyle = cellStyle;
+
+                //TODO:
+                row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                row.GetCell(4).CellStyle = cellStyle;
+
+                row.CreateCell(5).SetCellValue(tn.Number);
+                row.GetCell(5).CellStyle = cellStyle;
+
+                row.CreateCell(6).SetCellValue(tn.LocationA);
+                row.GetCell(6).CellStyle = cellStyle;
+
+                row.CreateCell(7).SetCellValue(tn.LocationB);
+                row.GetCell(7).CellStyle = cellStyle;
+
+                row.CreateCell(8).SetCellValue(tn.CarPlate);
+                row.GetCell(8).CellStyle = cellStyle;
+
+                row.CreateCell(9).SetCellValue(tn.DriverInfo);
+                row.GetCell(9).CellStyle = cellStyle;
+
+                row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
+                row.GetCell(10).CellStyle = cellStyle;
+
+                row.CreateCell(11).SetCellValue(tn.Material);
+                row.GetCell(11).CellStyle = cellStyle;
+
+                row.CreateCell(12).SetCellValue(tn.UnloadVolume);
+                row.GetCell(12).CellStyle = cellStyle;
+
+                row.CreateCell(13).SetCellValue(tn.UnloadUnit);
+                row.GetCell(13).CellStyle = cellStyle;
+
+                row.CreateCell(14).SetCellValue(tn.Order.Price.ToString());
+
+                row.CreateCell(15).SetCellType(CellType.Formula);
+                row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
+                row.GetCell(15).CellStyle.WrapText = true;
+
+                row.CreateCell(16).SetCellValue(tn.DriverPercent.ToString(nfi));
+
+                row.CreateCell(17).SetCellType(CellType.Formula);
+                row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");
+
+                row.CreateCell(18).SetCellValue(tn.IsVerified ? "Да" : "Нет");
+                row.CreateCell(19).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+
+                rowIndex++;
+            }
+
+            var stream = new MemoryStream();
+
+            for (var i = 0; i < 21; i++)
+            {
+                sheet.SetColumnWidth(i, 255 * 40);
+            }
+
+            var lst = tns.ToList();
+
+            for (var i = 4; i < rowIndex; i++)
+            {
+                if (lst[i - 4].TaskStatus == DriverTaskStatus.Done)
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(10);
+                    var cellStyle2 = workbook.CreateCellStyle();
+
+
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightGreen.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+                else
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(10);
+                    var cellStyle2 = workbook.CreateCellStyle();
+
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightYellow.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+            }
+
+            XSSFFormulaEvaluator.EvaluateAllFormulaCells(workbook);
+
+            workbook.Write(stream, true);
+
             return stream;
         }
     }

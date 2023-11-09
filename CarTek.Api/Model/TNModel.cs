@@ -103,6 +103,8 @@ namespace CarTek.Api.Model
 
         public DriverTaskStatus TaskStatus { get; set; }
 
+        public double DriverPercent { get; set; }
+
         public Order Order { get; set; }
     }
 }
