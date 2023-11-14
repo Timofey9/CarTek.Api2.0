@@ -293,7 +293,7 @@ namespace CarTek.Api.Services
                         new Claim(AuthConstants.ClaimTypeId, driver.Id.ToString())
                     };
 
-                    token = _jwtService.GenerateToken(claims, 3, 0);
+                    token = _jwtService.GenerateToken(claims, 0, 1);
 
                     userInstance = new User
                     {
@@ -321,7 +321,7 @@ namespace CarTek.Api.Services
                         new Claim(AuthConstants.ClaimTypeId, userInstance.Id.ToString())
                     };
 
-                    token = _jwtService.GenerateToken(claims, 3, 0);
+                    token = _jwtService.GenerateToken(claims, 0, 1);
                     refreshToken = _jwtService.GenerateRefreshToken();
 
                     userInstance.RefreshToken = refreshToken;

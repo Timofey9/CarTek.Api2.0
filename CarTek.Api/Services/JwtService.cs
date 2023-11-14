@@ -67,7 +67,7 @@ namespace CarTek.Api.Services
                             return null;
 
 
-                        var newAccessTokenD = GenerateToken(principal.Claims.ToArray(), 3, 0);
+                        var newAccessTokenD = GenerateToken(principal.Claims.ToArray(), 0, 1);
 
                         var newRefreshTokenD = GenerateRefreshToken();
                         driver.RefreshToken = newRefreshTokenD;
@@ -97,7 +97,7 @@ namespace CarTek.Api.Services
                         return null;
 
 
-                    var newAccessToken = GenerateToken(principal.Claims.ToArray(), 3, 0);
+                    var newAccessToken = GenerateToken(principal.Claims.ToArray(), 0, 1);
                     var newRefreshToken = GenerateRefreshToken();
                     user.RefreshToken = newRefreshToken;
 

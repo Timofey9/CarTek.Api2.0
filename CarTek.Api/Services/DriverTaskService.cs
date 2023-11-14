@@ -93,7 +93,7 @@ namespace CarTek.Api.Services
                 {
                     tresult = tresult.Skip((pageNumber - 1) * pageSize).Take(pageSize);
                 }
-                
+
                 result = tresult.ToList();
             }
             catch (Exception ex)
@@ -132,11 +132,11 @@ namespace CarTek.Api.Services
 
                 result = ordered.ToList();
 
-                foreach(var task in result)
+                foreach (var task in result)
                 {
                     var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == task.Order.GpId);
 
-                    var client = task.Order.Service == ServiceType.Supply ? gp?.ClientName: task.Order.ClientName;
+                    var client = task.Order.Service == ServiceType.Supply ? gp?.ClientName : task.Order.ClientName;
 
                     var mappedTask = new DriverTaskReportModel
                     {
@@ -276,11 +276,11 @@ namespace CarTek.Api.Services
                         DateCreated = DateTime.UtcNow,
                     };
 
-                    if(status > 9)
+                    if (status > 9)
                     {
                         task.Status = DriverTaskStatus.Done;
                     }
-                    else if(status == 8)
+                    else if (status == 8)
                     {
                         task.Status = DriverTaskStatus.Done;
                     }
@@ -361,7 +361,7 @@ namespace CarTek.Api.Services
                     {
                         task.OrderId = orderId.Value;
                         var subtasks = _dbContext.SubTasks.Where(t => t.DriverTaskId == taskId);
-                        foreach(var subtask in subtasks)
+                        foreach (var subtask in subtasks)
                         {
                             subtask.OrderId = orderId.Value;
                         }
@@ -588,8 +588,8 @@ namespace CarTek.Api.Services
                         };
                     }
                 }
-                    return result;
-                
+                return result;
+
             }
             catch (Exception ex)
             {
@@ -610,6 +610,7 @@ namespace CarTek.Api.Services
                     tn = _dbContext.TNs
                         .Include(t => t.Material)
                         .Include(t => t.SubTask)
+                        .ThenInclude(t => t.Notes)
                         .FirstOrDefault(t => t.SubTaskId == driverTaskId);
 
                     if (tn != null)
@@ -624,6 +625,17 @@ namespace CarTek.Api.Services
 
                         var gpInfo = $"{gp?.ClientName}, ИНН {gp?.Inn}";
                         var goInfo = $"{go?.ClientName}, ИНН {go?.Inn}";
+
+                        var linksList = new List<string>();
+
+                        if (tn.SubTask != null && tn.SubTask.Notes != null)
+                        {
+                            foreach (var note in tn.SubTask.Notes)
+                            {
+                                var links = JsonConvert.DeserializeObject<List<string>>(note.S3Links);
+                                linksList.AddRange(links);
+                            }
+                        }
 
                         //TODO: грузоотправитель
                         result = new TNModel
@@ -669,6 +681,7 @@ namespace CarTek.Api.Services
                             PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
                             DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                            S3Links = linksList
                         };
                     }
                 }
@@ -684,7 +697,19 @@ namespace CarTek.Api.Services
                         .Include(t => t.Car)
                         .ThenInclude(c => c.Trailer)
                         .Include(dt => dt.Driver)
+                        .Include(dt => dt.Notes)
                         .FirstOrDefault(t => t.Id == driverTaskId);
+
+                    var linksList = new List<string>();
+
+                    if (task != null)
+                    {
+                        foreach (var note in task.Notes)
+                        {
+                            var links = JsonConvert.DeserializeObject<List<string>>(note.S3Links);
+                            linksList.AddRange(links);
+                        }
+                    }
 
                     if (tn != null)
                     {
@@ -742,6 +767,7 @@ namespace CarTek.Api.Services
                             PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
                             DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                            S3Links = linksList
                         };
                     }
 
@@ -803,7 +829,7 @@ namespace CarTek.Api.Services
                     {
                         var sbTN = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
 
-                        if(sbTN != null)
+                        if (sbTN != null)
                         {
                             _dbContext.Update(sbTN).CurrentValues.SetValues(new
                             {
@@ -840,7 +866,8 @@ namespace CarTek.Api.Services
                         else
                         {
                             var updTn = task.TN;
-                            _dbContext.Update(updTn).CurrentValues.SetValues(new {
+                            _dbContext.Update(updTn).CurrentValues.SetValues(new
+                            {
                                 Number = model.Number,
                                 GoId = model.GoId,
                                 GpId = model.GpId,
@@ -968,13 +995,13 @@ namespace CarTek.Api.Services
             }
         }
 
-        public ApiResponse UpdateTN(FillDocumentModel model)
+        public async Task<ApiResponse> UpdateTN(FillDocumentModel model)
         {
             try
             {
                 if (model.IsSubtask)
                 {
-                    var TN = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
+                    var TN = _dbContext.TNs.Include(tn => tn.SubTask).FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
 
                     if (TN != null)
                     {
@@ -1001,6 +1028,40 @@ namespace CarTek.Api.Services
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
                         _dbContext.TNs.Update(TN);
+                    }
+
+                    if (model.Files != null && model.Files.Count > 0)
+                    {
+                        var subTask = TN.SubTask;
+                        if (subTask != null)
+                        {
+                            var taskNote = new DriverTaskNote
+                            {
+                                DriverTaskId = null,
+                                SubTaskId = model.SubTaskId,
+                                Status = DriverTaskStatus.DocumentSigning2,
+                                Text = " ",
+                                DateCreated = DateTime.UtcNow,
+                            };
+
+                            var links = new List<string>();
+
+
+                            foreach (var file in model.Files)
+                            {
+                                var path = subTask.OrderId + "/" + subTask.Id + "/" + subTask.Status.ToString();
+
+                                links.Add("cartek/" + path + "/" + file.FileName);
+
+                                await _AWSS3Service.UploadFileToS3(file, path, file.FileName, "cartek");
+                            }
+
+                            var stringLinks = JsonConvert.SerializeObject(links);
+
+                            taskNote.S3Links = stringLinks;
+
+                            _dbContext.DriverTaskNotes.Add(taskNote);
+                        }
                     }
 
                     _dbContext.SaveChanges();
@@ -1043,6 +1104,35 @@ namespace CarTek.Api.Services
                         task.TN.UnloadUnit2 = model.UnloadUnit2;
 
                         _dbContext.TNs.Update(task.TN);
+                    }
+
+                    if (model.Files != null && model.Files.Count > 0)
+                    {
+                        var taskNote = new DriverTaskNote
+                        {
+                            DriverTaskId = task.Id,
+                            Status = DriverTaskStatus.DocumentSigning2,
+                            Text = "Фото",
+                            DateCreated = DateTime.UtcNow,
+                        };
+
+                        var links = new List<string>();
+
+
+                        foreach (var file in model.Files)
+                        {
+                            var path = task.OrderId + "/" + task.Id + "/" + task.Status.ToString();
+
+                            links.Add("cartek/" + path + "/" + file.FileName);
+
+                            await _AWSS3Service.UploadFileToS3(file, path, file.FileName, "cartek");
+                        }
+
+                        var stringLinks = JsonConvert.SerializeObject(links);
+
+                        taskNote.S3Links = stringLinks;
+
+                        _dbContext.DriverTaskNotes.Add(taskNote);
                     }
 
                     _dbContext.SaveChanges();
@@ -1117,7 +1207,8 @@ namespace CarTek.Api.Services
 
         public async Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment)
         {
-            try {
+            try
+            {
                 var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == taskId);
 
                 if (task != null)
@@ -1166,7 +1257,7 @@ namespace CarTek.Api.Services
                     Message = "Комментарий не добавлен"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
 
@@ -1209,10 +1300,10 @@ namespace CarTek.Api.Services
                     }
 
                     var stringLinks = JsonConvert.SerializeObject(links);
-                    
+
                     taskNote.S3Links = stringLinks;
-                    
-                    if(status >= 8)
+
+                    if (status >= 8)
                     {
                         task.Status = DriverTaskStatus.Done;
                     }
@@ -1313,7 +1404,7 @@ namespace CarTek.Api.Services
                     Message = "Статус не обновлен"
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Невозможно обновить статус.{ex.Message},Trace:{ex.StackTrace}");
                 return new ApiResponse
@@ -1360,13 +1451,13 @@ namespace CarTek.Api.Services
                         _dbContext.Update(tn);
                         _dbContext.SaveChanges();
 
-                        response.IsSuccess = true; 
+                        response.IsSuccess = true;
                     }
                 }
 
                 return response;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ошибка подтверждения ТН. {ex.Message}", ex.Message);
                 return new ApiResponse

@@ -48,6 +48,7 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("refresh")]
         public async Task<IActionResult>Refresh([FromBody]TokenApiModel tokenApiModel)
         {

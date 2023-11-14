@@ -43,7 +43,7 @@ namespace CarTek.Api.Model
         public Address LocationB { get; set; }
     }
 
-    public class TNModel
+    public class TNModel 
     {
         public long Id { get; set; }
         public bool IsVerified { get; set; }
@@ -104,6 +104,8 @@ namespace CarTek.Api.Model
         public DriverTaskStatus TaskStatus { get; set; }
 
         public double DriverPercent { get; set; }
+
+        public List<string> S3Links { get; set; }
 
         public Order Order { get; set; }
     }

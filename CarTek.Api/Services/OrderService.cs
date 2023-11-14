@@ -640,8 +640,8 @@ namespace CarTek.Api.Services
 
                 filterBy = x =>
                     x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
-                     (x.PickUpDepartureDate.Value.AddHours(4).Date >= date1
-                    && x.DropOffDepartureDate.Value.AddHours(4).Date <= date2);
+                     (x.PickUpDepartureDate.Value.Date >= date1
+                    && x.DropOffDepartureDate.Value.Date <= date2);
 
 
             Expression<Func<TN, object>> orderBy = x => x.DropOffDepartureDate;
@@ -771,8 +771,8 @@ namespace CarTek.Api.Services
                     CarPlate = carInfo,
                     LocationA = locationA?.TextAddress,
                     LocationB = locationB?.TextAddress,
-                    PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
-                    DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
+                    PickUpDepartureTime = $"{tn.PickUpDepartureDate?.AddHours(4).ToString("dd.MM.yyyy")}",
+                    DropOffDepartureTime = $"{tn.DropOffDepartureDate?.AddHours(4).ToString("dd.MM.yyyy")}",
                     Order = order,
                     TaskStatus = status,
                     DriverPercent = driverPercent

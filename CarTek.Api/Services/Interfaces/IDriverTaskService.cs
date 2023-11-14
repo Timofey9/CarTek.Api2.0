@@ -31,7 +31,7 @@ namespace CarTek.Api.Services.Interfaces
 
         public ApiResponse FinalizeDocument(FillDocumentModel model);
 
-        public ApiResponse UpdateTN(FillDocumentModel model);
+        public Task<ApiResponse> UpdateTN(FillDocumentModel model);
 
         public ApiResponse CreateSubTask(long driverTaskId);
 

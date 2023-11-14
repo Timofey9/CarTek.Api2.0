@@ -274,9 +274,9 @@ namespace CarTek.Api.Controllers
                 
         
         [HttpPost("updatetn")]
-        public IActionResult UpdateTn([FromForm] FillDocumentModel model)
+        public async Task<IActionResult> UpdateTn([FromForm] FillDocumentModel model)
         {
-            var res = _driverTaskService.UpdateTN(model);
+            var res = await _driverTaskService.UpdateTN(model);
 
             if (res.IsSuccess)
             {
