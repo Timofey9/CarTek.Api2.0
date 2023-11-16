@@ -6,7 +6,7 @@ namespace CarTek.Api.Model.Dto
     {
         public long Id { get; set; }
 
-        public double Price { get; set; }
+        public string Price { get; set; }
 
         public Guid UniqueId { get; set; }
 
@@ -20,6 +20,7 @@ namespace CarTek.Api.Model.Dto
         public Address LocationB { get; set; }
 
         public string Material { get; set; }
+
         public DateTime StartDate { get; set; }
 
         public int Volume { get; set; }

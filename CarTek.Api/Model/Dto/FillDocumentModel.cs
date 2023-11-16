@@ -12,6 +12,8 @@ namespace CarTek.Api.Model.Dto
 
         public ICollection<IFormFile>? Files { get; set; }
 
+        public string? Transporter { get; set; }
+
         public string? Note { get; set; }
 
         public string? Number { get; set; }

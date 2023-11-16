@@ -12,23 +12,30 @@ namespace CarTek.Api.Model
         public DateTime Date { get; set; }
 
         public string LoadVolume { get; set; }
+
         public string LoadVolume2 { get; set; }
 
         public string UnloadVolume { get; set; }
+
         public string UnloadVolume2 { get; set; }
 
         public string Unit { get; set; }
+
         public string Unit2 { get; set; }
 
         public string UnloadUnit { get; set; }
+
         public string UnloadUnit2 { get; set; }
 
         public string PickUpArrivalTime { get; set; }
+
         public string PickUpDepartureTime { get; set; }
 
         public string DropOffArrivalTime { get; set; }
+
         public string DropOffDepartureTime { get; set; }
 
+        public string Transporter { get; set; }
 
         public ClientModel Gp { get; set; }
 
@@ -53,6 +60,7 @@ namespace CarTek.Api.Model
         public DateTime Date { get; set; }
 
         public string LoadVolume { get; set; }
+
         public string LoadVolume2 { get; set; }
 
         public string UnloadVolume { get; set; }
@@ -83,9 +91,7 @@ namespace CarTek.Api.Model
 
         public string DriverInfo { get; set; }
 
-        public string Accepter { get; set; }
-
-        public long? TransporterId { get; set; } //Id из таблицы Clients, если null => КарТэк
+        public string Transporter { get; set; }
 
         public string Material { get; set; }
 
@@ -106,6 +112,8 @@ namespace CarTek.Api.Model
         public double DriverPercent { get; set; }
 
         public List<string> S3Links { get; set; }
+
+        public double? FixedPrice { get; set; }
 
         public Order Order { get; set; }
     }

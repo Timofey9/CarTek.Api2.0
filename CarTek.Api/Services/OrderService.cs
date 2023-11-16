@@ -669,6 +669,7 @@ namespace CarTek.Api.Services
                 string driverInfo = "";
                 string carInfo = "";
                 string client = "";
+                double? fixedPrice = null;
                 Client clientObject = null;
                 double driverPercent = 0;
                 bool add = false;
@@ -694,6 +695,9 @@ namespace CarTek.Api.Services
                         driverPercent = parent.Driver.Percentage;
                         carInfo = $"{parent.Car.Plate.ToUpper()} {parent.Car.Brand}";
                         client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+
+                        fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+
                         clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
                         order = parent.Order;
                         status = parent.Status;
@@ -708,6 +712,8 @@ namespace CarTek.Api.Services
                     driverPercent = tn.DriverTask.Driver.Percentage;
 
                     client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                    fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+
                     clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
 
                     order = tn.DriverTask.Order;
@@ -759,7 +765,6 @@ namespace CarTek.Api.Services
                     },
                     DriverInfo = driverInfo,
                     Number = tn.Number,
-                    Accepter = "",
                     Unit = UnitToString(clientObject?.ClientUnit),
 
                     UnloadUnit = UnitToString(clientObject?.ClientUnit),
@@ -775,7 +780,8 @@ namespace CarTek.Api.Services
                     DropOffDepartureTime = $"{tn.DropOffDepartureDate?.AddHours(4).ToString("dd.MM.yyyy")}",
                     Order = order,
                     TaskStatus = status,
-                    DriverPercent = driverPercent
+                    DriverPercent = driverPercent,
+                    FixedPrice = fixedPrice
                 };
 
                 if(add)

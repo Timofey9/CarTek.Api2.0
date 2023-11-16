@@ -56,7 +56,7 @@ namespace CarTek.Api.Controllers
         [HttpPost("createclient")]
         public IActionResult CreateClient([FromBody] CreateClientModel model)
         {
-            var result = _clientService.CreateClient(model.ClientName, model.Inn, model.ClientAddress, model.ClientUnit);
+            var result = _clientService.CreateClient(model.ClientName, model.Inn, model.ClientAddress, model.ClientUnit, model.FixedPrice);
 
             return Ok(result);
         }
@@ -64,7 +64,7 @@ namespace CarTek.Api.Controllers
         [HttpPost("updateclient")]
         public IActionResult UpdateClient([FromBody] CreateClientModel model)
         {
-            var result = _clientService.UpdateClient(model.Id, model.ClientName, model.Inn, model.ClientAddress, model.ClientUnit);
+            var result = _clientService.UpdateClient(model.Id, model.ClientName, model.Inn, model.ClientAddress, model.ClientUnit, model.FixedPrice);
 
             return Ok(result);
         }

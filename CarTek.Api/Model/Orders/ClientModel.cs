@@ -10,6 +10,8 @@
 
         public Unit ClientUnit { get; set; }
 
+        public double? FixedPrice { get; set; }
+
         //public string Ogrn { get; set; }
 
         //public string Kpp { get; set; }

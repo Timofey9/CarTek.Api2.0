@@ -15,5 +15,8 @@ namespace CarTek.Api.Services
         public string Material { get; set; }
         public ShiftType Shift { get; set; }
         public DriverTaskStatus Status { get; set; }
+
+        public string OrderComment { get; set; }
+        public string TaskComment { get; set; }
     }
 }
