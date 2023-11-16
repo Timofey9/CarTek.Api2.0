@@ -446,11 +446,30 @@ namespace CarTek.Api.Services
 
                 if (task != null)
                 {
-                    _dbContext.DriverTasks.Remove(task);
+                    var subTasks = _dbContext.SubTasks
+                        .Include(st => st.TN)
+                        .Include(st => st.Notes)
+                        .Where(st => st.DriverTaskId == taskId);
 
-                    _dbContext.SubTasks.RemoveRange(_dbContext.SubTasks.Include(st => st.TN).Include(st => st.Notes).Where(st => st.DriverTaskId == taskId));
+                    if(subTasks != null && subTasks.Count() > 0)
+                    {
+                        foreach(var subTask in subTasks)
+                        {
+                            if(subTask.TN != null)
+                                _dbContext.TNs.Remove(subTask.TN);
+                            if(subTask.Notes != null)
+                                _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);
+
+                            _dbContext.Remove(subTask);
+                        }
+                    }
+
                     _dbContext.DriverTaskNotes.RemoveRange(_dbContext.DriverTaskNotes.Where(dn => dn.DriverTaskId == taskId));
 
+                    _dbContext.TNs.RemoveRange(_dbContext.TNs.Where(tn => tn.DriverTaskId == taskId));
+
+                    _dbContext.DriverTasks.Remove(task);
+                 
                     _dbContext.SaveChanges();
                     _notificationService.SendNotification($"Задача удалена", $"Ваша задача на {task.StartDate} была отменена", task.DriverId, true);
 
