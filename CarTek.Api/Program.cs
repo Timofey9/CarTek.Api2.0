@@ -29,14 +29,14 @@ builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
-builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
-builder.Services.AddTransient<IDriverTaskService, DriverTaskService>();
+builder.Services.AddScoped<IDriverTaskService, DriverTaskService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
-builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAWSS3ClientFactory, AWSS3ClientFactory>();
 builder.Services.AddScoped<IAWSS3Service, AWSS3Service>();
 

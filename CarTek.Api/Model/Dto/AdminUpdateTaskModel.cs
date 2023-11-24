@@ -18,4 +18,11 @@ namespace CarTek.Api.Model
 
         public ShiftType? Shift { get; set; }
     }
+
+    public class DeleteImageRequest
+    {
+        public long NoteId { get; set; }
+
+        public string UrlToDelete { get; set; }
+    }
 }

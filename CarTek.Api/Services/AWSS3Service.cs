@@ -36,5 +36,13 @@ namespace CarTek.Api.Services
                 }
             }
         }
+
+        public async Task DeleteFromS3(string key)
+        {
+            using (var s3Client = _awsS3ClientFactory.GetClient())
+            {
+                var res = await s3Client.DeleteObjectAsync("cartek", key);
+            }
+        }
     }
 }

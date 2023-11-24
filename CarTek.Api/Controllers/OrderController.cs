@@ -234,6 +234,27 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [HttpGet("getdriverreport")]
+        public IActionResult DownloadDriverReportList(DateTime startDate, DateTime endDate, long driverId)
+        {
+            try
+            {
+                var tns = _orderService.GetTNsBetweenDatesDriver(startDate, endDate,driverId, true);
+
+                var fileStream = _reportGeneratorService.GenerateSalaryReportDriver(tns, startDate, endDate);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("getxls")]
         public IActionResult TestFileDownload(DateTime startDate, DateTime endDate)
         {
@@ -241,9 +262,11 @@ namespace CarTek.Api.Controllers
             {
                 var orders = _orderService.GetOrderModelsBetweenDates(null, null, startDate, endDate);
 
+                var sorted = orders.OrderBy(t => t.StartDate);
+
                 var mappedList = new List<OrderModel>();
 
-                foreach (var item in orders)
+                foreach (var item in sorted)
                 {
                     var gp = _clientService.GetClient(item.GpId);
 
@@ -344,6 +367,34 @@ namespace CarTek.Api.Controllers
             
             return Ok(result);
         }
+
+
+        [HttpPost("deleteS3Image")]
+        public async Task<IActionResult> DeleteS3Image([FromBody] DeleteImageRequest model)
+        {
+            var result = await _driverTaskService.DeleteImage(model);
+
+            if(result.IsSuccess) {
+                return Ok(result);
+            }
+
+            return BadRequest();
+        }
+
+
+        [HttpDelete("deleteSubTask/{subtaskId}")]
+        public IActionResult DeleteSubtask(long subtaskId)
+        {
+            var result = _driverTaskService.DeleteSubTask(subtaskId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest();
+        }
+
 
         [HttpGet("getorderbyid/{orderId}")]
         public IActionResult GetOrderById(long orderId)

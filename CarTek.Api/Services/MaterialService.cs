@@ -55,6 +55,11 @@ namespace CarTek.Api.Services
                 if (material != null)
                 {
                     _dbContext.Materials.Remove(material);
+
+                    var tns = _dbContext.TNs.Where(tn => tn.MaterialId == id);
+
+                    _dbContext.TNs.RemoveRange(tns);
+
                     _dbContext.SaveChanges();
 
                     return new ApiResponse

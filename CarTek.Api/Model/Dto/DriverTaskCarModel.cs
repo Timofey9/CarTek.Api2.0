@@ -75,5 +75,7 @@ namespace CarTek.Api.Model.Dto
 
         public int SubTasksCount { get; set; }
 
+        public string Price { get; set; }
+
     }
 }

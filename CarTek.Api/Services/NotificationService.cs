@@ -121,7 +121,7 @@ namespace CarTek.Api.Services
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Ошибка отправки уведомления пользователю:{userId}, {ex.StackTrace}", ex.Message);
+                _logger.LogError($"Ошибка отправки уведомления пользователю:{userId}, {ex.Message}, stack: {ex.StackTrace}, ie: {ex.InnerException?.Message}", ex.Message);
             }
         }
     }

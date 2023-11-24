@@ -8,6 +8,7 @@ using CarTek.Api.Services.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -203,8 +204,8 @@ namespace CarTek.Api.Services
 
                     driverTask.Order.DriverTasks = null;
 
-                    Address locationA = new Address();
-                    Address locationB = new Address();
+                    Model.Address locationA = new Model.Address();
+                    Model.Address locationB = new Model.Address();
 
                     if (driverTask.Order?.LocationAId != null)
                     {
@@ -258,8 +259,8 @@ namespace CarTek.Api.Services
         {
             try
             {
-                Address locationA = new Address();
-                Address locationB = new Address();
+                Model.Address locationA = new Model.Address();
+                Model.Address locationB = new Model.Address();
 
                 if (model?.Order?.LocationAId != null)
                 {
@@ -271,8 +272,30 @@ namespace CarTek.Api.Services
                     locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationBId);
                 }
 
+                var clientId = model.Order.Service == ServiceType.Supply ? model.Order.GpId : model.Order.Client.Id;
+
+                var client = _dbContext.Clients.FirstOrDefault(t => t.Id == clientId);
+
+                string price = "";
+
+                if (client != null)
+                {
+                    var unit = UnitToString(client.ClientUnit);
+
+                    if (client.FixedPrice == null)
+                    {
+                        price = model.Order.Price + $" руб/{unit}";
+                    }
+                    else
+                    {
+                        price = client.FixedPrice + " руб";
+                    }
+                }
+
                 model.LocationA = locationA;
                 model.LocationB = locationB;
+
+                model.Price = price;
             }
             catch (Exception ex)
             {
@@ -458,7 +481,9 @@ namespace CarTek.Api.Services
                             if(subTask.TN != null)
                                 _dbContext.TNs.Remove(subTask.TN);
                             if(subTask.Notes != null)
-                                _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);
+                            {
+                                _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);                                
+                            }
 
                             _dbContext.Remove(subTask);
                         }
@@ -859,9 +884,9 @@ namespace CarTek.Api.Services
                         Unit2 = model.Unit2,
                         LocationAId = model.LocationAId,
                         LocationBId = model.LocationBId,
-                        PickUpArrivalDate = model.PickUpArrivalDate,
+                        PickUpArrivalDate = model.PickUpArrivalDate?.Date,
                         PickUpArrivalTime = model.PickUpArrivalTime,
-                        PickUpDepartureDate = model.PickUpDepartureDate,
+                        PickUpDepartureDate = model.PickUpDepartureDate?.Date,
                         PickUpDepartureTime = model.PickUpDepartureTime,
                         DriverTaskId = task.Id,
                         DriverId = task.DriverId,
@@ -885,9 +910,9 @@ namespace CarTek.Api.Services
                                 SubTaskId = model.SubTaskId,
                                 LocationAId = model.LocationAId,
                                 LocationBId = model.LocationBId,
-                                PickUpArrivalDate = model.PickUpArrivalDate,
+                                PickUpArrivalDate = model.PickUpArrivalDate?.Date,
                                 PickUpArrivalTime = model.PickUpArrivalTime,
-                                PickUpDepartureDate = model.PickUpDepartureDate,
+                                PickUpDepartureDate = model.PickUpDepartureDate?.Date,
                                 PickUpDepartureTime = model.PickUpDepartureTime,
                                 DriverId = task.DriverId,
                                 MaterialId = model.MaterialId,
@@ -920,9 +945,9 @@ namespace CarTek.Api.Services
                                 Unit = model.Unit,
                                 LocationAId = model.LocationAId,
                                 LocationBId = model.LocationBId,
-                                PickUpArrivalDate = model.PickUpArrivalDate,
+                                PickUpArrivalDate = model.PickUpArrivalDate?.Date,
                                 PickUpArrivalTime = model.PickUpArrivalTime,
-                                PickUpDepartureDate = model.PickUpDepartureDate,
+                                PickUpDepartureDate = model.PickUpDepartureDate?.Date,
                                 PickUpDepartureTime = model.PickUpDepartureTime,
                                 DriverTaskId = task.Id,
                                 DriverId = task.DriverId,
@@ -972,9 +997,9 @@ namespace CarTek.Api.Services
                         TN.UnloadUnit = model.UnloadUnit;
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
-                        TN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        TN.DropOffArrivalDate = model.DropOffArrivalDate?.Date;
                         TN.LocationBId = model.LocationBId;
-                        TN.DropOffDepartureDate = model.DropOffDepartureDate;
+                        TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         TN.DropOffDepartureTime = model.DropOffDepartureTime;
 
@@ -1005,9 +1030,9 @@ namespace CarTek.Api.Services
                         task.TN.UnloadUnit = model.UnloadUnit;
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
                         task.TN.UnloadUnit2 = model.UnloadUnit2;
-                        task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        task.TN.DropOffArrivalDate = model.DropOffArrivalDate?.Date;
                         task.TN.LocationBId = model.LocationBId;
-                        task.TN.DropOffDepartureDate = model.DropOffDepartureDate;
+                        task.TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
@@ -1136,16 +1161,16 @@ namespace CarTek.Api.Services
                         task.TN.Unit2 = model.Unit2;
                         task.TN.LocationAId = model.LocationAId;
                         task.TN.LocationBId = model.LocationBId;
-                        task.TN.PickUpArrivalDate = model.PickUpArrivalDate;
-                        task.TN.PickUpDepartureDate = model.PickUpDepartureDate;
+                        task.TN.PickUpArrivalDate = model.PickUpArrivalDate?.Date;
+                        task.TN.PickUpDepartureDate = model.PickUpDepartureDate?.Date;
                         task.TN.MaterialId = model.MaterialId;
                         task.TN.UnloadVolume = model.UnloadVolume;
                         task.TN.UnloadUnit = model.UnloadUnit;
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
                         task.TN.UnloadUnit2 = model.UnloadUnit2;
-                        task.TN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        task.TN.DropOffArrivalDate = model.DropOffArrivalDate?.Date;
                         task.TN.LocationBId = model.LocationBId;
-                        task.TN.DropOffDepartureDate = model.DropOffDepartureDate;
+                        task.TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
@@ -1537,6 +1562,105 @@ namespace CarTek.Api.Services
             }
 
             return result;
+        }
+
+        public async Task<ApiResponse> DeleteImage(DeleteImageRequest request)
+        {
+            try
+            {
+                var note = _dbContext.DriverTaskNotes.FirstOrDefault(t => t.Id == request.NoteId);
+
+                if (note != null)
+                {
+                    var s3Links = JsonConvert.DeserializeObject<List<string>>(note.S3Links);
+
+                    var url = request.UrlToDelete.Substring(7);
+
+                    await _AWSS3Service.DeleteFromS3(url);
+
+                    s3Links.Remove(request.UrlToDelete);
+
+                    note.S3Links = JsonConvert.SerializeObject(s3Links);
+
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                         Message = "Удалено"
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Ошибка удаления S3. {ex.Message}. {ex.StackTrace}");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка удаления"
+                };
+            }
+            return new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Ошибка удаления"
+            };
+        }
+
+        public ApiResponse DeleteSubTask(long subTaskId)
+        {
+            try
+            {
+                var subTask = _dbContext.SubTasks.Include(st => st.Notes).FirstOrDefault(t => t.Id == subTaskId);
+                var tn = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == subTaskId);
+
+                if (subTask != null)
+                {
+                    var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == subTask.DriverTaskId);
+
+                    if(task != null)
+                    {
+                        if(task.SubTasksCount > 0)
+                        {
+                            task.SubTasksCount--;
+                        }
+                    }
+
+                    if (subTask.Notes != null)
+                    {
+                        _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);
+                    }
+
+                    if (tn != null)
+                        _dbContext.TNs.Remove(tn);
+
+                    _dbContext.SubTasks.Remove(subTask);
+
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Подзадача удалена"
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.StackTrace, ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Подзадача не удалена"
+                };
+            }
+
+
+            return new ApiResponse
+            {
+                IsSuccess = false,
+                Message = "Подзадача не удалена"
+            };
         }
     }
 }
