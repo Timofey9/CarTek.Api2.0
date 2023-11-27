@@ -71,7 +71,16 @@ namespace CarTek.Api.Services
             cellStyle.BorderBottom = BorderStyle.Thin;
             cellStyle.BorderTop = BorderStyle.Thin;
             cellStyle.BorderLeft = BorderStyle.Thin;
-            cellStyle.BorderRight = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;            
+            
+            var numberCellStyle = workbook.CreateCellStyle();
+            numberCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00");
+            numberCellStyle.WrapText = true;
+            numberCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            numberCellStyle.BorderBottom = BorderStyle.Thin;
+            numberCellStyle.BorderTop = BorderStyle.Thin;
+            numberCellStyle.BorderLeft = BorderStyle.Thin;
+            numberCellStyle.BorderRight = BorderStyle.Thin;
 
             foreach (var tn in tns)
             {
@@ -114,20 +123,39 @@ namespace CarTek.Api.Services
                 row.CreateCell(11).SetCellValue(tn.Material);
                 row.GetCell(11).CellStyle = cellStyle;
 
-                row.CreateCell(12).SetCellValue(tn.UnloadVolume);
-                row.GetCell(12).CellStyle = cellStyle;
+                NumberFormatInfo nfi = new NumberFormatInfo();
+                nfi.NumberDecimalSeparator = ",";
+
+                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
+
+                row.CreateCell(12).SetCellType(CellType.Numeric);
+                row.GetCell(12).SetCellValue(unloadVolume);
+                row.GetCell(12).CellStyle = numberCellStyle;
 
                 row.CreateCell(13).SetCellValue(tn.UnloadUnit);
                 row.GetCell(13).CellStyle = cellStyle;
 
-                row.CreateCell(14).SetCellValue(tn.Order.Price.ToString());
 
-                row.CreateCell(15).SetCellType(CellType.Formula);
+                row.CreateCell(14).SetCellType(CellType.Numeric);
+                row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                row.GetCell(14).CellStyle = numberCellStyle;
+
+                row.CreateCell(15).SetCellType(CellType.Numeric);
                 row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
                 row.GetCell(15).CellStyle.WrapText = true;
-                row.CreateCell(16).SetCellValue(tn.Order.MaterialPrice.ToString());
-                row.CreateCell(17).SetCellFormula($"Q{rowIndex + 1}+O{rowIndex + 1}");
-                row.CreateCell(18).SetCellFormula($"M{rowIndex + 1}*R{rowIndex + 1}");
+                row.GetCell(15).CellStyle = numberCellStyle;
+
+                row.CreateCell(16).SetCellType(CellType.Numeric);
+                row.GetCell(16).SetCellValue(tn.Order.MaterialPrice ?? 0);
+                row.GetCell(16).CellStyle = numberCellStyle;
+
+                row.CreateCell(17).SetCellType(CellType.Numeric);
+                row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}+O{rowIndex + 1}");
+                row.GetCell(17).CellStyle = numberCellStyle;
+
+                row.CreateCell(18).SetCellType(CellType.Numeric);
+                row.GetCell(18).SetCellFormula($"M{rowIndex + 1}*R{rowIndex + 1}");
+                row.GetCell(18).CellStyle = numberCellStyle;
 
                 row.CreateCell(21).SetCellValue(tn.IsVerified ? "Да" : "Нет");
                 row.CreateCell(22).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
@@ -137,7 +165,7 @@ namespace CarTek.Api.Services
 
             var stream = new MemoryStream();
 
-            for(var i=0; i < 21; i++)
+            for (var i = 0; i < 21; i++)
             {
                 sheet.SetColumnWidth(i, 255 * 40);
             }
@@ -163,7 +191,7 @@ namespace CarTek.Api.Services
 
                     cell.CellStyle = cellStyle2;
                 }
-                else 
+                else
                 {
                     var row = sheet.GetRow(i);
                     var cell = row.GetCell(10);
@@ -819,7 +847,16 @@ namespace CarTek.Api.Services
             cellStyle.BorderBottom = BorderStyle.Thin;
             cellStyle.BorderTop = BorderStyle.Thin;
             cellStyle.BorderLeft = BorderStyle.Thin;
-            cellStyle.BorderRight = BorderStyle.Thin;            
+            cellStyle.BorderRight = BorderStyle.Thin;
+
+            var numberCellStyle = workbook.CreateCellStyle();
+            numberCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00");
+            numberCellStyle.WrapText = true;
+            numberCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            numberCellStyle.BorderBottom = BorderStyle.Thin;
+            numberCellStyle.BorderTop = BorderStyle.Thin;
+            numberCellStyle.BorderLeft = BorderStyle.Thin;
+            numberCellStyle.BorderRight = BorderStyle.Thin;
 
             foreach (var tn in tns)
             {
@@ -862,21 +899,30 @@ namespace CarTek.Api.Services
                 row.CreateCell(11).SetCellValue(tn.Material);
                 row.GetCell(11).CellStyle = cellStyle;
 
-                row.CreateCell(12).SetCellValue(tn.UnloadVolume);
-                row.GetCell(12).CellStyle = cellStyle;
+                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
+
+                row.CreateCell(12).SetCellType(CellType.Numeric);
+                row.GetCell(12).SetCellValue(unloadVolume);
+                row.GetCell(12).CellStyle = numberCellStyle;
 
                 row.CreateCell(13).SetCellValue(tn.UnloadUnit);
                 row.GetCell(13).CellStyle = cellStyle;
 
-                row.CreateCell(14).SetCellValue(tn.Order.Price.ToString());
+                row.CreateCell(14).SetCellType(CellType.Numeric);
+                row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                row.GetCell(14).CellStyle = numberCellStyle;
 
-                row.CreateCell(15).SetCellType(CellType.Formula);
+                row.CreateCell(15).SetCellType(CellType.Numeric);
                 row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
                 row.GetCell(15).CellStyle.WrapText = true;
+                row.GetCell(15).CellStyle = numberCellStyle;
 
-                row.CreateCell(16).SetCellValue(tn.DriverPercent.ToString(nfi));
+                row.CreateCell(16).SetCellType(CellType.Numeric) ;
+                row.GetCell(16).SetCellValue(tn.DriverPercent);
+                row.GetCell(16).CellStyle = numberCellStyle;
 
-                row.CreateCell(17).SetCellType(CellType.Formula);
+                row.CreateCell(17).SetCellType(CellType.Numeric);
+                row.GetCell(17).CellStyle = numberCellStyle;
 
                 if(tn.FixedPrice == null)
                 {
@@ -1019,18 +1065,19 @@ namespace CarTek.Api.Services
                 row.GetCell(13).CellStyle = cellStyle;
 
                 row.CreateCell(14).SetCellValue(tn.Order.Price.ToString());
+                row.GetCell(15).SetCellType(CellType.Numeric);
 
-                row.CreateCell(15).SetCellType(CellType.Formula);
+                row.CreateCell(15).SetCellType(CellType.Numeric);
                 row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
                 row.GetCell(15).CellStyle.WrapText = true;
 
                 row.CreateCell(16).SetCellValue(tn.DriverPercent.ToString(nfi));
 
-                row.CreateCell(17).SetCellType(CellType.Formula);
+                row.CreateCell(17).SetCellType(CellType.Numeric);
 
                 if (tn.FixedPrice == null)
                 {
-                    row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");
+                    row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");                    
                 }
                 else
                 {
