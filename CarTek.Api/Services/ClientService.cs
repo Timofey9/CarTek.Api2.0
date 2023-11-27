@@ -17,7 +17,7 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
-        public ApiResponse CreateClient(string clientName, string inn, string clientAddress, Unit clientUnit, double? fixedPrice = null)
+        public ApiResponse CreateClient(string clientName, string inn, string clientAddress, Unit clientUnit, double? fixedPrice, double? density)
         {
             try
             {
@@ -27,7 +27,8 @@ namespace CarTek.Api.Services
                     ClientName = clientName,
                     Inn = inn,
                     ClientUnit = clientUnit,
-                    FixedPrice = fixedPrice
+                    FixedPrice = fixedPrice,
+                    Density = density
                 };
 
                 var entity = _dbContext.Clients.Add(client);
@@ -110,7 +111,7 @@ namespace CarTek.Api.Services
             return clients.ToList();
         }
 
-        public ApiResponse UpdateClient(long? id, string? clientName, string? inn, string? clientAddress, Unit clientUnit, double? fixedPrice = null)
+        public ApiResponse UpdateClient(long? id, string? clientName, string? inn, string? clientAddress, Unit clientUnit, double? fixedPrice, double? density)
         {
             if(id == null)
             {
@@ -139,6 +140,8 @@ namespace CarTek.Api.Services
                 }
 
                 client.FixedPrice = fixedPrice;
+                client.Density = density;
+
                 client.ClientUnit = clientUnit;
 
                 _dbContext.Update(client);

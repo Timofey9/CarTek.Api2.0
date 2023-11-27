@@ -511,7 +511,6 @@ namespace CarTek.Api.Services
             return stream;
         }
 
-
         public MemoryStream GenerateTasksReport(DateTime date, IEnumerable<CarDriverTaskModel> cars)
         {
             IWorkbook workbook;
@@ -572,7 +571,6 @@ namespace CarTek.Api.Services
             workbook.Write(stream, true);
             return stream;
         }
-
 
         public MemoryStream GenerateTasksReportShort(DateTime date, IEnumerable<CarDriverTaskModel> cars)
         {
@@ -700,7 +698,6 @@ namespace CarTek.Api.Services
             }
         }
 
-
         public MemoryStream GenerateTn(TNModel model)
         {
             IWorkbook workbook;
@@ -785,10 +782,12 @@ namespace CarTek.Api.Services
             row.GetCell(57).CellStyle = cellStyle;
 
             string loadVolume = $"{model.LoadVolume} {model.Unit}";
+
             if (model.LoadVolume2 != null && model.LoadVolume2 != "0")
             {
                 loadVolume += $", {model.LoadVolume2} {model.Unit2}";
             }
+
             row = sheet.GetRow(12);
             row.Height = 200;
             row.GetCell(1).SetCellValue(loadVolume);
@@ -808,6 +807,7 @@ namespace CarTek.Api.Services
             row.GetCell(57).CellStyle = cellStyle;
 
             string unloadVolume = $"{model.UnloadVolume} {model.UnloadUnit}";
+
             if (model.UnloadVolume2 != null && model.UnloadVolume2 != "0")
             {
                 unloadVolume += $", {model.UnloadVolume2} {model.UnloadUnit2}";

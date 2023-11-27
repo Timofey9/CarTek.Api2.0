@@ -497,16 +497,21 @@ namespace CarTek.Api.Services
                             Inn = order.Client?.Inn,
                             ClientName = order.Client?.ClientName,
                             ClientAddress = order.Client?.ClientAddress,
+                            FixedPrice = order.Client?.FixedPrice,
+                            Density = order.Client?.Density
                         },
                         Gp = new ClientModel
                         {
                             Id = gp?.Id,
                             Inn = gp?.Inn,
                             ClientName = gp?.ClientName,
-                            ClientAddress = gp?.ClientAddress,                           
+                            ClientAddress = gp?.ClientAddress,
+                            FixedPrice = gp?.FixedPrice,
+                            Density = gp?.Density
                         },
                         LocationA = locationA,
                         LocationB = locationB,
+                        LoadUnit = order.LoadUnit ?? Unit.none,
                         StartDate = order.StartDate,
                         DueDate = order?.DueDate,
                         Price = order.Price,
@@ -735,9 +740,17 @@ namespace CarTek.Api.Services
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
+
                 if (clientObject?.ClientUnit == tn.UnloadUnit)
                 {
-                    volume2 = tn.UnloadVolume ?? 0;
+                    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
+                    {
+                        volume2 = (tn.UnloadVolume / clientObject.Density.Value).Value;
+                    }
+                    else
+                    {
+                        volume2 = tn.UnloadVolume ?? 0;
+                    }
                 }
                 else
                 if (clientObject?.ClientUnit == tn.UnloadUnit2)
@@ -889,8 +902,16 @@ namespace CarTek.Api.Services
 
                 if(clientObject?.ClientUnit == tn.Unit)
                 {
-                    volume1 = tn.LoadVolume ?? 0;
-                }else               
+                    if(clientObject.Density != null && tn.Unit == Unit.t)
+                    {
+                        volume1 = (tn.LoadVolume/clientObject.Density.Value).Value;
+                    }
+                    else
+                    {
+                        volume1 = tn.LoadVolume ?? 0;
+                    }
+                }
+                else               
                 if (clientObject?.ClientUnit == tn.Unit2)
                 {
                     volume1 = tn.LoadVolume2 ?? 0;
@@ -899,7 +920,14 @@ namespace CarTek.Api.Services
                 double volume2 = tn.UnloadVolume ?? 0;
                 if (clientObject?.ClientUnit == tn.UnloadUnit)
                 {
-                    volume2 = tn.UnloadVolume ?? 0;
+                    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
+                    {
+                        volume2 = (tn.UnloadVolume / clientObject.Density.Value).Value;
+                    }
+                    else
+                    {
+                        volume2 = tn.UnloadVolume ?? 0;
+                    }
                 }
                 else
                 if (clientObject?.ClientUnit == tn.UnloadUnit2)
@@ -930,12 +958,9 @@ namespace CarTek.Api.Services
                     DriverInfo = driverInfo,
                     Number = tn.Number,
                     Unit = UnitToString(clientObject?.ClientUnit),
-
                     UnloadUnit = UnitToString(clientObject?.ClientUnit),
-
                     LoadVolume = volume1.ToString(nfi),
                     UnloadVolume = volume2.ToString(nfi),
-
                     Material = tn.Material?.Name,
                     CarPlate = carInfo,
                     LocationA = locationA?.TextAddress,

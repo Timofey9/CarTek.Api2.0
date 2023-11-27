@@ -7,7 +7,6 @@ namespace CarTek.Api.Model
     {
         m3,
         t,
-        quantity,
         none
     }
 
@@ -30,7 +29,7 @@ namespace CarTek.Api.Model
         
         public ShiftType Shift { get; set; }
 
-        public Unit LoadUnit { get; set; }
+        public Unit? LoadUnit { get; set; }
 
         public bool IsComplete { get; set; }
 

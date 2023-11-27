@@ -44,6 +44,8 @@ namespace CarTek.Api.Model.Dto
 
         public OrderModel Order { get; set; }
 
+        public ClientModel OrderCustomer { get; set; }
+
         public Guid UniqueId { get; set; }
 
         // night/day

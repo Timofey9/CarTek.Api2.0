@@ -290,11 +290,13 @@ namespace CarTek.Api.Services
                     {
                         price = client.FixedPrice + " руб";
                     }
+
+                    model.OrderCustomer = _mapper.Map<ClientModel>(client);
                 }
 
                 model.LocationA = locationA;
                 model.LocationB = locationB;
-
+                
                 model.Price = price;
             }
             catch (Exception ex)
