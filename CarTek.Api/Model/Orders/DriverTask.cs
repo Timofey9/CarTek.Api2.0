@@ -11,7 +11,8 @@
         ArrivedToUnload,
         Unloading,
         DocumentSigning2,
-        Done
+        Done,
+        Canceled
     }
 
     public enum ShiftType

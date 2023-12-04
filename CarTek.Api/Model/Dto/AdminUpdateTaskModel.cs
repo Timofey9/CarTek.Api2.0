@@ -25,4 +25,9 @@ namespace CarTek.Api.Model
 
         public string UrlToDelete { get; set; }
     }
+
+    public class CancelTaskRequest
+    {
+        public long DriverTaskId { get; set; }
+    }
 }

@@ -995,13 +995,13 @@ namespace CarTek.Api.Services
         {
             IWorkbook workbook;
 
-            using (FileStream fileStream = new FileStream("/data/Templates/reportAccountant.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            using (FileStream fileStream = new FileStream("/data/Templates/reportDriverSalary.xlsx", FileMode.Open, FileAccess.ReadWrite))
             {
                 workbook = new XSSFWorkbook(fileStream);
             }
 
             // Получение листа 
-            ISheet sheet = workbook.GetSheetAt(0);
+            ISheet sheet = workbook.GetSheetAt(0); 
 
             var dateRow = sheet.GetRow(1);
             dateRow.GetCell(2).SetCellValue($"{startDate.ToString("dd.MM.yyyy")}-{endDate.ToString("dd.MM.yyyy")}");
@@ -1017,75 +1017,79 @@ namespace CarTek.Api.Services
             cellStyle.BorderLeft = BorderStyle.Thin;
             cellStyle.BorderRight = BorderStyle.Thin;
 
+            var numberCellStyle = workbook.CreateCellStyle();
+            numberCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00");
+            numberCellStyle.WrapText = true;
+            numberCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            numberCellStyle.BorderBottom = BorderStyle.Thin;
+            numberCellStyle.BorderTop = BorderStyle.Thin;
+            numberCellStyle.BorderLeft = BorderStyle.Thin;
+            numberCellStyle.BorderRight = BorderStyle.Thin;
+
             foreach (var tn in tns)
             {
                 var row = sheet.CreateRow(rowIndex);
 
-                row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
+                row.CreateCell(0).SetCellValue(tn.DropOffDepartureTime);
                 row.GetCell(0).CellStyle = cellStyle;
-                row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
+
+                row.CreateCell(1).SetCellValue(tn.Number);
                 row.GetCell(1).CellStyle = cellStyle;
 
-                row.CreateCell(2).SetCellValue(tn.Client);
+                row.CreateCell(2).SetCellValue(tn.LocationA);
                 row.GetCell(2).CellStyle = cellStyle;
 
-                //TODO:
-                row.CreateCell(3).SetCellValue("КарТэк");
+                row.CreateCell(3).SetCellValue(tn.LocationB);
                 row.GetCell(3).CellStyle = cellStyle;
 
-                //TODO:
-                row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                row.CreateCell(4).SetCellValue(tn.CarPlate);
                 row.GetCell(4).CellStyle = cellStyle;
 
-                row.CreateCell(5).SetCellValue(tn.Number);
+                //row.CreateCell(9).SetCellValue(tn.DriverInfo);
+                //row.GetCell(9).CellStyle = cellStyle;
+
+                row.CreateCell(5).SetCellValue(StatusToString(tn.TaskStatus));
                 row.GetCell(5).CellStyle = cellStyle;
 
-                row.CreateCell(6).SetCellValue(tn.LocationA);
+                row.CreateCell(6).SetCellValue(tn.Material);
                 row.GetCell(6).CellStyle = cellStyle;
 
-                row.CreateCell(7).SetCellValue(tn.LocationB);
+                row.CreateCell(7).SetCellValue(tn.UnloadVolume);
                 row.GetCell(7).CellStyle = cellStyle;
 
-                row.CreateCell(8).SetCellValue(tn.CarPlate);
+                row.CreateCell(8).SetCellValue(tn.UnloadUnit);
                 row.GetCell(8).CellStyle = cellStyle;
 
-                row.CreateCell(9).SetCellValue(tn.DriverInfo);
-                row.GetCell(9).CellStyle = cellStyle;
+                row.CreateCell(9).SetCellValue(tn.Order.Price.Value);
+                row.GetCell(9).SetCellType(CellType.Numeric);
+                row.GetCell(9).CellStyle = numberCellStyle;
 
-                row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
-                row.GetCell(10).CellStyle = cellStyle;
+                //row.CreateCell(15).SetCellType(CellType.Numeric);
+                //row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
+                //row.GetCell(15).CellStyle.WrapText = true;
+                 
+                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
 
-                row.CreateCell(11).SetCellValue(tn.Material);
-                row.GetCell(11).CellStyle = cellStyle;
+                var fullAmount = tn.Order.Price.Value * unloadVolume;
 
-                row.CreateCell(12).SetCellValue(tn.UnloadVolume);
-                row.GetCell(12).CellStyle = cellStyle;
+                row.CreateCell(10).SetCellValue(tn.DriverPercent.ToString(nfi));
+                row.GetCell(10).CellStyle = numberCellStyle;
 
-                row.CreateCell(13).SetCellValue(tn.UnloadUnit);
-                row.GetCell(13).CellStyle = cellStyle;
 
-                row.CreateCell(14).SetCellValue(tn.Order.Price.ToString());
-                row.GetCell(15).SetCellType(CellType.Numeric);
-
-                row.CreateCell(15).SetCellType(CellType.Numeric);
-                row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
-                row.GetCell(15).CellStyle.WrapText = true;
-
-                row.CreateCell(16).SetCellValue(tn.DriverPercent.ToString(nfi));
-
-                row.CreateCell(17).SetCellType(CellType.Numeric);
+                row.CreateCell(11).SetCellType(CellType.Numeric);
 
                 if (tn.FixedPrice == null)
                 {
-                    row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");                    
+                    var taskSalary = fullAmount * tn.DriverPercent / 100;
+                    row.GetCell(11).SetCellValue(taskSalary);                    
                 }
                 else
                 {
-                    row.GetCell(17).SetCellFormula(tn.FixedPrice.Value.ToString(nfi));
+                    row.GetCell(11).SetCellFormula(tn.FixedPrice.Value.ToString(nfi));
                 }
 
-                row.CreateCell(18).SetCellValue(tn.IsVerified ? "Да" : "Нет");
-                row.CreateCell(19).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+                row.GetCell(11).CellStyle = numberCellStyle;
+
 
                 rowIndex++;
             }
@@ -1104,7 +1108,7 @@ namespace CarTek.Api.Services
                 if (lst[i - 4].TaskStatus == DriverTaskStatus.Done)
                 {
                     var row = sheet.GetRow(i);
-                    var cell = row.GetCell(10);
+                    var cell = row.GetCell(5);
                     var cellStyle2 = workbook.CreateCellStyle();
 
                     cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightGreen.Index;
@@ -1120,7 +1124,7 @@ namespace CarTek.Api.Services
                 else
                 {
                     var row = sheet.GetRow(i);
-                    var cell = row.GetCell(10);
+                    var cell = row.GetCell(5);
                     var cellStyle2 = workbook.CreateCellStyle();
 
                     cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.LightYellow.Index;

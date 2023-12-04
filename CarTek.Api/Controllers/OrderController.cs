@@ -369,6 +369,20 @@ namespace CarTek.Api.Controllers
         }
 
 
+        [HttpPost("canceldrivertask")]
+        public IActionResult CancelDriverTask([FromBody] CancelTaskRequest model)
+        {
+            var result = _driverTaskService.CancelDriverTask(model.DriverTaskId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+
         [HttpPost("deleteS3Image")]
         public async Task<IActionResult> DeleteS3Image([FromBody] DeleteImageRequest model)
         {
