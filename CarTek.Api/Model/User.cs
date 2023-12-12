@@ -18,9 +18,17 @@ namespace CarTek.Api.Model
 
         public string Login { get; set; }
 
+        //админ-логист
         public bool IsAdmin { get; set; }
 
+        //Диспетчер
         public bool IsDispatcher { get; set; }
+
+        //Бухгалтер первички
+        public bool IsInitialBookkeeper { get; set; }
+
+        //Бухгалтер ЗП
+        public bool IsSalaryBookkeeper { get; set; }
 
         public string Phone { get; set; }
 

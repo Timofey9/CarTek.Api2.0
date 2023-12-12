@@ -153,7 +153,8 @@ namespace CarTek.Api.Services
                         Shift = task.Shift,
                         Status = task.Status,
                         OrderComment = task.Order.Note,
-                        TaskComment = task.AdminComment
+                        TaskComment = task.AdminComment,
+                        IsCanceled = task.IsCanceled
                     };
 
                     mappedResult.Add(mappedTask);
@@ -245,6 +246,8 @@ namespace CarTek.Api.Services
                 .ThenInclude(o => o.Material)
                 .Include(dt => dt.Order)
                 .ThenInclude(o => o.Client)
+                .Include(dt => dt.Order)
+                .ThenInclude(o => o.DriverTasks).ThenInclude(dts => dts.Car)
                 .Include(dt => dt.Car)
                 .Include(dt => dt.Driver)
                 .Include(dt => dt.Notes)
@@ -1671,7 +1674,25 @@ namespace CarTek.Api.Services
 
             if(driverTask != null)
             {
-                driverTask.Status = DriverTaskStatus.Canceled;
+                driverTask.IsCanceled = true;
+
+                _dbContext.Update(driverTask);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse { IsSuccess = true, Message = "Задача обновлена" };
+            }
+
+            return new ApiResponse { IsSuccess = false, Message = "Задача не обновлена" };
+        }
+
+        public ApiResponse RestoreDriverTask(long driverTaskId)
+        {
+            var driverTask = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == driverTaskId);
+
+            if (driverTask != null)
+            {
+                driverTask.IsCanceled = false;
 
                 _dbContext.Update(driverTask);
 

@@ -433,8 +433,6 @@ namespace CarTek.Api.Services
                 num++;       
             }
 
-
-
             sheet.SetColumnWidth(1, 255 * 30);
             sheet.SetColumnWidth(2, 255 * 50);
             sheet.SetColumnWidth(3, 255 * 20);
@@ -478,6 +476,22 @@ namespace CarTek.Api.Services
                     var cellStyle2 = workbook.CreateCellStyle();
 
                     cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.Red.Index;
+                    cellStyle2.FillPattern = FillPattern.SolidForeground;
+
+                    cellStyle2.BorderBottom = BorderStyle.Thin;
+                    cellStyle2.BorderTop = BorderStyle.Thin;
+                    cellStyle2.BorderLeft = BorderStyle.Thin;
+                    cellStyle2.BorderRight = BorderStyle.Thin;
+
+                    cell.CellStyle = cellStyle2;
+                }
+                else if (lst[i - 4].IsCanceled)
+                {
+                    var row = sheet.GetRow(i);
+                    var cell = row.GetCell(11);
+                    var cellStyle2 = workbook.CreateCellStyle();
+
+                    cellStyle2.FillForegroundColor = NPOI.HSSF.Util.HSSFColor.Grey50Percent.Index;
                     cellStyle2.FillPattern = FillPattern.SolidForeground;
 
                     cellStyle2.BorderBottom = BorderStyle.Thin;

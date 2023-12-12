@@ -380,6 +380,19 @@ namespace CarTek.Api.Controllers
             }
 
             return BadRequest(result);
+        }      
+        
+        [HttpPost("restoredrivertask")]
+        public IActionResult RestoreDriverTask([FromBody] CancelTaskRequest model)
+        {
+            var result = _driverTaskService.RestoreDriverTask(model.DriverTaskId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
 

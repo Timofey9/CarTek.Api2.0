@@ -48,6 +48,8 @@ namespace CarTek.Api.Model.Dto
 
         public Guid UniqueId { get; set; }
 
+        public bool IsCanceled { get; set; }
+
         // night/day
         public ShiftType Shift { get; set; }
 

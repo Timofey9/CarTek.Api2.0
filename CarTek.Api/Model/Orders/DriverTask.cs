@@ -52,6 +52,8 @@
 
         public string? AdminComment { get; set; }
 
+        public bool IsCanceled { get; set; }
+
         public int SubTasksCount { get; set; }
 
         public TN? TN { get; set; }

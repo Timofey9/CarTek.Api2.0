@@ -44,6 +44,7 @@ namespace CarTek.Api.Services.Interfaces
         public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId);
 
         public ApiResponse CancelDriverTask(long driverTaskId);
+        public ApiResponse RestoreDriverTask(long driverTaskId);
 
         public SubTaskModel GetSubTask(long subTaskId);
 

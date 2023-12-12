@@ -126,15 +126,17 @@ namespace CarTek.Api.Services
 
             if (client != null)
             {
-                if (!string.IsNullOrEmpty(clientName))
+                if (clientName != null)
                 {
                     client.ClientName = clientName;
                 }
-                if (!string.IsNullOrEmpty(inn))
+
+                if (inn != null)
                 {
                     client.Inn = inn;
                 }
-                if (!string.IsNullOrEmpty(clientAddress))
+
+                if (clientAddress != null)
                 {
                     client.ClientAddress = clientAddress;
                 }
