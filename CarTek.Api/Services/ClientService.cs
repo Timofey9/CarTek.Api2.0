@@ -31,15 +31,27 @@ namespace CarTek.Api.Services
                     Density = density
                 };
 
-                var entity = _dbContext.Clients.Add(client);
+                var hasClient = _dbContext.Clients.Any(t => t.ClientName.ToLower() == clientName.ToLower());
 
-                _dbContext.SaveChanges();
-
-                return new ApiResponse
+                if (!hasClient)
                 {
-                    IsSuccess = true,
-                    Message = $"Клиент {clientName} добавлен"
-                };
+                    var entity = _dbContext.Clients.Add(client);
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = $"Клиент {clientName} добавлен"
+                    };
+                }
+                else
+                {
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Клиент с таким именем уже существует!"
+                    };
+                }
             }
             catch (Exception ex)
             {

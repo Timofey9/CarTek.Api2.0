@@ -55,5 +55,7 @@ namespace CarTek.Api.Services.Interfaces
         Task<ApiResponse> DeleteImage(DeleteImageRequest request);
 
         ApiResponse DeleteSubTask(long subTaskId);
+
+        ApiResponse CreateSubtaskTn(FillDocumentModel model);
     }
 }

@@ -25,14 +25,25 @@ namespace CarTek.Api.Services
                 {
                     Name = name
                 };
+                
+                var hasMaterial = _dbContext.Materials.Any(t => t.Name.ToLower() == material.Name.ToLower());
 
-                _dbContext.Materials.Add(material);
-                _dbContext.SaveChanges();
+                if(!hasMaterial)
+                {
+                    _dbContext.Materials.Add(material);
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Материал добавлен"
+                    };
+                }
 
                 return new ApiResponse
                 {
-                    IsSuccess = true,
-                    Message = "Материал добавлен"
+                    IsSuccess = false,
+                    Message = "Такой материал уже существует"
                 };
             }
             catch (Exception ex)

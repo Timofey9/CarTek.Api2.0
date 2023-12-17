@@ -882,20 +882,23 @@ namespace CarTek.Api.Services
                 }
                 else
                 {
-                    add = tn.DriverTask.Status == DriverTaskStatus.Done || !completedOnly;
+                    if (tn.DriverTask != null)
+                    {
+                        add = tn.DriverTask.Status == DriverTaskStatus.Done || !completedOnly;
 
-                    carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
-                    driverInfo = tn.DriverTask.Driver.FullName;
-                    driverPercent = tn.DriverTask.Driver.Percentage;
+                        carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
+                        driverInfo = tn.DriverTask.Driver.FullName;
+                        driverPercent = tn.DriverTask.Driver.Percentage;
 
-                    client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                    fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                        client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
 
-                    clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
+                        clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
 
-                    order = tn.DriverTask.Order;
+                        order = tn.DriverTask.Order;
 
-                    status = tn.DriverTask.Status;
+                        status = tn.DriverTask.Status;
+                    }
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;

@@ -227,6 +227,20 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [HttpPost("subtasktn")]
+        public async Task<IActionResult> CreateSubtaskTn([FromForm] FillDocumentModel model)
+        {
+            var res = _driverTaskService.CreateSubtaskTn(model);
+            await _driverTaskService.UpdateDriverSubTask(model.SubTaskId.Value, model.Files, model.UpdatedStatus, model.Note);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res.Message);
+        }
+
         [HttpPost("starttn")]
         public async Task <IActionResult> StartTn([FromForm] FillDocumentModel model)
         {

@@ -21,17 +21,31 @@ namespace CarTek.Api.Services
             try
             {
                 var address = new Address {Coordinates = coordinates, TextAddress = textAddress };
-                _dbContext.Addresses.Add(address);
-                _dbContext.SaveChanges();
+
+                var hasMaterial = _dbContext.Addresses.Any(t => t.TextAddress.ToLower() == textAddress.ToLower());
+
+                if(!hasMaterial)
+                {
+                    _dbContext.Addresses.Add(address);
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Адрес добавлен"
+                    };
+                }
+
                 return new ApiResponse
                 {
-                    IsSuccess = true,
-                    Message = "Адрес добавлен"
+                    IsSuccess = false,
+                    Message = "Такой адрес уже существует"
                 };
             }
             catch(Exception ex)
             {
                 _logger.LogError("Адрес не добавлен", ex);
+                
                 return new ApiResponse
                 {
                     IsSuccess = false,

@@ -137,6 +137,13 @@ namespace CarTek.Api.Services
                             break;
                         case "phone":
                             filterBy = x => x.Phone.ToLower().Contains(search.ToLower().Trim());
+                            break;                       
+                        case "percent":
+                            var convSuccess = int.TryParse(search, out var percent);
+                            if (convSuccess)
+                            {
+                                filterBy = x => x.Percentage == percent;
+                            }
                             break;
                         default:
                             break;
@@ -154,6 +161,9 @@ namespace CarTek.Api.Services
                             break;
                         case "phone":
                             orderBy = x => x.Phone;
+                            break;
+                        case "percent":
+                            orderBy = x => x.Percentage;
                             break;
                         default:
                             break;

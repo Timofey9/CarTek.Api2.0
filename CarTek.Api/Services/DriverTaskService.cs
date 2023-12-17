@@ -182,14 +182,14 @@ namespace CarTek.Api.Services
                 for (var i = 0; i < list.Count; i++)
                 {
                     var driverTask = list[i];
-                    
+
                     var clientId = driverTask.Order.Service == ServiceType.Supply ? driverTask.Order.GpId : driverTask.Order.ClientId;
 
                     var client = _dbContext.Clients.FirstOrDefault(t => t.Id == clientId);
 
                     string price = "";
 
-                    if(client != null)
+                    if (client != null)
                     {
                         var unit = UnitToString(client.ClientUnit);
 
@@ -299,7 +299,7 @@ namespace CarTek.Api.Services
 
                 model.LocationA = locationA;
                 model.LocationB = locationB;
-                
+
                 model.Price = price;
             }
             catch (Exception ex)
@@ -479,15 +479,15 @@ namespace CarTek.Api.Services
                         .Include(st => st.Notes)
                         .Where(st => st.DriverTaskId == taskId);
 
-                    if(subTasks != null && subTasks.Count() > 0)
+                    if (subTasks != null && subTasks.Count() > 0)
                     {
-                        foreach(var subTask in subTasks)
+                        foreach (var subTask in subTasks)
                         {
-                            if(subTask.TN != null)
+                            if (subTask.TN != null)
                                 _dbContext.TNs.Remove(subTask.TN);
-                            if(subTask.Notes != null)
+                            if (subTask.Notes != null)
                             {
-                                _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);                                
+                                _dbContext.DriverTaskNotes.RemoveRange(subTask.Notes);
                             }
 
                             _dbContext.Remove(subTask);
@@ -499,7 +499,7 @@ namespace CarTek.Api.Services
                     _dbContext.TNs.RemoveRange(_dbContext.TNs.Where(tn => tn.DriverTaskId == taskId));
 
                     _dbContext.DriverTasks.Remove(task);
-                 
+
                     _dbContext.SaveChanges();
                     _notificationService.SendNotification($"Задача удалена", $"Ваша задача на {task.StartDate} была отменена", task.DriverId, true);
 
@@ -1071,6 +1071,68 @@ namespace CarTek.Api.Services
             }
         }
 
+        public ApiResponse CreateSubtaskTn(FillDocumentModel model)
+        {
+            try
+            {
+                var newTN = new TN();
+
+                var subTask = _dbContext.SubTasks.FirstOrDefault(t => t.Id == model.SubTaskId);
+
+                if (subTask != null)
+                {
+                    newTN.SubTaskId = model.SubTaskId;
+
+                    newTN.Number = model.Number;
+                    newTN.GoId = model.GoId;
+                    newTN.GpId = model.GpId;
+                    newTN.LoadVolume = model.LoadVolume;
+                    newTN.Unit = model.Unit;
+                    newTN.LoadVolume2 = model.LoadVolume2;
+                    newTN.Unit2 = model.Unit2;
+                    newTN.LocationAId = model.LocationAId;
+                    newTN.LocationBId = model.LocationBId;
+                    newTN.PickUpArrivalDate = model.PickUpArrivalDate;
+                    newTN.PickUpDepartureDate = model.PickUpDepartureDate;
+                    newTN.MaterialId = model.MaterialId;
+                    newTN.UnloadVolume = model.UnloadVolume;
+                    newTN.UnloadUnit = model.UnloadUnit;
+                    newTN.UnloadVolume2 = model.UnloadVolume2;
+                    newTN.UnloadUnit2 = model.UnloadUnit2;
+                    newTN.DropOffArrivalDate = model.DropOffArrivalDate;
+                    newTN.LocationBId = model.LocationBId;
+                    newTN.DropOffDepartureDate = model.DropOffDepartureDate;
+                    newTN.Transporter = model.Transporter;
+                    newTN.UnloadVolume2 = model.UnloadVolume2;
+                    newTN.UnloadUnit2 = model.UnloadUnit2;
+
+                    _dbContext.TNs.Add(newTN);
+                    _dbContext.SaveChanges();
+
+                    return new ApiResponse
+                    {
+                        IsSuccess = true,
+                        Message = "ТН создана"
+                    };
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "ТН не создана"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка заполнения ТН.{ex.Message}");
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Ошибка сохранения данных"
+                };
+            }
+        }
+
         public async Task<ApiResponse> UpdateTN(FillDocumentModel model)
         {
             try
@@ -1103,12 +1165,14 @@ namespace CarTek.Api.Services
                         TN.Transporter = model.Transporter;
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
+
                         _dbContext.TNs.Update(TN);
                     }
 
                     if (model.Files != null && model.Files.Count > 0)
                     {
                         var subTask = TN.SubTask;
+
                         if (subTask != null)
                         {
                             var taskNote = new DriverTaskNote
@@ -1121,7 +1185,6 @@ namespace CarTek.Api.Services
                             };
 
                             var links = new List<string>();
-
 
                             foreach (var file in model.Files)
                             {
@@ -1256,7 +1319,7 @@ namespace CarTek.Api.Services
                 var subTask = new SubTask
                 {
                     DriverTaskId = driverTaskId,
-                    Status = DriverTaskStatus.Confirmed,
+                    Status = DriverTaskStatus.Unloading,
                     SequenceNumber = dt.SubTasks.Count + 1,
                     OrderId = dt.OrderId
                 };
@@ -1592,11 +1655,11 @@ namespace CarTek.Api.Services
                     return new ApiResponse
                     {
                         IsSuccess = true,
-                         Message = "Удалено"
+                        Message = "Удалено"
                     };
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ошибка удаления S3. {ex.Message}. {ex.StackTrace}");
                 return new ApiResponse
@@ -1623,9 +1686,9 @@ namespace CarTek.Api.Services
                 {
                     var task = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == subTask.DriverTaskId);
 
-                    if(task != null)
+                    if (task != null)
                     {
-                        if(task.SubTasksCount > 0)
+                        if (task.SubTasksCount > 0)
                         {
                             task.SubTasksCount--;
                         }
@@ -1650,7 +1713,7 @@ namespace CarTek.Api.Services
                     };
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.StackTrace, ex);
                 return new ApiResponse
@@ -1672,7 +1735,7 @@ namespace CarTek.Api.Services
         {
             var driverTask = _dbContext.DriverTasks.FirstOrDefault(t => t.Id == driverTaskId);
 
-            if(driverTask != null)
+            if (driverTask != null)
             {
                 driverTask.IsCanceled = true;
 
