@@ -279,6 +279,13 @@ namespace CarTek.Api.Services
 
                 var client = _dbContext.Clients.FirstOrDefault(t => t.Id == clientId);
 
+                var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == model.Order.GpId);
+
+                if(gp != null)
+                {
+                    model.Order.Gp = _mapper.Map<ClientModel>(gp);
+                }
+
                 string price = "";
 
                 if (client != null)
@@ -299,7 +306,6 @@ namespace CarTek.Api.Services
 
                 model.LocationA = locationA;
                 model.LocationB = locationB;
-
                 model.Price = price;
             }
             catch (Exception ex)
