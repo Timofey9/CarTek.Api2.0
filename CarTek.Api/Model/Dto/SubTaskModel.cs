@@ -19,6 +19,8 @@ namespace CarTek.Api.Model.Dto
 
         public TNModel? TN { get; set; }
 
+        public bool IsCanceled { get; set; }
+
         public ICollection<DriverTaskNote> Notes { get; set; }
     }
 

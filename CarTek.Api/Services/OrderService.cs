@@ -853,8 +853,11 @@ namespace CarTek.Api.Services
                 Order order = new Order();
                 DriverTaskStatus status = DriverTaskStatus.Assigned;
 
+
                 var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
                 var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+
+
 
                 if (tn.SubTask != null)
                 {
@@ -871,11 +874,15 @@ namespace CarTek.Api.Services
                         driverInfo = parent.Driver.FullName;
                         driverPercent = parent.Driver.Percentage;
                         carInfo = $"{parent.Car.Plate.ToUpper()} {parent.Car.Brand}";
-                        client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
 
-                        fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                        if(gp != null && go != null)
+                        {
+                            client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                            fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
 
-                        clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
+                            clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
+                        }
+
                         order = parent.Order;
                         status = parent.Status;
                     }
@@ -890,10 +897,12 @@ namespace CarTek.Api.Services
                         driverInfo = tn.DriverTask.Driver.FullName;
                         driverPercent = tn.DriverTask.Driver.Percentage;
 
-                        client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                        fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-
-                        clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
+                        if (gp != null && go != null)
+                        {
+                            client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                            fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                            clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
+                        }
 
                         order = tn.DriverTask.Order;
 
@@ -902,41 +911,10 @@ namespace CarTek.Api.Services
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;
-
-                if(clientObject?.ClientUnit == tn.Unit)
-                {
-                    if(clientObject.Density != null && tn.Unit == Unit.t)
-                    {
-                        volume1 = (tn.LoadVolume/clientObject.Density.Value).Value;
-                    }
-                    else
-                    {
-                        volume1 = tn.LoadVolume ?? 0;
-                    }
-                }
-                else               
-                if (clientObject?.ClientUnit == tn.Unit2)
-                {
-                    volume1 = tn.LoadVolume2 ?? 0;
-                }
+                volume1 = CalculateLoadVolume(clientObject, tn);
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                if (clientObject?.ClientUnit == tn.UnloadUnit)
-                {
-                    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
-                    {
-                        volume2 = (tn.UnloadVolume / clientObject.Density.Value).Value;
-                    }
-                    else
-                    {
-                        volume2 = tn.UnloadVolume ?? 0;
-                    }
-                }
-                else
-                if (clientObject?.ClientUnit == tn.UnloadUnit2)
-                {
-                    volume2 = tn.UnloadVolume2 ?? 0;
-                }
+                volume1 = CalculateUnloadVolume(clientObject, tn);
 
                 //TODO: грузоотправитель
                 var model = new TNModel
@@ -947,7 +925,7 @@ namespace CarTek.Api.Services
                     {
                         ClientName = go?.ClientName,
                         ClientAddress = go?.ClientAddress,
-                        Id = go.Id,
+                        Id = go?.Id,
                         Inn = go?.Inn
                     },
                     Client = client,
@@ -955,10 +933,11 @@ namespace CarTek.Api.Services
                     {
                         ClientName = gp?.ClientName,
                         ClientAddress = gp?.ClientAddress,
-                        Id = gp.Id,
+                        Id = gp?.Id,
                         Inn = gp?.Inn
                     },
                     DriverInfo = driverInfo,
+                    Transporter = tn.Transporter,
                     Number = tn.Number,
                     Unit = UnitToString(clientObject?.ClientUnit),
                     UnloadUnit = UnitToString(clientObject?.ClientUnit),
@@ -981,6 +960,57 @@ namespace CarTek.Api.Services
             }
 
             return tnList;
+        }
+
+        private double CalculateLoadVolume(Client clientObject, TN tn)
+        {
+            double volume = 0;
+
+            if (clientObject != null)
+            {
+                if (clientObject?.ClientUnit == tn.Unit)
+                {
+                    if (clientObject.Density != null && tn.Unit == Unit.t)
+                    {
+                        volume = (tn.LoadVolume / clientObject.Density.Value).Value;
+                    }
+                    else
+                    {
+                        volume = tn.LoadVolume ?? 0;
+                    }
+                }
+                else
+                if (clientObject?.ClientUnit == tn.Unit2)
+                {
+                    volume = tn.LoadVolume2 ?? 0;
+                }
+            }
+
+            return volume;
+        }
+
+        private double CalculateUnloadVolume(Client clientObject, TN tn)
+        {
+            double volume = 0;
+
+            if (clientObject?.ClientUnit == tn.UnloadUnit)
+            {
+                if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
+                {
+                    volume = (tn.UnloadVolume / clientObject.Density.Value).Value;
+                }
+                else
+                {
+                    volume = tn.UnloadVolume ?? 0;
+                }
+            }
+            else
+            if (clientObject?.ClientUnit == tn.UnloadUnit2)
+            {
+                volume = tn.UnloadVolume2 ?? 0;
+            }
+
+            return volume;
         }
 
         public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate, bool isExport = false)

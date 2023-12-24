@@ -1772,5 +1772,41 @@ namespace CarTek.Api.Services
 
             return new ApiResponse { IsSuccess = false, Message = "Задача не обновлена" };
         }
+
+        public ApiResponse CancelDriverSubTask(long driverTaskId)
+        {
+            var driverTask = _dbContext.SubTasks.FirstOrDefault(t => t.Id == driverTaskId);
+
+            if (driverTask != null)
+            {
+                driverTask.IsCanceled = true;
+
+                _dbContext.Update(driverTask);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse { IsSuccess = true, Message = "Задача обновлена" };
+            }
+
+            return new ApiResponse { IsSuccess = false, Message = "Задача не обновлена" };
+        }
+
+        public ApiResponse RestoreDriverSubTask(long driverTaskId)
+        {
+            var driverTask = _dbContext.SubTasks.FirstOrDefault(t => t.Id == driverTaskId);
+
+            if (driverTask != null)
+            {
+                driverTask.IsCanceled = false;
+
+                _dbContext.Update(driverTask);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse { IsSuccess = true, Message = "Задача обновлена" };
+            }
+
+            return new ApiResponse { IsSuccess = false, Message = "Задача не обновлена" };
+        }
     }
 }

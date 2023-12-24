@@ -24,9 +24,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(ModelProfile));
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITnService, TNService>();
 builder.Services.AddScoped<ITrailerService, TrailerService>();
 builder.Services.AddScoped<ICarService, CarService>();
-builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

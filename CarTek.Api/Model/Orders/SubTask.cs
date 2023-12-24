@@ -12,6 +12,8 @@
 
         public DriverTaskStatus Status { get; set; }
 
+        public bool IsCanceled { get; set; }
+
         public TN? TN { get; set; }
 
         public ICollection<DriverTaskNote> Notes { get; set; }

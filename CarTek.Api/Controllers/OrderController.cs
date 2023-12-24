@@ -86,6 +86,7 @@ namespace CarTek.Api.Controllers
         public IActionResult GetOrders(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             var list = _orderService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
+           
             var totalNumber = _orderService.GetOrderModelsBetweenDates(searchColumn, search, startDate, endDate).Count();
 
             var mappedList = new List<OrderModel>();
@@ -395,6 +396,31 @@ namespace CarTek.Api.Controllers
             return BadRequest(result);
         }
 
+        [HttpPost("canceldriversubtask")]
+        public IActionResult CancelDriverSubTask([FromBody] CancelTaskRequest model)
+        {
+            var result = _driverTaskService.CancelDriverSubTask(model.DriverTaskId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+        [HttpPost("restoredriversubtask")]
+        public IActionResult RestoreDriverSubTask([FromBody] CancelTaskRequest model)
+        {
+            var result = _driverTaskService.RestoreDriverSubTask(model.DriverTaskId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
 
         [HttpPost("deleteS3Image")]
         public async Task<IActionResult> DeleteS3Image([FromBody] DeleteImageRequest model)
