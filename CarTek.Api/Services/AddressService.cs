@@ -61,6 +61,20 @@ namespace CarTek.Api.Services
                 var address = _dbContext.Addresses.FirstOrDefault(a => a.Id == id); 
                 if(address != null)
                 {
+                    var tns = _dbContext.TNs.Where(tn => tn.LocationAId  == address.Id || tn.LocationBId == address.Id);
+
+                    foreach(var tn in tns)
+                    {
+                        if(tn.LocationBId != address.Id)
+                        {
+                            tn.LocationBId = null;
+                        }
+                        if (tn.LocationAId != address.Id)
+                        {
+                            tn.LocationAId = null;
+                        }
+                    }
+
                     _dbContext.Addresses.Remove(address); 
                     _dbContext.SaveChanges();
 

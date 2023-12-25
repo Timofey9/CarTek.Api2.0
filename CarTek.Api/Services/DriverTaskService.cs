@@ -281,7 +281,7 @@ namespace CarTek.Api.Services
 
                 var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == model.Order.GpId);
 
-                if(gp != null)
+                if (gp != null)
                 {
                     model.Order.Gp = _mapper.Map<ClientModel>(gp);
                 }
@@ -537,13 +537,14 @@ namespace CarTek.Api.Services
                 TN tn;
                 if (isSubtask)
                 {
-                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.SubTaskId == driverTaskId);
+                    tn = _dbContext.TNs
+                        .Include(t => t.Material)
+                        .Include(tn => tn.LocationA)
+                        .Include(tn => tn.LocationB)
+                        .FirstOrDefault(t => t.SubTaskId == driverTaskId);
 
                     if (tn != null)
                     {
-                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
-
                         //var driverInfo = tn.DriverTask.Driver.FullName;
 
                         var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
@@ -590,8 +591,8 @@ namespace CarTek.Api.Services
                             //CarModel = $"{tn.DriverTask.Car.Brand} {tn.DriverTask.Car.Model}",
                             //CarPlate = tn.DriverTask.Car.Plate,
                             //TrailerPlate = tn.DriverTask.Car?.Trailer?.Plate,
-                            LocationA = locationA,
-                            LocationB = locationB,
+                            LocationA = _mapper.Map<AddressModel>(tn.LocationA),
+                            LocationB = _mapper.Map<AddressModel>(tn.LocationB),
                             PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
                             PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
@@ -602,7 +603,11 @@ namespace CarTek.Api.Services
                 }
                 else
                 {
-                    tn = _dbContext.TNs.Include(t => t.Material).FirstOrDefault(t => t.DriverTaskId == driverTaskId);
+                    tn = _dbContext.TNs
+                        .Include(t => t.Material)
+                        .Include(tn => tn.LocationA)
+                        .Include(tn => tn.LocationB)
+                        .FirstOrDefault(t => t.DriverTaskId == driverTaskId);
 
                     var task = _dbContext.DriverTasks
                         .Include(t => t.Order)
@@ -616,9 +621,6 @@ namespace CarTek.Api.Services
 
                     if (tn != null)
                     {
-                        var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                        var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
-
                         var driverInfo = tn.DriverTask.Driver.FullName;
 
                         var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
@@ -657,8 +659,8 @@ namespace CarTek.Api.Services
                                 Name = tn.Material.Name
                             },
                             MaterialAmount = $"{tn.LoadVolume} {UnitToString(tn.Unit)}",
-                            LocationA = locationA,
-                            LocationB = locationB,
+                            LocationA = _mapper.Map<AddressModel>(tn.LocationA),
+                            LocationB = _mapper.Map<AddressModel>(tn.LocationB),
                             PickUpArrivalTime = $"{tn.PickUpArrivalDate?.ToString("dd.MM.yyyy")}",
                             PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",

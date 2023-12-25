@@ -1,4 +1,5 @@
 ﻿using CarTek.Api.Model.Orders;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarTek.Api.Model
 {
@@ -35,10 +36,10 @@ namespace CarTek.Api.Model
         public long? GpId { get; set; }
 
         //Id точки забора груза
-        public int? LocationAId { get; set; }
+        public long? LocationAId { get; set; }
 
         //Id точки сдачи груза
-        public int? LocationBId { get; set; }
+        public long? LocationBId { get; set; }
 
         public long? MaterialId { get; set; }
 
@@ -63,5 +64,11 @@ namespace CarTek.Api.Model
         public SubTask? SubTask { get; set; }
 
         public Material? Material { get; set; }
+
+
+        [InverseProperty("TNLocationA")]
+        public Address LocationA { get; set; }
+        [InverseProperty("TNLocationB")]
+        public Address LocationB { get; set; }
     }
 }

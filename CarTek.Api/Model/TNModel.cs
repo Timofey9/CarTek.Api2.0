@@ -45,9 +45,9 @@ namespace CarTek.Api.Model
 
         public string MaterialAmount { get; set; }
 
-        public Address LocationA { get; set; }
+        public AddressModel LocationA { get; set; }
 
-        public Address LocationB { get; set; }
+        public AddressModel LocationB { get; set; }
     }
 
     public class TNModel 

@@ -4,6 +4,7 @@ using CarTek.Api.Model;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -23,7 +24,7 @@ namespace CarTek.Api.Services
 
         public IEnumerable<TNModel> GetAll(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
-            return GetAllPagination("", "", 0, 0, searchColumn, search, startDate,endDate);
+            return GetAllPagination("", "", 0, 0, searchColumn, search, startDate, endDate);
         }
 
         public IEnumerable<TNModel> GetAllPagination(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search, DateTime startDate, DateTime endDate)
@@ -58,9 +59,9 @@ namespace CarTek.Api.Services
             var tresult = _dbContext.TNs
                 .Include(tn => tn.SubTask)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Car)
-                .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Order)
+                .Include(tn => tn.LocationA)
+                .Include (tn => tn.LocationB)
                 .Include(tn => tn.Material)
                 .Where(filterBy);
 
@@ -80,19 +81,19 @@ namespace CarTek.Api.Services
 
                 tnModel.Material = tn.Material != null ? tn.Material.Name : "";
 
-                var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                if (locationA != null)
+                //var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                if (tn.LocationA != null)
                 {
-                    tnModel.LocationA = locationA.TextAddress;
+                    tnModel.LocationA = tn.LocationA.TextAddress;
                 }
 
-                var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
-                if (locationB != null)
+                //var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
+                if (tn.LocationB != null)
                 {
-                    tnModel.LocationB = locationB.TextAddress;
+                    tnModel.LocationB = tn.LocationB.TextAddress;
                 }
 
-                if(tn.DriverTask != null && tn.DriverTask.Order != null)
+                if (tn.DriverTask != null && tn.DriverTask.Order != null)
                 {
                     var customerId = tn.DriverTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
@@ -100,15 +101,10 @@ namespace CarTek.Api.Services
                     tnModel.OrderId = tn.DriverTask.OrderId;
                 }
 
-                var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == tn.DriverId);
-                if (driver != null)
-                {
-                    tnModel.DriverInfo = driver.FullName;
-                }
-
                 if (searchColumn == "customer" && search != null)
                 {
-                    if (tnModel.Customer.ClientName.ToLower().Contains(search.ToLower()))
+                    if (tnModel.Customer != null && !string.IsNullOrEmpty(tnModel.Customer.ClientName) &&
+                        tnModel.Customer.ClientName.ToLower().Contains(search.ToLower()))
                     {
                         result.Add(tnModel);
                     }
@@ -125,6 +121,6 @@ namespace CarTek.Api.Services
             }
 
             return result;
-        }        
+        }
     }
 }
