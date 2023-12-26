@@ -12,7 +12,7 @@
 
         public double? FixedPrice { get; set; }
 
-        public double? Density { get; set; }
+        //public double? Density { get; set; }
 
         //public string Ogrn { get; set; }
 

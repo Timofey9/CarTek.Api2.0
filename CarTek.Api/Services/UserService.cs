@@ -220,6 +220,7 @@ namespace CarTek.Api.Services
                     IsDispatcher = user.IsDispatcher,
                     IsInitialBookkeeper = user.IsInitialBookkeeper,
                     IsSalaryBookkeeper = user.IsSalaryBookkeeper,
+                    IsLogistManager = user.IsLogistManager,
                     Password = GetHash(user.Password)
                 };
 

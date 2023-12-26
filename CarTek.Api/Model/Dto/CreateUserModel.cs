@@ -23,6 +23,9 @@
         //Бухгалтер ЗП
         public bool IsSalaryBookkeeper { get; set; }
 
+        public bool IsLogistManager { get; set; }
+
+
         public string Phone { get; set; }
 
         public string Password { get; set; }

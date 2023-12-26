@@ -61,6 +61,8 @@ namespace CarTek.Api.Model
 
         public long GpId { get; set; }
 
+        public double? Density { get; set; }
+
         public ServiceType Service { get; set; }
 
         public Material Material { get; set; }

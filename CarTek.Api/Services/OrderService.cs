@@ -497,8 +497,7 @@ namespace CarTek.Api.Services
                             Inn = order.Client?.Inn,
                             ClientName = order.Client?.ClientName,
                             ClientAddress = order.Client?.ClientAddress,
-                            FixedPrice = order.Client?.FixedPrice,
-                            Density = order.Client?.Density
+                            FixedPrice = order.Client?.FixedPrice
                         },
                         Gp = new ClientModel
                         {
@@ -506,8 +505,7 @@ namespace CarTek.Api.Services
                             Inn = gp?.Inn,
                             ClientName = gp?.ClientName,
                             ClientAddress = gp?.ClientAddress,
-                            FixedPrice = gp?.FixedPrice,
-                            Density = gp?.Density
+                            FixedPrice = gp?.FixedPrice
                         },
                         LocationA = locationA,
                         LocationB = locationB,
@@ -740,23 +738,7 @@ namespace CarTek.Api.Services
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-
-                if (clientObject?.ClientUnit == tn.UnloadUnit)
-                {
-                    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
-                    {
-                        volume2 = (tn.UnloadVolume / clientObject.Density.Value).Value;
-                    }
-                    else
-                    {
-                        volume2 = tn.UnloadVolume ?? 0;
-                    }
-                }
-                else
-                if (clientObject?.ClientUnit == tn.UnloadUnit2)
-                {
-                    volume2 = tn.UnloadVolume2 ?? 0;
-                }
+                //Calculate
 
                 //TODO: грузоотправитель
                 var model = new TNModel
@@ -966,25 +948,25 @@ namespace CarTek.Api.Services
         {
             double volume = 0;
 
-            if (clientObject != null)
-            {
-                if (clientObject?.ClientUnit == tn.Unit)
-                {
-                    if (clientObject.Density != null && tn.Unit == Unit.t)
-                    {
-                        volume = (tn.LoadVolume / clientObject.Density.Value).Value;
-                    }
-                    else
-                    {
-                        volume = tn.LoadVolume ?? 0;
-                    }
-                }
-                else
-                if (clientObject?.ClientUnit == tn.Unit2)
-                {
-                    volume = tn.LoadVolume2 ?? 0;
-                }
-            }
+            //if (clientObject != null)
+            //{
+            //    if (clientObject?.ClientUnit == tn.Unit)
+            //    {
+            //        if (clientObject.Density != null && tn.Unit == Unit.t)
+            //        {
+            //            volume = (tn.LoadVolume / clientObject.Density.Value).Value;
+            //        }
+            //        else
+            //        {
+            //            volume = tn.LoadVolume ?? 0;
+            //        }
+            //    }
+            //    else
+            //    if (clientObject?.ClientUnit == tn.Unit2)
+            //    {
+            //        volume = tn.LoadVolume2 ?? 0;
+            //    }
+            //}
 
             return volume;
         }
@@ -993,22 +975,22 @@ namespace CarTek.Api.Services
         {
             double volume = 0;
 
-            if (clientObject?.ClientUnit == tn.UnloadUnit)
-            {
-                if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
-                {
-                    volume = (tn.UnloadVolume / clientObject.Density.Value).Value;
-                }
-                else
-                {
-                    volume = tn.UnloadVolume ?? 0;
-                }
-            }
-            else
-            if (clientObject?.ClientUnit == tn.UnloadUnit2)
-            {
-                volume = tn.UnloadVolume2 ?? 0;
-            }
+            //if (clientObject?.ClientUnit == tn.UnloadUnit)
+            //{
+            //    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
+            //    {
+            //        volume = (tn.UnloadVolume / clientObject.Density.Value).Value;
+            //    }
+            //    else
+            //    {
+            //        volume = tn.UnloadVolume ?? 0;
+            //    }
+            //}
+            //else
+            //if (clientObject?.ClientUnit == tn.UnloadUnit2)
+            //{
+            //    volume = tn.UnloadVolume2 ?? 0;
+            //}
 
             return volume;
         }

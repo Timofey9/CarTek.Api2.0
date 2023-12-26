@@ -14,7 +14,7 @@
 
         public double? FixedPrice { get; set; }
 
-        public double? Density { get; set; }    
+        //public double? Density { get; set; }    
 
         public ICollection<Order> Orders { get; set; }
     }
@@ -26,7 +26,7 @@
         public Unit ClientUnit { get; set; }
         public string Inn { get; set; }
         public double? FixedPrice { get; set; }
-        public double? Density { get; set; }
+        //public double? Density { get; set; }
         public string ClientAddress { get; set; }
     }
 }

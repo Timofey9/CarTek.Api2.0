@@ -30,6 +30,9 @@ namespace CarTek.Api.Model
         //Бухгалтер ЗП
         public bool IsSalaryBookkeeper { get; set; }
 
+        //Менеджер-логист
+        public bool IsLogistManager { get; set; }
+
         public string Phone { get; set; }
 
         public string Password { get; set; }
