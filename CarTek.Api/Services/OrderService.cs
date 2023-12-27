@@ -146,6 +146,7 @@ namespace CarTek.Api.Services
                     CarCount = model.CarCount,
                     MaterialId = model.MaterialId,
                     Service = model.Service,                    
+                    Density = model.Density
                 };
 
                 var locationA = _addressService.GetAddress(model.AddressAId);
@@ -516,6 +517,7 @@ namespace CarTek.Api.Services
                         MaterialPrice = order.MaterialPrice,
                         Service = order.Service,
                         CarCount = order.CarCount,
+                        Density = order.Density,
                         Mileage = order.Mileage,
                         Volume = order?.Volume,
                         DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
@@ -726,19 +728,24 @@ namespace CarTek.Api.Services
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;
-
-                if (clientObject?.ClientUnit == tn.Unit)
+                if (order.LoadUnit == Unit.m3)
                 {
                     volume1 = tn.LoadVolume ?? 0;
                 }
                 else
-                if (clientObject?.ClientUnit == tn.Unit2)
                 {
                     volume1 = tn.LoadVolume2 ?? 0;
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                //Calculate
+                if (order.LoadUnit == Unit.m3)
+                {
+                    volume2 = tn.UnloadVolume ?? 0;
+                }
+                else
+                {
+                    volume2 = tn.UnloadVolume2 ?? 0;
+                }
 
                 //TODO: грузоотправитель
                 var model = new TNModel
@@ -893,11 +900,24 @@ namespace CarTek.Api.Services
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;
-                volume1 = CalculateLoadVolume(clientObject, tn);
+                if (order.LoadUnit == Unit.m3)
+                {
+                    volume1 = tn.LoadVolume ?? 0;
+                }
+                else
+                {
+                    volume1 = tn.LoadVolume2 ?? 0;
+                }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                volume1 = CalculateUnloadVolume(clientObject, tn);
-
+                if (order.LoadUnit == Unit.m3)
+                {
+                    volume2 = tn.UnloadVolume ?? 0;
+                }
+                else
+                {
+                    volume2 = tn.UnloadVolume2 ?? 0;
+                }
                 //TODO: грузоотправитель
                 var model = new TNModel
                 {
@@ -942,57 +962,6 @@ namespace CarTek.Api.Services
             }
 
             return tnList;
-        }
-
-        private double CalculateLoadVolume(Client clientObject, TN tn)
-        {
-            double volume = 0;
-
-            //if (clientObject != null)
-            //{
-            //    if (clientObject?.ClientUnit == tn.Unit)
-            //    {
-            //        if (clientObject.Density != null && tn.Unit == Unit.t)
-            //        {
-            //            volume = (tn.LoadVolume / clientObject.Density.Value).Value;
-            //        }
-            //        else
-            //        {
-            //            volume = tn.LoadVolume ?? 0;
-            //        }
-            //    }
-            //    else
-            //    if (clientObject?.ClientUnit == tn.Unit2)
-            //    {
-            //        volume = tn.LoadVolume2 ?? 0;
-            //    }
-            //}
-
-            return volume;
-        }
-
-        private double CalculateUnloadVolume(Client clientObject, TN tn)
-        {
-            double volume = 0;
-
-            //if (clientObject?.ClientUnit == tn.UnloadUnit)
-            //{
-            //    if (clientObject.Density != null && tn.UnloadUnit == Unit.t)
-            //    {
-            //        volume = (tn.UnloadVolume / clientObject.Density.Value).Value;
-            //    }
-            //    else
-            //    {
-            //        volume = tn.UnloadVolume ?? 0;
-            //    }
-            //}
-            //else
-            //if (clientObject?.ClientUnit == tn.UnloadUnit2)
-            //{
-            //    volume = tn.UnloadVolume2 ?? 0;
-            //}
-
-            return volume;
         }
 
         public IEnumerable<OrderModel> GetOrderModelsBetweenDates(string? searchColumn, string? search, DateTime startDate, DateTime endDate, bool isExport = false)

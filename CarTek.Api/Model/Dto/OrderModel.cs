@@ -46,6 +46,8 @@ namespace CarTek.Api.Model.Dto
 
         public int CarCount { get; set; }
 
+        public double? Density { get; set; }
+
         public string Mileage { get; set; }
 
         public long? MaterialId { get; set; }

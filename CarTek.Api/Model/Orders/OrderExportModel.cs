@@ -38,6 +38,8 @@ namespace CarTek.Api.Model.Orders
 
         public string? Note { get; set; }
 
+        public double? Density { get; set; }
+
         public int CarCount { get; set; }
 
         public int? Mileage { get; set; }

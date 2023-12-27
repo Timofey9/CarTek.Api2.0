@@ -30,6 +30,7 @@
         public DateTime StartDate { get; set; }       
         
         public string? Mileage { get; set; }
+        public double? Density { get; set; }
 
         public double? Price { get; set; }
         public double? MaterialPrice { get; set; }
