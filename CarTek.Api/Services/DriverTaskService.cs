@@ -290,7 +290,7 @@ namespace CarTek.Api.Services
 
                 if (client != null)
                 {
-                    var unit = UnitToString(client.ClientUnit);
+                    var unit = UnitToString(model.Order.LoadUnit);
 
                     if (client.FixedPrice == null)
                     {
