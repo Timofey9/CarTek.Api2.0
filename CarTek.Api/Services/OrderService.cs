@@ -229,7 +229,6 @@ namespace CarTek.Api.Services
                     var gp = _clientService.GetClient(item.GpId);
 
                     var locationA = _addressService.GetAddress(item.LocationAId ?? 0);
-
                     var locationB = _addressService.GetAddress(item.LocationBId ?? 0);
 
                     if (locationA != null)
@@ -276,6 +275,13 @@ namespace CarTek.Api.Services
 
                             case "service":
                                 if (((int)item.Service).ToString() == search.ToLower())
+                                {
+                                    result.Add(item);
+                                }
+                                break;
+                            case "address":
+                                if ((!string.IsNullOrEmpty(item.LocationA) && item.LocationA.ToLower().Contains(search.ToLower())) 
+                                    || (!string.IsNullOrEmpty(item.LocationB) && item.LocationB.ToLower().Contains(search.ToLower())))
                                 {
                                     result.Add(item);
                                 }
@@ -1060,6 +1066,13 @@ namespace CarTek.Api.Services
                                 if (((int)item.Service).ToString() == search.ToLower())
                                 {
                                     filtered.Add(mappedItem);
+                                }
+                                break;
+                            case "address":
+                                if ((!string.IsNullOrEmpty(item.LocationA) && item.LocationA.ToLower().Contains(search.ToLower()))
+                                    || (!string.IsNullOrEmpty(item.LocationB) && item.LocationB.ToLower().Contains(search.ToLower())))
+                                {
+                                    result.Add(item);
                                 }
                                 break;
                             default:

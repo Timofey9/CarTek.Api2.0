@@ -34,6 +34,7 @@ builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
 builder.Services.AddScoped<IDriverTaskService, DriverTaskService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IInformationDeskService, InformationDeskService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

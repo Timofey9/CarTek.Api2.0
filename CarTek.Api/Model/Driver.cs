@@ -28,6 +28,8 @@ namespace CarTek.Api.Model
 
         public Car? Car { get; set; }
 
+        public bool IsFired { get; set; }
+
         public string? RefreshToken { get; set; }
 
         public DateTime RefreshTokenExpiryTime { get; set; }

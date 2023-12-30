@@ -289,6 +289,11 @@ namespace CarTek.Api.Services
                 {
                     var driver = GetDriver(authModel);
 
+                    if (driver.IsFired)
+                    {
+                        throw new InvalidPasswordException();
+                    }
+
                     claims = new[]
                     {
                         new Claim(AuthConstants.ClaimTypeLogin, driver.Login),

@@ -108,17 +108,41 @@ namespace CarTek.Api.Services
             }
         }
 
-        public IEnumerable<Driver> GetAll()
+        public ApiResponse FireDriver(long driverId)
         {
-            return GetAll(null, null, 0, 0, null, null);
+            var driver = _dbContext.Drivers.FirstOrDefault(t => t.Id == driverId);
+
+            if (driver == null)
+                return new ApiResponse
+                {
+                    Message = "Водитель не найден",
+                    IsSuccess = false,
+                };
+
+            driver.IsFired = true;
+            driver.RefreshToken = null;
+            driver.Password = "secret";
+
+            _dbContext.SaveChanges();
+
+            return new ApiResponse
+            {
+                Message = "Водитель уволен",
+                IsSuccess = true,
+            };
         }
 
-        public IEnumerable<Driver> GetAll(string searchColumn, string search)
+        public IEnumerable<Driver> GetAll(bool includeFired = false)
+        {
+            return GetAll(null, null, 0, 0, null, null, includeFired);
+        }
+
+        public IEnumerable<Driver> GetAll(string searchColumn, string search, bool includeFired = false)
         {
             return GetAll(null, null, 0, 0, searchColumn, search);
         }
 
-        public IEnumerable<Driver> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search)
+        public IEnumerable<Driver> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search, bool includeFired = false)
         {
             pageNumber = pageNumber > 0 ? pageNumber : 1;
             pageSize = pageSize >= 0 ? pageSize : 10;
@@ -127,22 +151,23 @@ namespace CarTek.Api.Services
 
             try
             {
-                Expression<Func<Driver, bool>> filterBy = x => true;
+                Expression<Func<Driver, bool>> filterBy = x => !x.IsFired || includeFired;
+
                 if (!string.IsNullOrEmpty(searchColumn) && !string.IsNullOrEmpty(search))
                 {
                     switch (searchColumn)
                     {
                         case "lastname":
-                            filterBy = x => x.LastName.ToLower().Contains(search.ToLower().Trim());
+                            filterBy = x => x.LastName.ToLower().Contains(search.ToLower().Trim()) && (!x.IsFired || includeFired);
                             break;
                         case "phone":
-                            filterBy = x => x.Phone.ToLower().Contains(search.ToLower().Trim());
+                            filterBy = x => x.Phone.ToLower().Contains(search.ToLower().Trim()) && (!x.IsFired || includeFired);
                             break;                       
                         case "percent":
                             var convSuccess = int.TryParse(search, out var percent);
                             if (convSuccess)
                             {
-                                filterBy = x => x.Percentage == percent;
+                                filterBy = x => x.Percentage == percent && (!x.IsFired || includeFired);
                             }
                             break;
                         default:

@@ -106,6 +106,19 @@ namespace CarTek.Api.Controllers
             return Ok(_mapper.Map<List<DriverModel>>(list));
         }
 
+        [HttpGet("getalldriverswithfired")]
+        public IActionResult GetAllDriversWithFired(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search)
+        {
+            var list = _driverService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, true);
+            var totalNumber = _driverService.GetAll(searchColumn, search).Count();
+
+            return Ok(new PagedResult<DriverModel>()
+            {
+                TotalNumber = totalNumber,
+                List = _mapper.Map<List<DriverModel>>(list)
+            });
+        }
+
         [HttpGet("getdrivertasks")]
         public IActionResult GetDriverTasks(int pageNumber, int pageSize, DateTime? startDate, DateTime? endDate, long driverId, string? searchBy, string? searchString)
         {
@@ -183,6 +196,20 @@ namespace CarTek.Api.Controllers
         public IActionResult TaskGetBack([FromBody] DriverTaskUpdateModel model)
         {
             var res = _driverTaskService.TaskGetBack(model.DriverTaskId, model.IsSubTask ?? false);
+
+            if (res.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return BadRequest(res.Message);
+        }
+               
+        
+        [HttpPost("firedriver")]
+        public IActionResult FireDriver([FromBody] FireDriverModel model)
+        {
+            var res = _driverService.FireDriver(model.DriverId);
 
             if (res.IsSuccess)
             {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CarTek.Api.Model;
+using CarTek.Api.Model.Dto;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -16,16 +17,18 @@ namespace CarTek.Api.Controllers
         private readonly IClientService _clientService;
         private readonly IAddressService _addressService;
         private readonly IMaterialService _materialService;
+        private readonly IInformationDeskService _informationDeskService;
         private readonly IMapper _mapper;
 
-        public UtilsController(IOrderService orderService, IClientService clientService,
-            IAddressService addresSservice, IMapper mapper, IMaterialService materialService)
+        public UtilsController(IOrderService orderService, IClientService clientService, 
+            IAddressService addresSservice, IMapper mapper, IMaterialService materialService, IInformationDeskService informationDeskService)
         {
             _orderService = orderService;
             _addressService = addresSservice;
             _clientService = clientService;
             _materialService = materialService;
             _mapper = mapper;
+            _informationDeskService = informationDeskService;
         }
 
         [HttpGet("getmaterials")]
@@ -124,5 +127,41 @@ namespace CarTek.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpDelete("deleteinformationmessage/{messageId}")]
+        public IActionResult DeleteMessage(long messageId)
+        {
+            var res = _informationDeskService.DeleteMessage(messageId);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
+
+        [HttpPost("createmessage")]
+        public IActionResult CreateMessage([FromBody] CreateInformationMessage model)
+        {
+            var res = _informationDeskService.AddMessage(model.Message);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
+
+
+        [HttpGet("getinformationmessages")]
+        public IActionResult GetMessages()
+        {
+            var list = _informationDeskService.GetMessages();
+
+            return Ok(list);
+        }
+
     }
 }

@@ -84,7 +84,7 @@ namespace CarTek.Api.Services
             numberCellStyle.BorderRight = BorderStyle.Thin;
 
             var moneyCellStyle = workbook.CreateCellStyle();
-            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("#,##0.00");
+            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("# ### ### ### ##0.00");
             moneyCellStyle.WrapText = true;
             moneyCellStyle.VerticalAlignment = VerticalAlignment.Center;
             moneyCellStyle.BorderBottom = BorderStyle.Thin;
@@ -883,7 +883,7 @@ namespace CarTek.Api.Services
             numberCellStyle.BorderRight = BorderStyle.Thin;
 
             var moneyCellStyle = workbook.CreateCellStyle();
-            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("#,##0.00");
+            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("# ### ### ### ##0.00");
             moneyCellStyle.WrapText = true;
             moneyCellStyle.VerticalAlignment = VerticalAlignment.Center;
             moneyCellStyle.BorderBottom = BorderStyle.Thin;
@@ -1061,7 +1061,7 @@ namespace CarTek.Api.Services
 
 
             var moneyCellStyle = workbook.CreateCellStyle();
-            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("#,##0.00");
+            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("# ### ### ### ##0.00");  
             moneyCellStyle.WrapText = true;
             moneyCellStyle.VerticalAlignment = VerticalAlignment.Center;
             moneyCellStyle.BorderBottom = BorderStyle.Thin;

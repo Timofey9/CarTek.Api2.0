@@ -27,5 +27,7 @@ namespace CarTek.Api.Model.Dto
         public long? CarId { get; set; }
 
         public string CarName { get; set; }
+
+        public bool IsFired { get; set; }
     }
 }

@@ -28,6 +28,7 @@ namespace CarTek.Api.DBContext
         public DbSet<UserDevice> UserDevices { get; set; }
         public DbSet<TN> TNs { get; set; }
         public DbSet<SubTask> SubTasks { get; set; }
+        public DbSet<InformationDeskMessage> InformationDeskMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

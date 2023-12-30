@@ -7,6 +7,13 @@
         public bool? IsSubTask { get; set; }
     }
 
+
+    public class FireDriverModel
+    {
+        public long DriverId { get; set; }
+    }
+
+
     public class CreateDriverModel
     {
         public string FirstName { get; set; }
