@@ -268,9 +268,14 @@ namespace CarTek.Api.Services
                                     result.Add(item);
                                 }
                                 break;
-                            case "address":
-                                if ((!string.IsNullOrEmpty(item.LocationA) && item.LocationA.ToLower().Contains(search.ToLower()))
-                                    || (!string.IsNullOrEmpty(item.LocationB) && item.LocationB.ToLower().Contains(search.ToLower())))
+                            case "addressA":
+                                if ((!string.IsNullOrEmpty(item.LocationA) && item.LocationA.ToLower().Contains(search.ToLower())))
+                                {
+                                    result.Add(item);
+                                }
+                                break;
+                            case "addressB":
+                                if ((!string.IsNullOrEmpty(item.LocationB) && item.LocationB.ToLower().Contains(search.ToLower())))
                                 {
                                     result.Add(item);
                                 }

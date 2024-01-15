@@ -51,6 +51,20 @@ namespace CarTek.Api.Services
                         && x.DropOffDepartureDate.Value.Date <= date2)
                         && x.Number != null && x.Number.ToLower().Contains(search.ToLower());
                         break;
+                    case "loadAddress":
+                        filterBy = x =>
+                        x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
+                        && (x.PickUpDepartureDate.Value.Date >= date1
+                        && x.DropOffDepartureDate.Value.Date <= date2)
+                        && x.LocationA != null && x.LocationA.TextAddress.ToLower().Contains(search.ToLower());
+                        break;
+                    case "unloadAddress":
+                        filterBy = x =>
+                        x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
+                        && (x.PickUpDepartureDate.Value.Date >= date1
+                        && x.DropOffDepartureDate.Value.Date <= date2)
+                        && x.LocationB != null && x.LocationB.TextAddress.ToLower().Contains(search.ToLower());
+                        break;
                 }
             }
 
