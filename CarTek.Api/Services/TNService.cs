@@ -93,6 +93,8 @@ namespace CarTek.Api.Services
             {
                 var tnModel = _mapper.Map<TNModel>(tn);
 
+                tnModel.OrderName = tn.DriverTask?.Order?.Name;
+
                 tnModel.Material = tn.Material != null ? tn.Material.Name : "";
 
                 //var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);

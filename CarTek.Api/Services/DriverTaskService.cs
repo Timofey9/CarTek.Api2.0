@@ -1168,13 +1168,36 @@ namespace CarTek.Api.Services
                         TN.UnloadVolume2 = model.UnloadVolume2;
                         TN.UnloadUnit2 = model.UnloadUnit2;
                         TN.DropOffArrivalDate = model.DropOffArrivalDate;
-                        TN.LocationBId = model.LocationBId;
                         TN.DropOffDepartureDate = model.DropOffDepartureDate;
                         TN.Transporter = model.Transporter;
-                        TN.UnloadVolume2 = model.UnloadVolume2;
-                        TN.UnloadUnit2 = model.UnloadUnit2;
-
                         _dbContext.TNs.Update(TN);
+                    }
+                    else
+                    {
+                        var newTN = new TN
+                        {
+                            Number = model.Number,
+                            GoId = model.GoId,
+                            GpId = model.GpId,
+                            LoadVolume = model.LoadVolume,
+                            Unit = model.Unit,
+                            LoadVolume2 = model.LoadVolume2,
+                            Unit2 = model.Unit2,
+                            LocationAId = model.LocationAId,
+                            LocationBId = model.LocationBId,
+                            PickUpArrivalDate = model.PickUpArrivalDate,
+                            PickUpDepartureDate = model.PickUpDepartureDate,
+                            MaterialId = model.MaterialId,
+                            UnloadVolume = model.UnloadVolume,
+                            UnloadUnit = model.UnloadUnit,
+                            UnloadVolume2 = model.UnloadVolume2,
+                            UnloadUnit2 = model.UnloadUnit2,
+                            DropOffArrivalDate = model.DropOffArrivalDate,
+                            DropOffDepartureDate = model.DropOffDepartureDate,
+                            Transporter = model.Transporter,
+                        };
+
+                        _dbContext.TNs.Add(newTN);
                     }
 
                     if (model.Files != null && model.Files.Count > 0)
@@ -1249,11 +1272,36 @@ namespace CarTek.Api.Services
                         task.TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
-                        task.TN.UnloadVolume2 = model.UnloadVolume2;
-                        task.TN.UnloadUnit2 = model.UnloadUnit2;
                         task.TN.Transporter = model.Transporter;
 
                         _dbContext.TNs.Update(task.TN);
+                    }
+                    else
+                    {
+                        var newTN = new TN
+                        {
+                            Number = model.Number,
+                            GoId = model.GoId,
+                            GpId = model.GpId,
+                            LoadVolume = model.LoadVolume,
+                            Unit = model.Unit,
+                            LoadVolume2 = model.LoadVolume2,
+                            Unit2 = model.Unit2,
+                            LocationAId = model.LocationAId,
+                            LocationBId = model.LocationBId,
+                            PickUpArrivalDate = model.PickUpArrivalDate,
+                            PickUpDepartureDate = model.PickUpDepartureDate,
+                            MaterialId = model.MaterialId,
+                            UnloadVolume = model.UnloadVolume,
+                            UnloadUnit = model.UnloadUnit,
+                            UnloadVolume2 = model.UnloadVolume2,
+                            UnloadUnit2 = model.UnloadUnit2,
+                            DropOffArrivalDate = model.DropOffArrivalDate,
+                            DropOffDepartureDate = model.DropOffDepartureDate,
+                            Transporter = model.Transporter,
+                        };
+
+                        _dbContext.TNs.Add(newTN);
                     }
 
                     if (model.Files != null && model.Files.Count > 0)

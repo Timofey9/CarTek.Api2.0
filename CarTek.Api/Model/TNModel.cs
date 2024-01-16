@@ -118,7 +118,7 @@ namespace CarTek.Api.Model
         public Order Order { get; set; }
 
         public ClientModel Customer { get; set; }
-
+        public string OrderName { get; set; }
         public long DriverTaskId { get;set; }
         public long SubTaskId { get; set; }
         public long OrderId { get; set; }
