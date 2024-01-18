@@ -159,7 +159,7 @@ namespace CarTek.Api.Services
                 if (client != null)
                 {
                     order.ClientId = model.ClientId;
-                }
+                }                
 
                 if (locationA != null)
                 {
@@ -846,11 +846,8 @@ namespace CarTek.Api.Services
                 Order order = new Order();
                 DriverTaskStatus status = DriverTaskStatus.Assigned;
 
-
                 var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
                 var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
-
-
 
                 if (tn.SubTask != null)
                 {
@@ -903,8 +900,9 @@ namespace CarTek.Api.Services
                     }
                 }
 
-                double volume1 = tn.LoadVolume ?? 0;
-                if (order.LoadUnit == Unit.m3)
+                double volume1 = tn.LoadVolume ?? 0;                
+
+                if (gp?.ClientUnit == Unit.m3)
                 {
                     volume1 = tn.LoadVolume ?? 0;
                 }
@@ -914,7 +912,7 @@ namespace CarTek.Api.Services
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                if (order.LoadUnit == Unit.m3)
+                if (gp?.ClientUnit == Unit.m3)
                 {
                     volume2 = tn.UnloadVolume ?? 0;
                 }
@@ -945,8 +943,8 @@ namespace CarTek.Api.Services
                     DriverInfo = driverInfo,
                     Transporter = tn.Transporter,
                     Number = tn.Number,
-                    Unit = UnitToString(clientObject?.ClientUnit),
-                    UnloadUnit = UnitToString(clientObject?.ClientUnit),
+                    Unit = UnitToString(gp?.ClientUnit),
+                    UnloadUnit = UnitToString(gp?.ClientUnit),
                     LoadVolume = volume1.ToString(nfi),
                     UnloadVolume = volume2.ToString(nfi),
                     Material = tn.Material?.Name,

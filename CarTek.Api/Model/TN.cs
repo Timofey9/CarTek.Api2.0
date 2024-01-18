@@ -16,9 +16,14 @@ namespace CarTek.Api.Model
         public long? SubTaskId { get; set; }
         public long DriverId { get; set; }
         public long? TransporterId { get; set; } //Id из таблицы Clients, если null => КарТэк
+
+        //м3
         public double? LoadVolume { get; set; }
+        //тн
         public double? LoadVolume2 { get; set; }
+        //м3
         public double? UnloadVolume { get; set; }
+        //тн
         public double? UnloadVolume2 { get; set; }
 
         public Unit? Unit { get; set; }

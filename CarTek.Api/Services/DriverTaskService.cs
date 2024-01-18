@@ -892,9 +892,9 @@ namespace CarTek.Api.Services
                         GoId = model.GoId,
                         GpId = model.GpId,
                         LoadVolume = model.LoadVolume,
-                        Unit = model.Unit,
+                        Unit = Unit.m3,
                         LoadVolume2 = model.LoadVolume2,
-                        Unit2 = model.Unit2,
+                        Unit2 = Unit.t,
                         LocationAId = model.LocationAId,
                         LocationBId = model.LocationBId,
                         PickUpArrivalDate = model.PickUpArrivalDate?.Date,
@@ -919,7 +919,6 @@ namespace CarTek.Api.Services
                                 GoId = model.GoId,
                                 GpId = model.GpId,
                                 LoadVolume = model.LoadVolume,
-                                Unit = model.Unit,
                                 SubTaskId = model.SubTaskId,
                                 LocationAId = model.LocationAId,
                                 LocationBId = model.LocationBId,
@@ -955,7 +954,6 @@ namespace CarTek.Api.Services
                                 GoId = model.GoId,
                                 GpId = model.GpId,
                                 LoadVolume = model.LoadVolume,
-                                Unit = model.Unit,
                                 LocationAId = model.LocationAId,
                                 LocationBId = model.LocationBId,
                                 PickUpArrivalDate = model.PickUpArrivalDate?.Date,
@@ -1007,17 +1005,14 @@ namespace CarTek.Api.Services
                     if (TN != null)
                     {
                         TN.UnloadVolume = model.UnloadVolume;
-                        TN.UnloadUnit = model.UnloadUnit;
+                        TN.UnloadUnit = Unit.m3;
                         TN.UnloadVolume2 = model.UnloadVolume2;
-                        TN.UnloadUnit2 = model.UnloadUnit2;
+                        TN.UnloadUnit2 = Unit.t;
                         TN.DropOffArrivalDate = model.DropOffArrivalDate?.Date;
                         TN.LocationBId = model.LocationBId;
                         TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         TN.DropOffDepartureTime = model.DropOffDepartureTime;
-
-                        TN.UnloadVolume2 = model.UnloadVolume2;
-                        TN.UnloadUnit2 = model.UnloadUnit2;
 
                         _dbContext.Update(TN);
                         _dbContext.SaveChanges();
@@ -1040,16 +1035,14 @@ namespace CarTek.Api.Services
                     if (task.TN != null)
                     {
                         task.TN.UnloadVolume = model.UnloadVolume;
-                        task.TN.UnloadUnit = model.UnloadUnit;
+                        task.TN.UnloadUnit = Unit.m3;
                         task.TN.UnloadVolume2 = model.UnloadVolume2;
-                        task.TN.UnloadUnit2 = model.UnloadUnit2;
+                        task.TN.UnloadUnit2 = Unit.t;
                         task.TN.DropOffArrivalDate = model.DropOffArrivalDate?.Date;
                         task.TN.LocationBId = model.LocationBId;
                         task.TN.DropOffDepartureDate = model.DropOffDepartureDate?.Date;
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
-                        task.TN.UnloadVolume2 = model.UnloadVolume2;
-                        task.TN.UnloadUnit2 = model.UnloadUnit2;
 
                         _dbContext.Update(task.TN);
                         _dbContext.SaveChanges();

@@ -950,7 +950,7 @@ namespace CarTek.Api.Services
                 row.GetCell(15).CellStyle.WrapText = true;
                 row.GetCell(15).CellStyle = moneyCellStyle;
 
-                row.CreateCell(16).SetCellType(CellType.Numeric) ;
+                row.CreateCell(16).SetCellType(CellType.Numeric);
                 row.GetCell(16).SetCellValue(tn.DriverPercent);
                 row.GetCell(16).CellStyle = numberCellStyle;
 
