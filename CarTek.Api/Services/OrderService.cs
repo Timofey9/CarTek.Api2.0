@@ -148,7 +148,12 @@ namespace CarTek.Api.Services
                     CarCount = model.CarCount,
                     MaterialId = model.MaterialId,
                     Service = model.Service,
-                    Density = model.Density
+                    Density = model.Density,
+                    IsExternal = model.IsExternal,
+                    ExternalTransporterId = model.ExternalTransporterId,
+                    ExternalPrice = model.ExternalPrice,
+                    DriverPrice = model.DriverPrice,
+                    Discount = model.Discount
                 };
 
                 var locationA = _addressService.GetAddress(model.AddressAId);
@@ -217,6 +222,7 @@ namespace CarTek.Api.Services
                     .ThenInclude(dt => dt.Driver)
                     .Include(t => t.Client)
                     .Include(t => t.Material)
+                    .Include(t => t.ExternalTransporter)
                     .Where(filterBy)
                     .Join(_dbContext.Addresses, t => t.LocationAId, a => a.Id, (odr, adr) => new { Order = odr, LocA = adr })
                     .Join(_dbContext.Addresses, t => t.Order.LocationBId, a => a.Id, (adr, odr) => new { Order = adr.Order, LocA = adr.LocA, LocB = odr })
@@ -344,6 +350,7 @@ namespace CarTek.Api.Services
                         .Include(o => o.DriverTasks)
                         .Include(t => t.Material)
                         .Include(t => t.Client)
+                        .Include(t => t.ExternalTransporter)
                         .Where(filterBy);
 
                 result = tresult.ToList();
@@ -415,6 +422,7 @@ namespace CarTek.Api.Services
                 .Include(t => t.DriverTasks)
                 .Include(t => t.Client)
                 .Include(t => t.Material)
+                .Include(t => t.ExternalTransporter)
                 .FirstOrDefault(t => t.Id == orderId);
 
             var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == order.LocationAId);
@@ -482,6 +490,7 @@ namespace CarTek.Api.Services
                 .Include(t => t.DriverTasks)
                 .Include(t => t.Client)
                 .Include(t => t.Material)
+                .Include(t => t.ExternalTransporter)
                 .FirstOrDefault(t => t.Id == orderId);
 
                 if (order != null)
@@ -732,7 +741,7 @@ namespace CarTek.Api.Services
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;
-                if (order.LoadUnit == Unit.m3)
+                if (gp?.ClientUnit == Unit.m3)
                 {
                     volume1 = tn.LoadVolume ?? 0;
                 }
@@ -742,7 +751,7 @@ namespace CarTek.Api.Services
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                if (order.LoadUnit == Unit.m3)
+                if (gp?.ClientUnit == Unit.m3)
                 {
                     volume2 = tn.UnloadVolume ?? 0;
                 }
@@ -988,6 +997,7 @@ namespace CarTek.Api.Services
                     .ThenInclude(dt => dt.Driver)
                     .Include(t => t.Client)
                     .Include(t => t.Material)
+                    .Include(t => t.ExternalTransporter)
                     .Where(filterBy)
                     .Join(_dbContext.Addresses, t => t.LocationAId, a => a.Id, (odr, adr) => new { Order = odr, LocA = adr })
                     .Join(_dbContext.Addresses, t => t.Order.LocationBId, a => a.Id, (adr, odr) => new { Order = adr.Order, LocA = adr.LocA, LocB = odr })

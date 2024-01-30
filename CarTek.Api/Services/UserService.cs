@@ -284,6 +284,7 @@ namespace CarTek.Api.Services
                 User userInstance;
                 string token;
                 string refreshToken;
+                bool isExternal = false;
 
                 if (authModel.IsDriver == true)
                 {
@@ -309,8 +310,10 @@ namespace CarTek.Api.Services
                         Login = driver.Login,
                         FirstName = driver.FirstName,
                         LastName = driver.LastName,
-                        MiddleName = driver.MiddleName,
+                        MiddleName = driver.MiddleName                        
                     };
+
+                    isExternal = driver.IsExternal;
 
                     refreshToken = _jwtService.GenerateRefreshToken();
 
@@ -345,7 +348,8 @@ namespace CarTek.Api.Services
                     Token = token,
                     Identity = userInstance,
                     RefreshToken = refreshToken,
-                    IsDriver = authModel.IsDriver ?? false
+                    IsDriver = authModel.IsDriver ?? false,
+                    IsExternal = isExternal
                 };
             }
             catch(Exception ex)

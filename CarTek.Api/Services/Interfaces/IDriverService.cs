@@ -26,5 +26,7 @@ namespace CarTek.Api.Services.Interfaces
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel);
 
         public ApiResponse FireDriver(long driverId);
+
+        public ICollection<Driver> GetExternalTransporterDrivers(long transporterId);
     }
 }

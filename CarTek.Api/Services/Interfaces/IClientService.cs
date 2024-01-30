@@ -14,5 +14,11 @@ namespace CarTek.Api.Services.Interfaces
         Client GetClient(long id);
 
         ICollection<Client> GetClients();
+
+        ApiResponse CreateExternalTransporter(string name);
+
+        ICollection<ExternalTransporter> GetExternalTransporters();
+
+        ExternalTransporter GetExternalTransporter(long id);
     }
 }

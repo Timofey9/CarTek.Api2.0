@@ -242,6 +242,29 @@ namespace CarTek.Api.Services
             return driver;
         }
 
+        public ICollection<Driver> GetExternalTransporterDrivers(long transporterId)
+        {
+            var result = new List<Driver>();
+            try
+            {
+                var transporter = _dbContext.ExternalTransporters
+                    .Include(t => t.Drivers)
+                    .FirstOrDefault(t => t.Id == transporterId);
+
+                if (transporter == null)
+                    return result;
+
+                result = transporter.Drivers.ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения вн. водителей " + ex.Message);
+                return result;
+            }
+        }
+
         public Driver UpdateDriver(long driverId, JsonPatchDocument<Driver> driverModel)
         {
             try

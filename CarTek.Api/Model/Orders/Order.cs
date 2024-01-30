@@ -47,9 +47,38 @@ namespace CarTek.Api.Model
 
         public long? LocationBId { get; set; }
 
-        public double? Price { get; set; } // себестоимость перевозки
+        /// <summary>
+        /// себестоимость перевозки (КарТэк)
+        /// </summary>
+        public double? Price { get; set; } 
 
-        public double? MaterialPrice { get; set; }  // себестоимость материала
+        /// <summary>
+        /// себестоимость перевозки (наемник)
+        /// </summary>
+        public double? ExternalPrice { get; set; } 
+
+        /// <summary>
+        /// Cебестоимость перевозки (водитель)
+        /// </summary>
+        public double? DriverPrice { get; set; } 
+
+        /// <summary>
+        /// В зависимости от типа заявки: Price - Driver/ExternalPrice
+        /// </summary>
+        public double? Discount { get; set; }
+
+        /// <summary>
+        /// Для наемного транспорта/водителя
+        /// </summary>
+        public bool IsExternal { get; set; }
+
+        public long? ExternalTransporterId { get; set; }
+        public ExternalTransporter? ExternalTransporter { get; set; }
+
+        /// <summary>
+        /// себестоимость материала
+        /// </summary>
+        public double? MaterialPrice { get; set; } 
 
         public string? Note { get; set; }
 

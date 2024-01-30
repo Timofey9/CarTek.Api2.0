@@ -16,5 +16,6 @@
 
         //В пути, на базе, в ремонте
         public string State { get; set; }
+        public bool IsExternal { get; set; }
     }
 }

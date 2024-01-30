@@ -34,6 +34,32 @@
 
         public double? Price { get; set; }
         public double? MaterialPrice { get; set; }
+
+        /// <summary>
+        /// себестоимость перевозки (наемник)
+        /// </summary>
+        public double? ExternalPrice { get; set; }
+
+        /// <summary>
+        /// Cебестоимость перевозки (водитель)
+        /// </summary>
+        public double? DriverPrice { get; set; }
+
+        /// <summary>
+        /// В зависимости от типа заявки: Price - Driver/ExternalPrice
+        /// </summary>
+        public double? Discount { get; set; }
+
+        /// <summary>
+        /// Для наемного транспорта/водителя
+        /// </summary>
+        public bool IsExternal { get; set; }
+
+        /// <summary>
+        /// Id перевозчика
+        /// </summary>
+        public long? ExternalTransporterId { get; set; }
+
         public string? Note { get; set; }
         public int CarCount { get; set; }
 

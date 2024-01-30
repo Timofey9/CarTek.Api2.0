@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq.Expressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CarTek.Api.Services
 {
@@ -349,6 +348,29 @@ namespace CarTek.Api.Services
             }
 
             return result;
+        }
+
+        public ICollection<Car> GetExternalTransporterCars(long transporterId)
+        {
+            var result = new List<Car>();
+            try
+            {
+                var transporter = _dbContext.ExternalTransporters
+                    .Include(t => t.Cars)
+                    .FirstOrDefault(t => t.Id == transporterId);
+
+                if (transporter == null)
+                    return result;
+
+                result = transporter.Cars.ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения вн. авто " + ex.Message);
+                return result;
+            }
         }
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> patchDoc)
