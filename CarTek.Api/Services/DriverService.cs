@@ -139,7 +139,7 @@ namespace CarTek.Api.Services
 
         public IEnumerable<Driver> GetAll(string searchColumn, string search, bool includeFired = false)
         {
-            return GetAll(null, null, 0, 0, searchColumn, search);
+            return GetAll(null, null, 0, 0, searchColumn, search, includeFired);
         }
 
         public IEnumerable<Driver> GetAll(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search, bool includeFired = false)

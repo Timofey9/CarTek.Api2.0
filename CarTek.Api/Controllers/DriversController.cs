@@ -110,7 +110,7 @@ namespace CarTek.Api.Controllers
         public IActionResult GetAllDriversWithFired(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search)
         {
             var list = _driverService.GetAll(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, true);
-            var totalNumber = _driverService.GetAll(searchColumn, search).Count();
+            var totalNumber = _driverService.GetAll(searchColumn, search, true).Count();
 
             return Ok(new PagedResult<DriverModel>()
             {
