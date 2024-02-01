@@ -12,5 +12,9 @@
         public long TrailerId { get; set; } 
 
         public int AxelsCount { get; set; }
+
+        ////////////////        
+        public bool IsExternal { get; set; }
+        public long? ExternalTransporterId { get; set; }
     }
 }

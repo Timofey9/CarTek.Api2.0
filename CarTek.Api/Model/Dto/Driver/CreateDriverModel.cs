@@ -30,6 +30,10 @@
 
         public long? CarId { get; set; }
 
-        public string? Phone { get; set; }   
+        public string? Phone { get; set; }
+
+
+        public bool IsExternal { get; set; }
+        public long? ExternalTransportedId { get; set; }
     }
 }

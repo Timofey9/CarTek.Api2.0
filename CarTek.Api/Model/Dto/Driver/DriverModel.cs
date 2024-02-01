@@ -29,5 +29,7 @@ namespace CarTek.Api.Model.Dto
         public string CarName { get; set; }
 
         public bool IsFired { get; set; }
+
+        public bool IsExternal { get; set; }
     }
 }

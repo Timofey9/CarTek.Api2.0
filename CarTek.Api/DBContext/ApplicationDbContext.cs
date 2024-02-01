@@ -29,6 +29,7 @@ namespace CarTek.Api.DBContext
         public DbSet<TN> TNs { get; set; }
         public DbSet<SubTask> SubTasks { get; set; }
         public DbSet<InformationDeskMessage> InformationDeskMessages { get; set; }
+        public DbSet<ExternalTransporter> ExternalTransporters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

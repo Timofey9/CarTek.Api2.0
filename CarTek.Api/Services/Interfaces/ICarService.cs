@@ -26,5 +26,7 @@ namespace CarTek.Api.Services.Interfaces
         public ApiResponse DeleteCar(long carId);
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> carModel);
+
+        public ICollection<Car> GetExternalTransporterCars(long transporterId);
     }
 }

@@ -15,6 +15,8 @@
 
         public string Phone { get; set; }
 
+        public bool IsExternal { get; set; }
+
         public string FullName => $"{LastName} {FirstName} {MiddleName}";
     }
 }

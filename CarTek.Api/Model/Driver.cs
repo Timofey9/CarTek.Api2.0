@@ -30,6 +30,12 @@ namespace CarTek.Api.Model
 
         public bool IsFired { get; set; }
 
+        //наемный водитель
+        public bool IsExternal { get; set; }
+        public long? ExternalTransporterId { get; set; }
+        public ExternalTransporter? ExternalTransporter { get; set; }
+        //
+
         public string? RefreshToken { get; set; }
 
         public DateTime RefreshTokenExpiryTime { get; set; }

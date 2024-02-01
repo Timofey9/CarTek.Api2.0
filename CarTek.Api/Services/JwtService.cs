@@ -87,7 +87,8 @@ namespace CarTek.Api.Services
                             },
                             Token = newAccessTokenD,
                             RefreshToken = newRefreshTokenD,
-                            IsDriver = true
+                            IsDriver = true,
+                            IsExternal = driver.IsExternal
                         };
                     }
 

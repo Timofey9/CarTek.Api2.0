@@ -17,6 +17,46 @@ namespace CarTek.Api.Services
             _logger = logger;
         }
 
+
+        public ApiResponse CreateExternalTransporter(string name)
+        {
+            try
+            {
+                var transporterInDb = _dbContext.ExternalTransporters.FirstOrDefault(t => t.Name.Trim().ToLower() == name.Trim().ToLower());
+
+                if(transporterInDb != null)
+                {
+                    return new ApiResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Перевозчик с таким названием уже существует"
+                    };
+                }
+
+                var transporter = new ExternalTransporter { Name = name };
+
+                _dbContext.ExternalTransporters.Add(transporter);
+
+                _dbContext.SaveChanges();
+
+                return new ApiResponse
+                {
+                    IsSuccess = true,
+                    Message = "Перевозчик создан"
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Ошибка создания перевозчика " + ex.Message);
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Перевозчик не создан"
+                };
+            }
+        }
+
         public ApiResponse CreateClient(string clientName, string inn, string clientAddress, Unit clientUnit, double? fixedPrice)
         {
             try
@@ -170,6 +210,33 @@ namespace CarTek.Api.Services
                 IsSuccess = false,
                 Message = $"Клиент {id} не найден"
             };
+        }
+
+        public ICollection<ExternalTransporter> GetExternalTransporters()
+        {
+            var clients = _dbContext
+                .ExternalTransporters
+                .Include(t => t.Drivers)
+                .Include(t => t.Cars)
+                .Include(t => t.Orders)
+                .OrderBy(t => t.Name);
+
+            return clients.ToList();
+        }
+
+        public ExternalTransporter GetExternalTransporter(long id)
+        {
+            try
+            {
+                var client = _dbContext.ExternalTransporters.FirstOrDefault(c => c.Id == id);
+
+                return client;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка получения клиента: {id}", ex);
+                return null;
+            }
         }
     }
 }
