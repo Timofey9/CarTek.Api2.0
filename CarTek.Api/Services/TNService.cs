@@ -56,7 +56,7 @@ namespace CarTek.Api.Services
                             x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
                             && (x.PickUpDepartureDate.Value.Date >= date1
                             && x.DropOffDepartureDate.Value.Date <= date2)
-                            && x.DriverTask != null && x.DriverTask.Driver.FullName.ToLower().Contains(search.ToLower());
+                            && x.DriverTask != null && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower());
                         break;
                     case "loadAddress":
                         filterBy = x =>
@@ -80,7 +80,9 @@ namespace CarTek.Api.Services
             var tresult = _dbContext.TNs
                 .Include(tn => tn.SubTask)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Order)
+                    .ThenInclude(dt => dt.Order)                                    
+                .Include(tn => tn.DriverTask)
+                    .ThenInclude(dt => dt.Driver)
                 .Include(tn => tn.LocationA)
                 .Include (tn => tn.LocationB)
                 .Include(tn => tn.Material)
@@ -123,6 +125,12 @@ namespace CarTek.Api.Services
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
                     tnModel.OrderId = tn.DriverTask.OrderId;
                 }
+
+                if (tn.DriverTask != null && tn.DriverTask.Driver != null)
+                {
+                    tnModel.DriverInfo = tn.DriverTask.Driver.FullName;
+                }
+
 
                 if (searchColumn == "customer" && search != null)
                 {
