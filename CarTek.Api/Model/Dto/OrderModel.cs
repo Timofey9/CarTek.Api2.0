@@ -13,7 +13,7 @@ namespace CarTek.Api.Model.Dto
         public ClientModel Client { get; set; }
 
         public ShiftType Shift { get; set; }
-
+         
         public ClientModel Gp { get; set; }
 
         public string? ClientName { get; set; }
@@ -52,7 +52,7 @@ namespace CarTek.Api.Model.Dto
 
         /// <summary>
         /// В зависимости от типа заявки: Price - Driver/ExternalPrice
-        /// </summary>
+        /// </summary> 
         public double? Discount { get; set; }
 
         /// <summary>

@@ -51,6 +51,13 @@ namespace CarTek.Api.Services
                         && x.DropOffDepartureDate.Value.Date <= date2)
                         && x.Number != null && x.Number.ToLower().Contains(search.ToLower());
                         break;
+                    case "driver":
+                        filterBy = x =>
+                            x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
+                            && (x.PickUpDepartureDate.Value.Date >= date1
+                            && x.DropOffDepartureDate.Value.Date <= date2)
+                            && x.DriverTask != null && x.DriverTask.Driver.FullName.ToLower().Contains(search.ToLower());
+                        break;
                     case "loadAddress":
                         filterBy = x =>
                         x.PickUpDepartureDate != null && x.DropOffDepartureDate != null

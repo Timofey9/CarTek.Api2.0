@@ -34,7 +34,6 @@ namespace CarTek.Api.Model
         public bool IsExternal { get; set; }
         public long? ExternalTransporterId { get; set; }
         public ExternalTransporter? ExternalTransporter { get; set; }
-        //
 
         public string? RefreshToken { get; set; }
 

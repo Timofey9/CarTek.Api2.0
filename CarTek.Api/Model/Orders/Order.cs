@@ -10,7 +10,6 @@ namespace CarTek.Api.Model
         none
     }
 
-
     public enum ServiceType
     {
         Transport,
@@ -71,7 +70,6 @@ namespace CarTek.Api.Model
         /// Для наемного транспорта/водителя
         /// </summary>
         public bool IsExternal { get; set; }
-
         public long? ExternalTransporterId { get; set; }
         public ExternalTransporter? ExternalTransporter { get; set; }
 

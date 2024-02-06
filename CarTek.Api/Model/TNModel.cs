@@ -92,6 +92,7 @@ namespace CarTek.Api.Model
         public string DriverInfo { get; set; }
 
         public string Transporter { get; set; }
+        public long TransporterId { get; set; }
 
         public string Material { get; set; }
 

@@ -34,6 +34,6 @@
 
 
         public bool IsExternal { get; set; }
-        public long? ExternalTransportedId { get; set; }
+        public long? ExternalTransporterId { get; set; }
     }
 }

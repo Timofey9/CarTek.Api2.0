@@ -44,9 +44,11 @@ namespace CarTek.Api.Services
 
             var result = new List<DriverTask>();
 
+            var considerDriver = driverId != 0;
+
             try
             {
-                Expression<Func<DriverTask, bool>> filterBy = x => x.DriverId == driverId;
+                Expression<Func<DriverTask, bool>> filterBy = x => !considerDriver || x.DriverId == driverId;
 
                 if (startDate == null || endDate == null)
                 {
@@ -56,7 +58,7 @@ namespace CarTek.Api.Services
                 var date1 = startDate.Value.Date;
                 var date2 = endDate.Value.Date;
 
-                filterBy = x => x.DriverId == driverId &&
+                filterBy = x => (!considerDriver || x.DriverId == driverId) &&
                         x.StartDate.AddHours(4).Date >= date1
                         && x.StartDate.AddHours(4).Date <= date2;
 
@@ -65,13 +67,13 @@ namespace CarTek.Api.Services
                     switch (searchBy)
                     {
                         case "clientName":
-                            filterBy = x => x.DriverId == driverId && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
+                            filterBy = x => (!considerDriver || x.DriverId == driverId) && x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
                             && x.StartDate.AddHours(4).Date >= date1
                             && x.StartDate.AddHours(4).Date <= date2;
 
                             break;
                         case "material":
-                            filterBy = x => x.DriverId == driverId && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
+                            filterBy = x => (!considerDriver || x.DriverId == driverId) && x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
                             && x.StartDate.AddHours(4).Date >= date1
                             && x.StartDate.AddHours(4).Date <= date2;
                             break;
@@ -79,7 +81,6 @@ namespace CarTek.Api.Services
                             break;
                     }
                 }
-
 
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
@@ -246,6 +247,8 @@ namespace CarTek.Api.Services
                 .ThenInclude(o => o.Material)
                 .Include(dt => dt.Order)
                 .ThenInclude(o => o.Client)
+                .Include(dt => dt.Order)
+                .ThenInclude(o => o.ExternalTransporter)
                 .Include(dt => dt.Order)
                 .ThenInclude(o => o.DriverTasks).ThenInclude(dts => dts.Car)
                 .Include(dt => dt.Car)
@@ -763,6 +766,7 @@ namespace CarTek.Api.Services
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
                             DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
                             S3Links = linksList,
+                            TransporterId = tn.TransporterId ?? 0
                         };
                     }
                 }
@@ -904,7 +908,8 @@ namespace CarTek.Api.Services
                         DriverTaskId = task.Id,
                         DriverId = task.DriverId,
                         MaterialId = model.MaterialId,
-                        Transporter = model.Transporter
+                        Transporter = model.Transporter,
+                        TransporterId = model.TransporterId
                     };
 
                     if (model.IsSubtask)
@@ -928,7 +933,8 @@ namespace CarTek.Api.Services
                                 PickUpDepartureTime = model.PickUpDepartureTime,
                                 DriverId = task.DriverId,
                                 MaterialId = model.MaterialId,
-                                Transporter = model.Transporter
+                                Transporter = model.Transporter,
+                                TransporterId = model.TransporterId
                             });
                         }
                         else
@@ -963,7 +969,8 @@ namespace CarTek.Api.Services
                                 DriverTaskId = task.Id,
                                 DriverId = task.DriverId,
                                 MaterialId = model.MaterialId,
-                                Transporter = model.Transporter
+                                Transporter = model.Transporter,
+                                TransporterId = model.TransporterId
                             });
                         }
                     }
@@ -1106,7 +1113,7 @@ namespace CarTek.Api.Services
                     newTN.Transporter = model.Transporter;
                     newTN.UnloadVolume2 = model.UnloadVolume2;
                     newTN.UnloadUnit2 = model.UnloadUnit2;
-
+                    newTN.TransporterId = model.TransporterId;
                     _dbContext.TNs.Add(newTN);
                     _dbContext.SaveChanges();
 
@@ -1163,6 +1170,7 @@ namespace CarTek.Api.Services
                         TN.DropOffArrivalDate = model.DropOffArrivalDate;
                         TN.DropOffDepartureDate = model.DropOffDepartureDate;
                         TN.Transporter = model.Transporter;
+                        TN.TransporterId = model.TransporterId;
                         _dbContext.TNs.Update(TN);
                     }
                     else
@@ -1188,6 +1196,7 @@ namespace CarTek.Api.Services
                             DropOffArrivalDate = model.DropOffArrivalDate,
                             DropOffDepartureDate = model.DropOffDepartureDate,
                             Transporter = model.Transporter,
+                            TransporterId = model.TransporterId 
                         };
 
                         _dbContext.TNs.Add(newTN);
@@ -1266,7 +1275,7 @@ namespace CarTek.Api.Services
                         task.TN.DropOffArrivalTime = model.DropOffArrivalTime;
                         task.TN.DropOffDepartureTime = model.DropOffDepartureTime;
                         task.TN.Transporter = model.Transporter;
-
+                        task.TN.TransporterId = model.TransporterId;
                         _dbContext.TNs.Update(task.TN);
                     }
                     else
@@ -1292,6 +1301,7 @@ namespace CarTek.Api.Services
                             DropOffArrivalDate = model.DropOffArrivalDate,
                             DropOffDepartureDate = model.DropOffDepartureDate,
                             Transporter = model.Transporter,
+                            TransporterId = model.TransporterId
                         };
 
                         _dbContext.TNs.Add(newTN);

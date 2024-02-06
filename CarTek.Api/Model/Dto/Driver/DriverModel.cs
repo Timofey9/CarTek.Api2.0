@@ -31,5 +31,6 @@ namespace CarTek.Api.Model.Dto
         public bool IsFired { get; set; }
 
         public bool IsExternal { get; set; }
+        public long ExternalTransporterId { get; set; }
     }
 }

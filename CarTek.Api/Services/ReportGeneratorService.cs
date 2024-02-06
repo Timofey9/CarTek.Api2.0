@@ -167,8 +167,41 @@ namespace CarTek.Api.Services
                 row.GetCell(18).SetCellFormula($"M{rowIndex + 1}*R{rowIndex + 1}");
                 row.GetCell(18).CellStyle = moneyCellStyle;
 
-                row.CreateCell(21).SetCellValue(tn.IsVerified ? "Да" : "Нет");
-                row.CreateCell(22).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+                if (tn.Order.IsExternal)
+                {
+                    row.CreateCell(19).SetCellType(CellType.Numeric);
+                    row.GetCell(19).SetCellValue(tn.Order.ExternalPrice ?? 0);
+                    row.GetCell(19).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(21).SetCellType(CellType.Numeric);
+                    row.GetCell(21).SetCellValue(tn.Order.Discount ?? 0);
+                    row.GetCell(21).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(22).SetCellType(CellType.Numeric);
+                    row.GetCell(22).SetCellFormula($"U{rowIndex + 1}*R{rowIndex + 1}");
+                    row.GetCell(22).CellStyle = moneyCellStyle;
+                }
+                else
+                {
+                    row.CreateCell(19).SetCellType(CellType.Numeric);
+                    row.GetCell(19).SetCellValue(0);
+                    row.GetCell(19).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(20).SetCellType(CellType.Numeric);
+                    row.GetCell(20).SetCellValue(0);
+                    row.GetCell(20).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(21).SetCellType(CellType.Numeric);
+                    row.GetCell(21).SetCellValue(tn.Order.Discount ?? 0);
+                    row.GetCell(21).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(22).SetCellType(CellType.Numeric);
+                    row.GetCell(22).SetCellFormula($"U{rowIndex + 1}*R{rowIndex + 1}");
+                    row.GetCell(22).CellStyle = moneyCellStyle;
+                }
+
+                row.CreateCell(23).SetCellValue(tn.IsVerified ? "Да" : "Нет");
+                row.CreateCell(24).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
 
                 rowIndex++;
             }

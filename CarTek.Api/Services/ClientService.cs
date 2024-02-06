@@ -238,5 +238,45 @@ namespace CarTek.Api.Services
                 return null;
             }
         }
+
+        public ApiResponse UpdateExternalTransporter(long id, string name)
+        {
+            try
+            {
+                var transporter = _dbContext.ExternalTransporters.FirstOrDefault(c => c.Id == id);
+
+                if(transporter != null)
+                {
+                    if(name != transporter.Name)
+                    {
+                        transporter.Name = name;
+                        _dbContext.ExternalTransporters.Update(transporter);
+
+                        _dbContext.SaveChanges();
+
+                        return new ApiResponse
+                        {
+                            IsSuccess = true,
+                            Message = "Перевозчик обновлен"
+                        };
+                    }
+                }
+
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Перевозчик не найден"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка обновления перевозчика: {id}", ex);
+                return new ApiResponse
+                {
+                    IsSuccess = false,
+                    Message = "Перевозчик не найден"
+                };
+            }
+        }
     }
 }

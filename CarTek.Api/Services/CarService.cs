@@ -94,6 +94,8 @@ namespace CarTek.Api.Services
                     Plate = car.Plate,
                     Model = car.Model,
                     AxelsCount = car.AxelsCount,
+                    IsExternal = car.IsExternal,
+                    ExternalTransporterId = car.ExternalTransporterId,
                 };
 
                 var carEntity = _dbContext.Cars.Add(carModel);

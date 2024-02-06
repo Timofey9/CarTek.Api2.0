@@ -20,5 +20,7 @@ namespace CarTek.Api.Services.Interfaces
         ICollection<ExternalTransporter> GetExternalTransporters();
 
         ExternalTransporter GetExternalTransporter(long id);
+
+        ApiResponse UpdateExternalTransporter(long id, string name);
     }
 }

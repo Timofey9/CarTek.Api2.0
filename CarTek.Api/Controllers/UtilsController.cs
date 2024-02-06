@@ -154,7 +154,6 @@ namespace CarTek.Api.Controllers
             return BadRequest(res);
         }
 
-
         [HttpGet("getinformationmessages")]
         public IActionResult GetMessages()
         {
@@ -163,5 +162,47 @@ namespace CarTek.Api.Controllers
             return Ok(list);
         }
 
+        [HttpPost("createexternaltransporter")]
+        public IActionResult CreateExternalTransporter([FromBody] CreateExternalTransporterModel model)
+        {
+            var res = _clientService.CreateExternalTransporter(model.Name);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
+
+        [HttpPost("updateexternaltransporter")]
+        public IActionResult UpdateExternalTransporter([FromBody] CreateExternalTransporterModel model)
+        {
+            var res = _clientService.UpdateExternalTransporter(model.Id, model.Name);
+
+            if (res.IsSuccess)
+            {
+                return Ok(res);
+            }
+
+            return BadRequest(res);
+        }
+
+        [HttpGet("getexternaltransporter/{transporterId}")]
+        public IActionResult GetExternalTransporter(long transporterId)
+        {
+            var externalTransporter = _clientService.GetExternalTransporter(transporterId);
+
+            return Ok(_mapper.Map<ExternalTransporterModel>(externalTransporter));
+        }
+
+
+        [HttpGet("getexternaltransporterslist")]
+        public IActionResult GetExternalTransportersList()
+        {
+            var externalTransporters = _clientService.GetExternalTransporters();
+
+            return Ok(_mapper.Map<List<ExternalTransporterModel>>(externalTransporters));
+        }
     }
 }

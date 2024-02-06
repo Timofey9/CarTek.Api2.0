@@ -8,6 +8,7 @@ using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using NPOI.POIFS.Properties;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -434,9 +435,12 @@ namespace CarTek.Api.Services
         public List<TNModel> GetFullTnsCollection(DateTime startDate, DateTime endDate)
         {
             var result = new List<TNModel>();
+
             //1 - получаем заявки
             var orders = GetOrderModelsBetweenDates(null, null, startDate, endDate);
             var mappedList = new List<OrderModel>();
+
+            //2 - добавляем то, чего нет
             foreach (var item in orders)
             {
                 var gp = _clientService.GetClient(item.GpId);
@@ -527,6 +531,7 @@ namespace CarTek.Api.Services
                         StartDate = order.StartDate,
                         DueDate = order?.DueDate,
                         Price = order.Price,
+                        DriverPrice = order.DriverPrice,
                         MaterialPrice = order.MaterialPrice,
                         Service = order.Service,
                         CarCount = order.CarCount,
@@ -535,6 +540,15 @@ namespace CarTek.Api.Services
                         Volume = order?.Volume,
                         DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
                     };
+
+                    if (order.IsExternal)
+                    {
+                        exportModel.IsExternal = true;
+                        exportModel.ExternalTransporterId = order.ExternalTransporterId;
+                        exportModel.ExternalTransporter = _mapper.Map<ExternalTransporterModel>(order.ExternalTransporter);
+                        exportModel.ExternalPrice = order.ExternalPrice;
+                        exportModel.Discount = order.Discount;
+                    }
 
                     if (order.Material != null)
                     {
@@ -646,7 +660,6 @@ namespace CarTek.Api.Services
                     return "m3";
             }
         }
-
 
         public IEnumerable<TNModel> GetTNsBetweenDatesDriver(DateTime startDate, DateTime endDate, long driverId, bool completedOnly = false)
         {
@@ -816,12 +829,10 @@ namespace CarTek.Api.Services
             var tnList = new List<TNModel>();
             Expression<Func<TN, bool>> filterBy;
 
-
             filterBy = x =>
-                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
+                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null && !x.DriverTask.Driver.IsExternal &&
                  (x.PickUpDepartureDate.Value.Date >= date1
                 && x.DropOffDepartureDate.Value.Date <= date2);
-
 
             Expression<Func<TN, object>> orderBy = x => x.PickUpDepartureDate;
 
