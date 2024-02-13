@@ -174,12 +174,14 @@ namespace CarTek.Api.Services
                     row.GetCell(19).CellStyle = moneyCellStyle;
 
                     row.CreateCell(21).SetCellType(CellType.Numeric);
-                    row.GetCell(21).SetCellValue(tn.Order.Discount ?? 0);
-                    row.GetCell(21).CellStyle = moneyCellStyle;
+                    //Добавим формулу, но вообще еще в базе есть значение
+                    //Дисконт
+                    row.GetCell(20).SetCellFormula($"O{rowIndex + 1} - T{rowIndex + 1}");
+                    row.GetCell(20).CellStyle = moneyCellStyle;
 
-                    row.CreateCell(22).SetCellType(CellType.Numeric);
-                    row.GetCell(22).SetCellFormula($"U{rowIndex + 1}*R{rowIndex + 1}");
-                    row.GetCell(22).CellStyle = moneyCellStyle;
+                    row.CreateCell(23).SetCellType(CellType.Numeric);
+                    row.GetCell(23).SetCellFormula($"P{rowIndex + 1}+S{rowIndex + 1}");
+                    row.GetCell(23).CellStyle = moneyCellStyle;
                 }
                 else
                 {
@@ -187,21 +189,21 @@ namespace CarTek.Api.Services
                     row.GetCell(19).SetCellValue(0);
                     row.GetCell(19).CellStyle = moneyCellStyle;
 
-                    row.CreateCell(20).SetCellType(CellType.Numeric);
-                    row.GetCell(20).SetCellValue(0);
-                    row.GetCell(20).CellStyle = moneyCellStyle;
-
                     row.CreateCell(21).SetCellType(CellType.Numeric);
-                    row.GetCell(21).SetCellValue(tn.Order.Discount ?? 0);
+                    row.GetCell(21).SetCellValue(tn.Order.DriverPrice ?? 0);
                     row.GetCell(21).CellStyle = moneyCellStyle;
 
                     row.CreateCell(22).SetCellType(CellType.Numeric);
-                    row.GetCell(22).SetCellFormula($"U{rowIndex + 1}*R{rowIndex + 1}");
+                    row.GetCell(22).SetCellFormula($"O{rowIndex + 1} - V{rowIndex + 1}");
                     row.GetCell(22).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(23).SetCellType(CellType.Numeric);
+                    row.GetCell(23).SetCellFormula($"P{rowIndex + 1}+S{rowIndex + 1}");
+                    row.GetCell(23).CellStyle = moneyCellStyle;
                 }
 
-                row.CreateCell(23).SetCellValue(tn.IsVerified ? "Да" : "Нет");
-                row.CreateCell(24).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+                row.CreateCell(24).SetCellValue(tn.IsVerified ? "Да" : "Нет");
+                row.CreateCell(25).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
 
                 rowIndex++;
             }
@@ -975,7 +977,9 @@ namespace CarTek.Api.Services
                 row.GetCell(13).CellStyle = cellStyle;
 
                 row.CreateCell(14).SetCellType(CellType.Numeric);
-                row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                //row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                // Считаем по себестоимости водителя 
+                row.GetCell(14).SetCellValue(tn.Order.DriverPrice ?? 0);
                 row.GetCell(14).CellStyle = moneyCellStyle;
 
                 row.CreateCell(15).SetCellType(CellType.Numeric);
@@ -996,7 +1000,7 @@ namespace CarTek.Api.Services
                 }
                 else
                 {
-                    row.GetCell(17).SetCellFormula(tn.FixedPrice.Value.ToString(nfi));
+                    row.GetCell(17).SetCellValue(tn.FixedPrice.Value.ToString(nfi));
                 }
 
                 row.CreateCell(18).SetCellValue(tn.IsVerified ? "Да" : "Нет");
@@ -1136,7 +1140,9 @@ namespace CarTek.Api.Services
                 row.CreateCell(8).SetCellValue(tn.UnloadUnit);
                 row.GetCell(8).CellStyle = cellStyle;
 
-                row.CreateCell(9).SetCellValue(tn.Order.Price.Value);
+                //row.CreateCell(9).SetCellValue(tn.Order.Price.Value);
+                //Считаем по себестоимости водителя
+                row.CreateCell(9).SetCellValue(tn.Order.DriverPrice ?? 0);
                 row.GetCell(9).SetCellType(CellType.Numeric);
                 row.GetCell(9).CellStyle = numberCellStyle;
 

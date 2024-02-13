@@ -1089,39 +1089,44 @@ namespace CarTek.Api.Services
 
                 if (subTask != null)
                 {
-                    newTN.SubTaskId = model.SubTaskId;
+                    var TN = _dbContext.TNs.FirstOrDefault(t => t.SubTaskId == model.SubTaskId);
 
-                    newTN.Number = model.Number;
-                    newTN.GoId = model.GoId;
-                    newTN.GpId = model.GpId;
-                    newTN.LoadVolume = model.LoadVolume;
-                    newTN.Unit = model.Unit;
-                    newTN.LoadVolume2 = model.LoadVolume2;
-                    newTN.Unit2 = model.Unit2;
-                    newTN.LocationAId = model.LocationAId;
-                    newTN.LocationBId = model.LocationBId;
-                    newTN.PickUpArrivalDate = model.PickUpArrivalDate;
-                    newTN.PickUpDepartureDate = model.PickUpDepartureDate;
-                    newTN.MaterialId = model.MaterialId;
-                    newTN.UnloadVolume = model.UnloadVolume;
-                    newTN.UnloadUnit = model.UnloadUnit;
-                    newTN.UnloadVolume2 = model.UnloadVolume2;
-                    newTN.UnloadUnit2 = model.UnloadUnit2;
-                    newTN.DropOffArrivalDate = model.DropOffArrivalDate;
-                    newTN.LocationBId = model.LocationBId;
-                    newTN.DropOffDepartureDate = model.DropOffDepartureDate;
-                    newTN.Transporter = model.Transporter;
-                    newTN.UnloadVolume2 = model.UnloadVolume2;
-                    newTN.UnloadUnit2 = model.UnloadUnit2;
-                    newTN.TransporterId = model.TransporterId;
-                    _dbContext.TNs.Add(newTN);
-                    _dbContext.SaveChanges();
-
-                    return new ApiResponse
+                    if (TN == null)
                     {
-                        IsSuccess = true,
-                        Message = "ТН создана"
-                    };
+                        newTN.SubTaskId = model.SubTaskId;
+                        newTN.Number = model.Number;
+                        newTN.GoId = model.GoId;
+                        newTN.GpId = model.GpId;
+                        newTN.LoadVolume = model.LoadVolume;
+                        newTN.Unit = model.Unit;
+                        newTN.LoadVolume2 = model.LoadVolume2;
+                        newTN.Unit2 = model.Unit2;
+                        newTN.LocationAId = model.LocationAId;
+                        newTN.LocationBId = model.LocationBId;
+                        newTN.PickUpArrivalDate = model.PickUpArrivalDate;
+                        newTN.PickUpDepartureDate = model.PickUpDepartureDate;
+                        newTN.MaterialId = model.MaterialId;
+                        newTN.UnloadVolume = model.UnloadVolume;
+                        newTN.UnloadUnit = model.UnloadUnit;
+                        newTN.UnloadVolume2 = model.UnloadVolume2;
+                        newTN.UnloadUnit2 = model.UnloadUnit2;
+                        newTN.DropOffArrivalDate = model.DropOffArrivalDate;
+                        newTN.LocationBId = model.LocationBId;
+                        newTN.DropOffDepartureDate = model.DropOffDepartureDate;
+                        newTN.Transporter = model.Transporter;
+                        newTN.UnloadVolume2 = model.UnloadVolume2;
+                        newTN.UnloadUnit2 = model.UnloadUnit2;
+                        newTN.TransporterId = model.TransporterId;
+                        _dbContext.TNs.Add(newTN);
+                        _dbContext.SaveChanges();
+
+
+                        return new ApiResponse
+                        {
+                            IsSuccess = true,
+                            Message = "ТН создана"
+                        };
+                    }
                 }
 
                 return new ApiResponse
@@ -1132,7 +1137,7 @@ namespace CarTek.Api.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ошибка заполнения ТН.{ex.Message}");
+                _logger.LogError($"Ошибка заполнения ТН: {model.SubTaskId}.{ex.Message}");
                 return new ApiResponse
                 {
                     IsSuccess = false,
