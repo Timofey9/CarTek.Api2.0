@@ -79,6 +79,9 @@ namespace CarTek.Api.Services
 
             var tresult = _dbContext.TNs
                 .Include(tn => tn.SubTask)
+                    .ThenInclude(st => st.DriverTask.Driver)
+                .Include(tn => tn.SubTask)
+                    .ThenInclude(st => st.Order)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Order)                                    
                 .Include(tn => tn.DriverTask)
@@ -131,6 +134,19 @@ namespace CarTek.Api.Services
                     tnModel.DriverInfo = tn.DriverTask.Driver.FullName;
                 }
 
+
+                if (tn.SubTask != null && tn.SubTask.DriverTask.Order != null)
+                {
+                    var customerId = tn.SubTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
+                    var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
+                    tnModel.Customer = _mapper.Map<ClientModel>(customer);
+                    tnModel.OrderId = tn.SubTask.OrderId;
+                }
+
+                if (tn.SubTask != null && tn.SubTask.DriverTask.Driver != null)
+                {
+                    tnModel.DriverInfo = tn.SubTask.DriverTask.Driver.FullName;
+                }
 
                 if (searchColumn == "customer" && search != null)
                 {

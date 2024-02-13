@@ -40,6 +40,7 @@ namespace CarTek.Api.Services.Interfaces
         List<DriverTaskOrderModel> MapAndExtractLocationsInfo(IEnumerable<DriverTask> listToConvert);
 
         public void DriverTaskExportModelSetLocations(DriverTaskExportModel model);
+        public void DriverTaskExportModelSetLocations(DriverTaskSubTaskModel model);
 
         public IEnumerable<SubTaskModel> GetSubTasks(long driverTaskId);
 

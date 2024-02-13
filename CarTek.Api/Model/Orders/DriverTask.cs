@@ -2,17 +2,17 @@
 {
     public enum DriverTaskStatus
     {
-        Assigned,
-        Confirmed,
-        OnRoute,
-        Loading,
-        DocumentSigning1,
-        OutLoad,
-        ArrivedToUnload,
-        Unloading,
-        DocumentSigning2,
-        Done,
-        Canceled
+        Assigned = 0,
+        Confirmed = 1,
+        OnRoute = 2,
+        Loading = 3,
+        DocumentSigning1 = 4,
+        OutLoad = 5,
+        ArrivedToUnload = 6,
+        Unloading = 7,
+        DocumentSigning2 = 8,
+        Done = 9,
+        Canceled = 10
     }
 
     public enum ShiftType

@@ -228,7 +228,12 @@ namespace CarTek.Api.Services
 
                     if (mappedResult[i].SubTasksCount > 0 && mappedResult[i].SubTasks != null)
                     {
-                        mappedResult[i].SubTasks = mappedResult[i].SubTasks.OrderBy(t => t.SequenceNumber).ToList();
+                        var subTasks = mappedResult[i].SubTasks.Select(t => t);
+                        foreach(var st in subTasks)
+                        {
+                            st.DriverTask.Order = null;
+                        }
+                        mappedResult[i].SubTasks = subTasks.OrderBy(t => t.SequenceNumber).ToList();
                     }
                 }
             }
@@ -262,6 +267,62 @@ namespace CarTek.Api.Services
         }
 
         public void DriverTaskExportModelSetLocations(DriverTaskExportModel model)
+        {
+            try
+            {
+                Model.Address locationA = new Model.Address();
+                Model.Address locationB = new Model.Address();
+
+                if (model?.Order?.LocationAId != null)
+                {
+                    locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationAId);
+                }
+
+                if (model?.Order?.LocationBId != null)
+                {
+                    locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == model.Order.LocationBId);
+                }
+
+                var clientId = model.Order.Service == ServiceType.Supply ? model.Order.GpId : model.Order.Client.Id;
+
+                var client = _dbContext.Clients.FirstOrDefault(t => t.Id == clientId);
+
+                var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == model.Order.GpId);
+
+                if (gp != null)
+                {
+                    model.Order.Gp = _mapper.Map<ClientModel>(gp);
+                }
+
+                string price = "";
+
+                if (client != null)
+                {
+                    var unit = UnitToString(model.Order.LoadUnit);
+
+                    if (client.FixedPrice == null)
+                    {
+                        price = model.Order.Price + $" руб/{unit}";
+                    }
+                    else
+                    {
+                        price = client.FixedPrice + " руб";
+                    }
+
+                    model.OrderCustomer = _mapper.Map<ClientModel>(client);
+                }
+
+                model.LocationA = locationA;
+                model.LocationB = locationB;
+                model.Price = price;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Не удалось получить адреса, {ex.Message}");
+            }
+        }        
+        
+        public void DriverTaskExportModelSetLocations(DriverTaskSubTaskModel model)
         {
             try
             {
@@ -1684,10 +1745,15 @@ namespace CarTek.Api.Services
                 var driverTask = GetDriverTaskById(subTask.DriverTaskId);
                 result = _mapper.Map<SubTaskModel>(subTask);
 
-                var dt = _mapper.Map<DriverTaskExportModel>(driverTask);
+                var dt = _mapper.Map<DriverTaskSubTaskModel>(driverTask);
 
                 if (driverTask != null)
                 {
+                    foreach(var task in dt.Order.DriverTasks)
+                    {
+                        task.SubTasks = null;
+                    }
+                    
                     DriverTaskExportModelSetLocations(dt);
                     result.DriverTask = dt;
                 }

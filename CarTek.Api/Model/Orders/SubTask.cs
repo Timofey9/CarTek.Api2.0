@@ -15,7 +15,8 @@
         public bool IsCanceled { get; set; }
 
         public TN? TN { get; set; }
-
+        public DriverTask? DriverTask { get; set; }
+        public Order? Order { get; set; } 
         public ICollection<DriverTaskNote> Notes { get; set; }
     }
 }

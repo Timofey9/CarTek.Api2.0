@@ -165,7 +165,7 @@ namespace CarTek.Api.Services
                 if (client != null)
                 {
                     order.ClientId = model.ClientId;
-                }                
+                }
 
                 if (locationA != null)
                 {
@@ -830,15 +830,17 @@ namespace CarTek.Api.Services
             Expression<Func<TN, bool>> filterBy;
 
             filterBy = x =>
-                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null && !x.DriverTask.Driver.IsExternal &&
-                 (x.PickUpDepartureDate.Value.Date >= date1
+                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null && 
+                (x.PickUpDepartureDate.Value.Date >= date1
                 && x.DropOffDepartureDate.Value.Date <= date2);
 
             Expression<Func<TN, object>> orderBy = x => x.PickUpDepartureDate;
 
             var tresult = _dbContext.TNs
                 .Include(tn => tn.SubTask)
-                .Include(tn => tn.DriverTask)
+                    .ThenInclude(st => st.DriverTask.Driver)
+                .Include(tn => tn.SubTask)
+                    .ThenInclude(st => st.Order).Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Car)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Driver)
@@ -862,7 +864,9 @@ namespace CarTek.Api.Services
                 double? fixedPrice = null;
                 Client clientObject = null;
                 double driverPercent = 0;
+
                 bool add = false;
+
                 Order order = new Order();
                 DriverTaskStatus status = DriverTaskStatus.Assigned;
 
@@ -871,37 +875,37 @@ namespace CarTek.Api.Services
 
                 if (tn.SubTask != null)
                 {
-                    add = tn.SubTask.Status == DriverTaskStatus.Done || !completedOnly;
+                    var parent = tn.SubTask;
 
-                    var parent = _dbContext.DriverTasks
-                        .Include(dt => dt.Driver)
-                        .Include(dt => dt.Car)
-                        .Include(dt => dt.Order)
-                        .FirstOrDefault(t => t.Id == tn.SubTask.DriverTaskId);
+                    add = tn.SubTask.Status == DriverTaskStatus.Done && !tn.SubTask.DriverTask.Driver.IsExternal || !completedOnly;
 
-                    if (parent != null)
+                    if (parent.DriverTask.Driver != null)
                     {
-                        driverInfo = parent.Driver.FullName;
-                        driverPercent = parent.Driver.Percentage;
-                        carInfo = $"{parent.Car.Plate.ToUpper()} {parent.Car.Brand}";
-
-                        if (gp != null && go != null)
-                        {
-                            client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                            fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-
-                            clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
-                        }
-
-                        order = parent.Order;
-                        status = parent.Status;
+                        driverInfo = parent.DriverTask.Driver.FullName;
+                        driverPercent = parent.DriverTask.Driver.Percentage;
                     }
+
+                    if (parent.DriverTask.Car != null)
+                    {
+                        carInfo = $"{parent.DriverTask.Car.Plate.ToUpper()} {parent.DriverTask.Car.Brand}";
+                    }
+
+                    if (gp != null && go != null)
+                    {
+                        client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+
+                        clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
+                    }
+
+                    order = parent.Order;
+                    status = parent.Status;
                 }
                 else
                 {
                     if (tn.DriverTask != null)
                     {
-                        add = tn.DriverTask.Status == DriverTaskStatus.Done || !completedOnly;
+                        add = tn.DriverTask.Status == DriverTaskStatus.Done && !tn.DriverTask.Driver.IsExternal || !completedOnly;
 
                         carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
                         driverInfo = tn.DriverTask.Driver.FullName;
@@ -920,7 +924,7 @@ namespace CarTek.Api.Services
                     }
                 }
 
-                double volume1 = tn.LoadVolume ?? 0;                
+                double volume1 = tn.LoadVolume ?? 0;
 
                 if (gp?.ClientUnit == Unit.m3)
                 {
@@ -940,6 +944,7 @@ namespace CarTek.Api.Services
                 {
                     volume2 = tn.UnloadVolume2 ?? 0;
                 }
+
                 //TODO: грузоотправитель
                 var model = new TNModel
                 {

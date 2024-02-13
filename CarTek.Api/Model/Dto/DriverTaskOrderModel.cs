@@ -47,6 +47,6 @@ namespace CarTek.Api.Model.Dto
 
         public TNModel TN { get; set; }
 
-        public ICollection<SubTask> SubTasks { get; set; }
+        public ICollection<SubTaskModel> SubTasks { get; set; }
     }
 }

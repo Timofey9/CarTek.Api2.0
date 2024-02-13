@@ -97,5 +97,6 @@ namespace CarTek.Api.Model
         public Client Client { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }
+        public ICollection<SubTask> SubTasks { get; set; }
     }
 }

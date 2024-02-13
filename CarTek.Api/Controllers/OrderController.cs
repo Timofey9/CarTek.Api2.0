@@ -198,7 +198,7 @@ namespace CarTek.Api.Controllers
         {
             try
             {
-                var orders = _orderService.GetTNsBetweenDates(startDate, endDate);
+                var orders = _orderService.GetTNsBetweenDates(startDate, endDate, true);
 
                 var fileStream = _reportGeneratorService.GenerateTnsReport(orders, startDate, endDate);
 
