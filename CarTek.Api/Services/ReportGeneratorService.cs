@@ -180,7 +180,7 @@ namespace CarTek.Api.Services
                     row.GetCell(20).CellStyle = moneyCellStyle;
 
                     row.CreateCell(23).SetCellType(CellType.Numeric);
-                    row.GetCell(23).SetCellFormula($"P{rowIndex + 1}+S{rowIndex + 1}");
+                    row.GetCell(23).SetCellFormula($"M{rowIndex + 1}*T{rowIndex + 1}");
                     row.GetCell(23).CellStyle = moneyCellStyle;
                 }
                 else
@@ -197,9 +197,9 @@ namespace CarTek.Api.Services
                     row.GetCell(22).SetCellFormula($"O{rowIndex + 1} - V{rowIndex + 1}");
                     row.GetCell(22).CellStyle = moneyCellStyle;
 
-                    row.CreateCell(23).SetCellType(CellType.Numeric);
-                    row.GetCell(23).SetCellFormula($"P{rowIndex + 1}+S{rowIndex + 1}");
-                    row.GetCell(23).CellStyle = moneyCellStyle;
+                    //row.CreateCell(23).SetCellType(CellType.Numeric);
+                    //row.GetCell(23).SetCellFormula($"P{rowIndex + 1}+S{rowIndex + 1}");
+                    //row.GetCell(23).CellStyle = moneyCellStyle;
                 }
 
                 row.CreateCell(24).SetCellValue(tn.IsVerified ? "Да" : "Нет");

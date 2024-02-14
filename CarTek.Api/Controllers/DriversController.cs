@@ -164,6 +164,13 @@ namespace CarTek.Api.Controllers
                 _driverTaskService.DriverTaskExportModelSetLocations(res);
             }
 
+            foreach(var subtask in res.SubTasks)
+            {
+                subtask.DriverTask = null;
+            }
+
+            res.Order.DriverTasks = null;
+
             return Ok(res);
         }
 

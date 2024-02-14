@@ -121,7 +121,6 @@ namespace CarTek.Api.Services
 
             driver.IsFired = true;
             driver.RefreshToken = null;
-            driver.Password = "secret";
 
             _dbContext.SaveChanges();
 
