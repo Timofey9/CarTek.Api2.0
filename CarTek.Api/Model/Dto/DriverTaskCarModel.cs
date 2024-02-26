@@ -81,6 +81,7 @@ namespace CarTek.Api.Model.Dto
 
         public string Price { get; set; }
 
+        public string DriverPrice { get; set; }
     }
 
     public class DriverTaskSubTaskModel
@@ -123,6 +124,7 @@ namespace CarTek.Api.Model.Dto
         public int SubTasksCount { get; set; }
 
         public string Price { get; set; }
+        public string DriverPrice { get; set; }
 
     }
 }

@@ -295,6 +295,7 @@ namespace CarTek.Api.Services
                 }
 
                 string price = "";
+                string driverPrice = "";
 
                 if (client != null)
                 {
@@ -303,10 +304,12 @@ namespace CarTek.Api.Services
                     if (client.FixedPrice == null)
                     {
                         price = model.Order.Price + $" руб/{unit}";
+                        driverPrice = model.Order.DriverPrice + $" руб/{unit}";
                     }
                     else
                     {
                         price = client.FixedPrice + " руб";
+                        driverPrice = client.FixedPrice + $" руб/{unit}";
                     }
 
                     model.OrderCustomer = _mapper.Map<ClientModel>(client);
@@ -315,6 +318,8 @@ namespace CarTek.Api.Services
                 model.LocationA = locationA;
                 model.LocationB = locationB;
                 model.Price = price;
+                model.DriverPrice = driverPrice;
+
             }
             catch (Exception ex)
             {
@@ -351,6 +356,7 @@ namespace CarTek.Api.Services
                 }
 
                 string price = "";
+                string driverPrice = "";
 
                 if (client != null)
                 {
@@ -359,10 +365,12 @@ namespace CarTek.Api.Services
                     if (client.FixedPrice == null)
                     {
                         price = model.Order.Price + $" руб/{unit}";
+                        driverPrice = model.Order.DriverPrice + $" руб/{unit}";
                     }
                     else
                     {
                         price = client.FixedPrice + " руб";
+                        driverPrice = client.FixedPrice + $" руб/{unit}";
                     }
 
                     model.OrderCustomer = _mapper.Map<ClientModel>(client);
@@ -371,6 +379,7 @@ namespace CarTek.Api.Services
                 model.LocationA = locationA;
                 model.LocationB = locationB;
                 model.Price = price;
+                model.DriverPrice = driverPrice;
             }
             catch (Exception ex)
             {
