@@ -670,7 +670,7 @@ namespace CarTek.Api.Services
             Expression<Func<TN, bool>> filterBy;
 
             filterBy = x =>
-                x.DriverId == driverId
+                (x.DriverId == driverId || (x.SubTask != null && x.SubTask.DriverTask.DriverId == driverId))
                 && x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
                 && (x.PickUpDepartureDate.Value.Date >= date1
                 && x.DropOffDepartureDate.Value.Date <= date2);
@@ -719,7 +719,7 @@ namespace CarTek.Api.Services
                 {
                     var parent = tn.SubTask;
 
-                    add = tn.SubTask.Status == DriverTaskStatus.Done && !tn.SubTask.DriverTask.Driver.IsExternal || !completedOnly;
+                    add = tn.SubTask.Status == DriverTaskStatus.Done;
 
                     if (parent.DriverTask.Driver != null)
                     {
@@ -747,7 +747,7 @@ namespace CarTek.Api.Services
                 {
                     if (tn.DriverTask != null)
                     {
-                        add = tn.DriverTask.Status == DriverTaskStatus.Done && !tn.DriverTask.Driver.IsExternal || !completedOnly;
+                        add = tn.DriverTask.Status == DriverTaskStatus.Done;
 
                         carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
                         driverInfo = tn.DriverTask.Driver.FullName;

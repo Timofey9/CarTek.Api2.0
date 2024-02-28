@@ -7,6 +7,7 @@ namespace CarTek.Api.Model.Dto
         public long Id { get; set; }
 
         public string Price { get; set; }
+        public string DriverPrice { get; set; }
 
         public Guid UniqueId { get; set; }
 

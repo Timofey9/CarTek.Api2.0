@@ -189,6 +189,7 @@ namespace CarTek.Api.Services
                     var client = _dbContext.Clients.FirstOrDefault(t => t.Id == clientId);
 
                     string price = "";
+                    string driverPrice = "";
 
                     if (client != null)
                     {
@@ -197,10 +198,12 @@ namespace CarTek.Api.Services
                         if (client.FixedPrice == null)
                         {
                             price = driverTask.Order.Price + $" руб/{unit}";
+                            driverPrice = driverTask.Order.DriverPrice + $" руб/{unit}";
                         }
                         else
                         {
                             price = client.FixedPrice + " руб";
+                            driverPrice = client.FixedPrice + " руб";
                         }
                     }
 
@@ -225,6 +228,7 @@ namespace CarTek.Api.Services
                     mappedResult[i].Material = driverTask.Order?.Material?.Name;
 
                     mappedResult[i].Price = price;
+                    mappedResult[i].DriverPrice = driverPrice;
 
                     if (mappedResult[i].SubTasksCount > 0 && mappedResult[i].SubTasks != null)
                     {
@@ -1155,7 +1159,9 @@ namespace CarTek.Api.Services
             {
                 var newTN = new TN();
 
-                var subTask = _dbContext.SubTasks.FirstOrDefault(t => t.Id == model.SubTaskId);
+                var subTask = _dbContext.SubTasks
+                    .Include(t => t.DriverTask)
+                    .FirstOrDefault(t => t.Id == model.SubTaskId);
 
                 if (subTask != null)
                 {
@@ -1187,6 +1193,7 @@ namespace CarTek.Api.Services
                         newTN.UnloadVolume2 = model.UnloadVolume2;
                         newTN.UnloadUnit2 = model.UnloadUnit2;
                         newTN.TransporterId = model.TransporterId;
+                        newTN.DriverId = subTask.DriverTask.DriverId;
                         _dbContext.TNs.Add(newTN);
                         _dbContext.SaveChanges();
 
