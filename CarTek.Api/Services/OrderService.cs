@@ -515,7 +515,8 @@ namespace CarTek.Api.Services
                             Inn = order.Client?.Inn,
                             ClientName = order.Client?.ClientName,
                             ClientAddress = order.Client?.ClientAddress,
-                            FixedPrice = order.Client?.FixedPrice
+                            FixedPrice = order.Client?.FixedPrice,
+                            ClientUnit = order.Client.ClientUnit
                         },
                         Gp = new ClientModel
                         {
@@ -523,7 +524,8 @@ namespace CarTek.Api.Services
                             Inn = gp?.Inn,
                             ClientName = gp?.ClientName,
                             ClientAddress = gp?.ClientAddress,
-                            FixedPrice = gp?.FixedPrice
+                            FixedPrice = gp?.FixedPrice,
+                            ClientUnit = gp.ClientUnit
                         },
                         LocationA = locationA,
                         LocationB = locationB,

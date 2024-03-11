@@ -4,8 +4,6 @@ using CarTek.Api.Model;
 using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq.Expressions;
 
@@ -56,7 +54,8 @@ namespace CarTek.Api.Services
                             x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
                             && (x.PickUpDepartureDate.Value.Date >= date1
                             && x.DropOffDepartureDate.Value.Date <= date2)
-                            && x.DriverTask != null && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower());
+                            && (x.DriverTask != null && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()) ||
+                            x.SubTask != null && x.SubTask.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()));
                         break;
                     case "loadAddress":
                         filterBy = x =>
@@ -82,6 +81,8 @@ namespace CarTek.Api.Services
                     .ThenInclude(st => st.DriverTask.Driver)
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.Order)
+                .Include(tn => tn.SubTask)
+                    .ThenInclude(st => st.DriverTask)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Order)                                    
                 .Include(tn => tn.DriverTask)
@@ -123,8 +124,10 @@ namespace CarTek.Api.Services
 
                 if (tn.DriverTask != null && tn.DriverTask.Order != null)
                 {
+                    //TODO: Должно быть из заявки
                     var customerId = tn.DriverTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
+
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
                     tnModel.OrderId = tn.DriverTask.OrderId;
                 }
@@ -137,6 +140,7 @@ namespace CarTek.Api.Services
 
                 if (tn.SubTask != null && tn.SubTask.DriverTask.Order != null)
                 {
+                    //TODO: Должно быть из заявки
                     var customerId = tn.SubTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
