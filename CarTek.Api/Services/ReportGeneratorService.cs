@@ -136,10 +136,18 @@ namespace CarTek.Api.Services
                 NumberFormatInfo nfi = new NumberFormatInfo();
                 nfi.NumberDecimalSeparator = ",";
 
-                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
+                double volume;
+                if(tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                {
+                    double.TryParse(tn.LoadVolume, nfi, out volume);
+                }
+                else
+                {
+                    double.TryParse(tn.UnloadVolume, nfi, out volume);
+                }
 
                 row.CreateCell(12).SetCellType(CellType.Numeric);
-                row.GetCell(12).SetCellValue(unloadVolume);
+                row.GetCell(12).SetCellValue(volume);
                 row.GetCell(12).CellStyle = numberCellStyle;
 
                 row.CreateCell(13).SetCellValue(tn.UnloadUnit);
@@ -967,13 +975,20 @@ namespace CarTek.Api.Services
                 row.CreateCell(11).SetCellValue(tn.Material);
                 row.GetCell(11).CellStyle = cellStyle;
 
-                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
-
+                double volume;
+                if (tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                {
+                    double.TryParse(tn.LoadVolume, nfi, out volume);
+                }
+                else
+                {
+                    double.TryParse(tn.UnloadVolume, nfi, out volume);
+                }
                 row.CreateCell(12).SetCellType(CellType.Numeric);
-                row.GetCell(12).SetCellValue(unloadVolume);
+                row.GetCell(12).SetCellValue(volume);
                 row.GetCell(12).CellStyle = numberCellStyle;
 
-                row.CreateCell(13).SetCellValue(tn.UnloadUnit);
+                row.CreateCell(13).SetCellValue(tn.Unit);
                 row.GetCell(13).CellStyle = cellStyle;
 
                 row.CreateCell(14).SetCellType(CellType.Numeric);
@@ -1134,13 +1149,20 @@ namespace CarTek.Api.Services
                 row.CreateCell(6).SetCellValue(tn.Material);
                 row.GetCell(6).CellStyle = cellStyle;
 
-                row.CreateCell(7).SetCellValue(tn.UnloadVolume);
-                row.GetCell(7).CellStyle = cellStyle;
+                if(tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                {
+                    row.CreateCell(7).SetCellValue(tn.LoadVolume);
+                    row.GetCell(7).CellStyle = cellStyle;
+                }
+                else
+                {
+                    row.CreateCell(7).SetCellValue(tn.UnloadVolume);
+                    row.GetCell(7).CellStyle = cellStyle;
+                }
 
-                row.CreateCell(8).SetCellValue(tn.UnloadUnit);
+                row.CreateCell(8).SetCellValue(tn.Unit);
                 row.GetCell(8).CellStyle = cellStyle;
 
-                //row.CreateCell(9).SetCellValue(tn.Order.Price.Value);
                 //Считаем по себестоимости водителя
                 row.CreateCell(9).SetCellValue(tn.Order.DriverPrice ?? 0);
                 row.GetCell(9).SetCellType(CellType.Numeric);
@@ -1152,7 +1174,7 @@ namespace CarTek.Api.Services
                  
                 double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
 
-                var fullAmount = tn.Order.Price.Value * unloadVolume;
+                var fullAmount = tn.Order.DriverPrice.Value * unloadVolume;
 
                 row.CreateCell(10).SetCellValue(tn.DriverPercent.ToString(nfi));
                 row.GetCell(10).CellStyle = numberCellStyle;

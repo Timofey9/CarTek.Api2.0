@@ -38,7 +38,7 @@ namespace CarTek.Api.Model.Dto
         public string? LocationB { get; set; }
         public long? LocationBId { get; set; }
 
-        public double Price { get; set; } // себестоимость перевозки
+        public double? Price { get; set; } // себестоимость перевозки
 
         /// <summary>
         /// себестоимость перевозки (наемник)
@@ -63,7 +63,7 @@ namespace CarTek.Api.Model.Dto
         public long? ExternalTransporterId { get; set; }
         public ExternalTransporterModel? ExternalTransporter { get; set; }
 
-        public double MaterialPrice { get; set; }  // себестоимость материала
+        public double? MaterialPrice { get; set; }  // себестоимость материала
 
         public string? Note { get; set; }
 
@@ -77,6 +77,8 @@ namespace CarTek.Api.Model.Dto
 
         public ServiceType Service { get; set; }
 
+        //Брать объем с выгрузки или с погрузки
+        public ReportLoadType ReportLoadType { get; set; }
 
         //Услуга
         public MaterialModel Material { get; set; }

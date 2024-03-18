@@ -8,9 +8,7 @@ using CarTek.Api.Services.Interfaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NPOI.SS.Formula.Functions;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace CarTek.Api.Services
 {
@@ -87,6 +85,7 @@ namespace CarTek.Api.Services
                     .Include(t => t.SubTasks)
                     .Include(t => t.Order)
                     .ThenInclude(t => t.Material)
+                    .Include(t => t.Notes)
                     .Where(filterBy);
 
                 tresult = tresult.OrderByDescending(x => x.StartDate);
@@ -238,6 +237,11 @@ namespace CarTek.Api.Services
                             st.DriverTask.Order = null;
                         }
                         mappedResult[i].SubTasks = subTasks.OrderBy(t => t.SequenceNumber).ToList();
+                    }
+
+                    if(driverTask.Notes != null)
+                    {
+                        mappedResult[i].LastNote = driverTask.Notes.MaxBy(t => t.DateCreated);
                     }
                 }
             }
@@ -674,7 +678,8 @@ namespace CarTek.Api.Services
                             PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                             DropOffArrivalTime = $"{tn.DropOffArrivalDate?.ToString("dd.MM.yyyy")}",
                             DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                            Transporter = tn.Transporter
+                            Transporter = tn.Transporter,
+
                         };
                     }
                 }
@@ -767,6 +772,7 @@ namespace CarTek.Api.Services
                 {
                     tn = _dbContext.TNs
                         .Include(t => t.Material)
+                        .Include(t => t.Order)
                         .Include(t => t.SubTask)
                         .ThenInclude(t => t.Notes)
                         .FirstOrDefault(t => t.SubTaskId == driverTaskId);
@@ -806,14 +812,16 @@ namespace CarTek.Api.Services
                                 ClientName = go?.ClientName,
                                 ClientAddress = go?.ClientAddress,
                                 Id = go.Id,
-                                Inn = go?.Inn
+                                Inn = go?.Inn,
+                                ClientUnit = go.ClientUnit
                             },
                             Gp = new ClientModel
                             {
                                 ClientName = gp?.ClientName,
                                 ClientAddress = gp?.ClientAddress,
                                 Id = gp.Id,
-                                Inn = gp?.Inn
+                                Inn = gp?.Inn,
+                                ClientUnit = go.ClientUnit
                             },
                             //DriverInfo = driverInfo,
                             //Date = tn.DriverTask.StartDate,
@@ -983,7 +991,8 @@ namespace CarTek.Api.Services
                         DriverId = task.DriverId,
                         MaterialId = model.MaterialId,
                         Transporter = model.Transporter,
-                        TransporterId = model.TransporterId
+                        TransporterId = model.TransporterId,
+                        OrderId = task.OrderId
                     };
 
                     if (model.IsSubtask)
@@ -1008,7 +1017,8 @@ namespace CarTek.Api.Services
                                 DriverId = task.DriverId,
                                 MaterialId = model.MaterialId,
                                 Transporter = model.Transporter,
-                                TransporterId = model.TransporterId
+                                TransporterId = model.TransporterId,
+                                OrderId = task.OrderId
                             });
                         }
                         else
@@ -1044,7 +1054,8 @@ namespace CarTek.Api.Services
                                 DriverId = task.DriverId,
                                 MaterialId = model.MaterialId,
                                 Transporter = model.Transporter,
-                                TransporterId = model.TransporterId
+                                TransporterId = model.TransporterId,
+                                OrderId = task.OrderId
                             });
                         }
                     }
@@ -1194,6 +1205,8 @@ namespace CarTek.Api.Services
                         newTN.UnloadUnit2 = model.UnloadUnit2;
                         newTN.TransporterId = model.TransporterId;
                         newTN.DriverId = subTask.DriverTask.DriverId;
+
+                        newTN.OrderId = subTask.OrderId;
                         _dbContext.TNs.Add(newTN);
                         _dbContext.SaveChanges();
 
@@ -1244,7 +1257,7 @@ namespace CarTek.Api.Services
                         TN.LocationBId = model.LocationBId;
                         TN.PickUpArrivalDate = model.PickUpArrivalDate;
                         TN.PickUpDepartureDate = model.PickUpDepartureDate;
-                        TN.MaterialId = model.MaterialId;
+                        TN.MaterialId = model.MaterialId; 
                         TN.UnloadVolume = model.UnloadVolume;
                         TN.UnloadUnit = model.UnloadUnit;
                         TN.UnloadVolume2 = model.UnloadVolume2;
@@ -1342,7 +1355,7 @@ namespace CarTek.Api.Services
                         task.TN.LoadVolume2 = model.LoadVolume2;
                         task.TN.Unit = model.Unit;
                         task.TN.Unit2 = model.Unit2;
-                        task.TN.LocationAId = model.LocationAId;
+                        task.TN.LocationAId = model.LocationAId; 
                         task.TN.LocationBId = model.LocationBId;
                         task.TN.PickUpArrivalDate = model.PickUpArrivalDate?.Date;
                         task.TN.PickUpDepartureDate = model.PickUpDepartureDate?.Date;
@@ -1502,6 +1515,7 @@ namespace CarTek.Api.Services
                         Status = task.Status,
                         Text = string.IsNullOrEmpty(comment) ? " " : comment,
                         DateCreated = DateTime.UtcNow,
+                        CreatedByDriver = true
                     };
 
                     var links = new List<string>();

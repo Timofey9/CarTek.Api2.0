@@ -59,6 +59,7 @@
         /// Id перевозчика
         /// </summary>
         public long? ExternalTransporterId { get; set; }
+        public ReportLoadType ReportLoadType { get; set; }
 
         public string? Note { get; set; }
         public int CarCount { get; set; }

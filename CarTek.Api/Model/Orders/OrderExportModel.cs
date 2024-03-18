@@ -56,6 +56,8 @@ namespace CarTek.Api.Model.Orders
         public long? ExternalTransporterId { get; set; }
         public ExternalTransporterModel? ExternalTransporter { get; set; }
 
+        public ReportLoadType ReportLoadType { get; set; }
+
         public double? MaterialPrice { get; set; }
 
         public string? Note { get; set; }

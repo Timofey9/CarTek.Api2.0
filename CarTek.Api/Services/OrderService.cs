@@ -154,7 +154,8 @@ namespace CarTek.Api.Services
                     ExternalTransporterId = model.ExternalTransporterId,
                     ExternalPrice = model.ExternalPrice,
                     DriverPrice = model.DriverPrice,
-                    Discount = model.Discount
+                    Discount = model.Discount,
+                    ReportLoadType = model.ReportLoadType
                 };
 
                 var locationA = _addressService.GetAddress(model.AddressAId);
@@ -221,6 +222,8 @@ namespace CarTek.Api.Services
                     .ThenInclude(dt => dt.Car)
                     .Include(o => o.DriverTasks)
                     .ThenInclude(dt => dt.Driver)
+                    .Include(o => o.DriverTasks)
+                    .ThenInclude(dt => dt.Notes)
                     .Include(t => t.Client)
                     .Include(t => t.Material)
                     .Include(t => t.ExternalTransporter)
@@ -540,7 +543,8 @@ namespace CarTek.Api.Services
                         Density = order.Density,
                         Mileage = order.Mileage,
                         Volume = order?.Volume,
-                        DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks)
+                        DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks),
+                        ReportLoadType = order.ReportLoadType
                     };
 
                     if (order.IsExternal)
@@ -685,14 +689,13 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.DriverTask.Driver)
                 .Include(tn => tn.SubTask)
-                    .ThenInclude(st => st.Order)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Car)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Driver)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Order)
                 .Include(tn => tn.Material)
+                .Include(tn => tn.Order)
                 .Where(filterBy)
                 .OrderBy(orderBy)
                 .ToList();
@@ -736,13 +739,13 @@ namespace CarTek.Api.Services
 
                     if (gp != null && go != null)
                     {
-                        client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                        fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                        client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
 
-                        clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
+                        clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
                     }
 
-                    order = parent.Order;
+                    order = tn.Order;
                     status = parent.Status;
                 }
                 else
@@ -757,34 +760,30 @@ namespace CarTek.Api.Services
 
                         if (gp != null && go != null)
                         {
-                            client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                            fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-                            clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
+                            client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+
+                            fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+
+                            clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
                         }
 
-                        order = tn.DriverTask.Order;
+                        order = tn.Order;
 
                         status = tn.DriverTask.Status;
                     }
                 }
 
                 double volume1 = tn.LoadVolume ?? 0;
-                if (gp?.ClientUnit == Unit.m3)
+                double volume2 = tn.UnloadVolume ?? 0;
+
+                if (order.LoadUnit == Unit.m3)
                 {
                     volume1 = tn.LoadVolume ?? 0;
-                }
-                else
-                {
-                    volume1 = tn.LoadVolume2 ?? 0;
-                }
-
-                double volume2 = tn.UnloadVolume ?? 0;
-                if (gp?.ClientUnit == Unit.m3)
-                {
                     volume2 = tn.UnloadVolume ?? 0;
                 }
                 else
                 {
+                    volume1 = tn.LoadVolume2 ?? 0;
                     volume2 = tn.UnloadVolume2 ?? 0;
                 }
 
@@ -797,7 +796,8 @@ namespace CarTek.Api.Services
                         ClientName = go?.ClientName,
                         ClientAddress = go?.ClientAddress,
                         Id = go?.Id,
-                        Inn = go?.Inn
+                        Inn = go?.Inn,
+                        FixedPrice = go?.FixedPrice                        
                     },
                     Client = client,
                     Gp = new ClientModel
@@ -805,13 +805,14 @@ namespace CarTek.Api.Services
                         ClientName = gp?.ClientName,
                         ClientAddress = gp?.ClientAddress,
                         Id = gp?.Id,
-                        Inn = gp?.Inn
+                        Inn = gp?.Inn,
+                        FixedPrice = gp?.FixedPrice
                     },
                     DriverInfo = driverInfo,
                     Transporter = tn.Transporter,
                     Number = tn.Number,
-                    Unit = UnitToString(gp?.ClientUnit),
-                    UnloadUnit = UnitToString(gp?.ClientUnit),
+                    Unit = UnitToString(order?.LoadUnit),
+                    UnloadUnit = UnitToString(order?.LoadUnit),
                     LoadVolume = volume1.ToString(nfi),
                     UnloadVolume = volume2.ToString(nfi),
                     Material = tn.Material?.Name,
@@ -820,7 +821,7 @@ namespace CarTek.Api.Services
                     LocationB = locationB?.TextAddress,
                     PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                     DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                    Order = order,
+                    Order = _mapper.Map<OrderModel>(order),
                     TaskStatus = status,
                     DriverPercent = driverPercent,
                     FixedPrice = fixedPrice
@@ -853,14 +854,13 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.DriverTask.Driver)
                 .Include(tn => tn.SubTask)
-                    .ThenInclude(st => st.Order)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Car)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Driver)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Order)
                 .Include(tn => tn.Material)
+                .Include(tn => tn.Order)
                 .Where(filterBy)
                 .OrderBy(orderBy)
                 .ToList();
@@ -906,13 +906,13 @@ namespace CarTek.Api.Services
 
                     if (gp != null && go != null)
                     {
-                        client = parent.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                        fixedPrice = parent.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                        client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                        fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
 
-                        clientObject = parent.Order.Service == ServiceType.Supply ? gp : go;
+                        clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
                     }
 
-                    order = parent.Order;
+                    order = tn.Order;
                     status = parent.Status;
                 }
                 else
@@ -927,12 +927,12 @@ namespace CarTek.Api.Services
 
                         if (gp != null && go != null)
                         {
-                            client = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                            fixedPrice = tn.DriverTask.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-                            clientObject = tn.DriverTask.Order.Service == ServiceType.Supply ? gp : go;
+                            client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
+                            fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
+                            clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
                         }
 
-                        order = tn.DriverTask.Order;
+                        order = tn.Order;
 
                         status = tn.DriverTask.Status;
                     }
@@ -940,7 +940,7 @@ namespace CarTek.Api.Services
 
                 double volume1 = tn.LoadVolume ?? 0;
 
-                if (gp?.ClientUnit == Unit.m3)
+                if (order?.LoadUnit== Unit.m3)
                 {
                     volume1 = tn.LoadVolume ?? 0;
                 }
@@ -950,7 +950,7 @@ namespace CarTek.Api.Services
                 }
 
                 double volume2 = tn.UnloadVolume ?? 0;
-                if (gp?.ClientUnit == Unit.m3)
+                if (order?.LoadUnit == Unit.m3)
                 {
                     volume2 = tn.UnloadVolume ?? 0;
                 }
@@ -982,8 +982,8 @@ namespace CarTek.Api.Services
                     DriverInfo = driverInfo,
                     Transporter = tn.Transporter,
                     Number = tn.Number,
-                    Unit = UnitToString(gp?.ClientUnit),
-                    UnloadUnit = UnitToString(gp?.ClientUnit),
+                    Unit = UnitToString(order?.LoadUnit),
+                    UnloadUnit = UnitToString(order?.LoadUnit),
                     LoadVolume = volume1.ToString(nfi),
                     UnloadVolume = volume2.ToString(nfi),
                     Material = tn.Material?.Name,
@@ -992,7 +992,7 @@ namespace CarTek.Api.Services
                     LocationB = locationB?.TextAddress,
                     PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
                     DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                    Order = order,
+                    Order = _mapper.Map<OrderModel>(order),
                     TaskStatus = status,
                     DriverPercent = driverPercent,
                     FixedPrice = fixedPrice

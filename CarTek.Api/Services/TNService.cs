@@ -80,16 +80,15 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.DriverTask.Driver)
                 .Include(tn => tn.SubTask)
-                    .ThenInclude(st => st.Order)
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.DriverTask)
                 .Include(tn => tn.DriverTask)
-                    .ThenInclude(dt => dt.Order)                                    
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Driver)
                 .Include(tn => tn.LocationA)
                 .Include (tn => tn.LocationB)
                 .Include(tn => tn.Material)
+                .Include(tn => tn.Order)
                 .Where(filterBy);
 
             tresult = tresult.OrderBy(orderBy);
@@ -106,7 +105,7 @@ namespace CarTek.Api.Services
             {
                 var tnModel = _mapper.Map<TNModel>(tn);
 
-                tnModel.OrderName = tn.DriverTask?.Order?.Name;
+                tnModel.OrderName = tn?.Order?.Name;
 
                 tnModel.Material = tn.Material != null ? tn.Material.Name : "";
 
@@ -122,14 +121,14 @@ namespace CarTek.Api.Services
                     tnModel.LocationB = tn.LocationB.TextAddress;
                 }
 
-                if (tn.DriverTask != null && tn.DriverTask.Order != null)
+                if (tn.Order != null)
                 {
                     //TODO: Должно быть из заявки
-                    var customerId = tn.DriverTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
+                    var customerId = tn.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
 
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
-                    tnModel.OrderId = tn.DriverTask.OrderId;
+                    tnModel.OrderId = tn.OrderId;
                 }
 
                 if (tn.DriverTask != null && tn.DriverTask.Driver != null)
@@ -137,20 +136,22 @@ namespace CarTek.Api.Services
                     tnModel.DriverInfo = tn.DriverTask.Driver.FullName;
                 }
 
-
-                if (tn.SubTask != null && tn.SubTask.DriverTask.Order != null)
+                if (tn.SubTask != null && tn.Order != null)
                 {
                     //TODO: Должно быть из заявки
-                    var customerId = tn.SubTask.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
+                    var customerId = tn.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
-                    tnModel.OrderId = tn.SubTask.OrderId;
+                    tnModel.OrderId = tn.OrderId;
                 }
 
                 if (tn.SubTask != null && tn.SubTask.DriverTask.Driver != null)
                 {
                     tnModel.DriverInfo = tn.SubTask.DriverTask.Driver.FullName;
                 }
+
+                //не нужно дальше
+                tnModel.Order = null;
 
                 if (searchColumn == "customer" && search != null)
                 {
@@ -170,6 +171,8 @@ namespace CarTek.Api.Services
             {
                 result = result.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
+
+           
 
             return result;
         }

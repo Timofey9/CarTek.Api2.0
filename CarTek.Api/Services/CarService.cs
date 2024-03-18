@@ -305,7 +305,13 @@ namespace CarTek.Api.Services
                          || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
                          || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
                          || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
-                        .ThenInclude(dt => dt.Driver)
+                        .ThenInclude(dt => dt.Driver)                                                
+                        .Include(c => c.DriverTasks.Where(dt =>
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                        .ThenInclude(dt => dt.Notes)
                         .ToList();
 
                 var ordered = tresult.OrderBy(t => t.Plate.Substring(1, 3), new SemiNumericComparer());
@@ -331,6 +337,7 @@ namespace CarTek.Api.Services
                             Unit = dt.Unit,
                             LocationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationAId),
                             LocationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationBId),
+                            LastNote = dt.Notes != null ? dt.Notes.MaxBy(t => t.DateCreated) : new DriverTaskNote()
                         }).ToList(),
                     };
 

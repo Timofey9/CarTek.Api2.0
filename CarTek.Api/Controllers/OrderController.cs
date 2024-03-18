@@ -97,6 +97,14 @@ namespace CarTek.Api.Controllers
 
                 var mappedItem = _mapper.Map<OrderModel>(item);
 
+                mappedItem.DriverTasks?.ToList().ForEach(t =>
+                {
+                    var maxNote = t.Notes?.MaxBy(n => n.DateCreated);
+                    if (maxNote != null)
+                    {
+                        t.LastNote = maxNote;
+                    }
+                });
                 mappedItem.Gp = _mapper.Map<ClientModel>(gp);
 
                 mappedList.Add(mappedItem);
@@ -487,7 +495,7 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpPatch("updateorder/{id}")]
-        public IActionResult UpdateDriver(long id, [FromBody] JsonPatchDocument<Order> patchDoc)
+        public IActionResult UpdateOrder(long id, [FromBody] JsonPatchDocument<Order> patchDoc)
         {
             var res = _orderService.UpdateOrder(id, patchDoc);
 

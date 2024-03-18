@@ -21,15 +21,22 @@ namespace CarTek.Api.Controllers
         [HttpGet("gettnslist")]
         public IActionResult GetTNsList(string? sortColumn, string? sortDirection, int pageNumber, int pageSize, string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
-            var list = _tnService.GetAllPagination(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
-
-            var totalNumber = _tnService.GetAll(searchColumn, search, startDate, endDate).Count();
-
-            return Ok(new PagedResult<TNModel>()
+            try
             {
-                TotalNumber = totalNumber,
-                List = list.ToList()
-            });
+                var list = _tnService.GetAllPagination(sortColumn, sortDirection, pageNumber, pageSize, searchColumn, search, startDate, endDate);
+
+                var totalNumber = _tnService.GetAll(searchColumn, search, startDate, endDate).Count();
+
+                return Ok(new PagedResult<TNModel>()
+                {
+                    TotalNumber = totalNumber,
+                    List = list.ToList()
+                });
+            }
+            catch(Exception ex)
+            {                                
+                return BadRequest(ex.Message);            
+            }
         }
 
     }

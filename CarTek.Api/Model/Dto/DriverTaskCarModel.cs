@@ -36,6 +36,7 @@ namespace CarTek.Api.Model.Dto
 
         public int SubTasksCount { get; set; }
 
+        public DriverTaskNote LastNote { get; set; }
     }
 
     public class DriverTaskExportModel

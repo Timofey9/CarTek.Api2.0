@@ -49,5 +49,7 @@ namespace CarTek.Api.Model.Dto
         public TNModel TN { get; set; }
 
         public ICollection<SubTaskModel> SubTasks { get; set; }
+
+        public DriverTaskNote LastNote { get; set; }
     }
 }

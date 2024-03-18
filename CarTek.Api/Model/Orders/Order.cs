@@ -10,6 +10,12 @@ namespace CarTek.Api.Model
         none
     }
 
+    public enum ReportLoadType
+    {
+        UseLoad,
+        UseUnload
+    }
+
     public enum ServiceType
     {
         Transport,
@@ -96,7 +102,10 @@ namespace CarTek.Api.Model
 
         public Client Client { get; set; }
 
+        public ReportLoadType ReportLoadType { get; set; }
+
         public ICollection<DriverTask> DriverTasks { get; set; }
         public ICollection<SubTask> SubTasks { get; set; }
+        public ICollection<TN> TNs{ get; set; }
     }
 }

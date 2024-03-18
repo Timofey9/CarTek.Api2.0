@@ -15,5 +15,7 @@
         public long? DriverTaskId { get; set; }
 
         public long? SubTaskId { get; set; }
+
+        public bool CreatedByDriver { get; set; }
     }
 }

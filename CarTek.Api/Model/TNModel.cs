@@ -48,6 +48,8 @@ namespace CarTek.Api.Model
         public AddressModel LocationA { get; set; }
 
         public AddressModel LocationB { get; set; }
+
+        public OrderModel Order { get; set;}
     }
 
     public class TNModel 
@@ -116,12 +118,12 @@ namespace CarTek.Api.Model
 
         public double? FixedPrice { get; set; }
 
-        public Order Order { get; set; }
+        public OrderModel Order { get; set; }
 
         public ClientModel Customer { get; set; }
         public string OrderName { get; set; }
         public long DriverTaskId { get;set; }
         public long SubTaskId { get; set; }
-        public long OrderId { get; set; }
+        public long? OrderId { get; set; }
     }
 }
