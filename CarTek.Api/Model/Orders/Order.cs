@@ -102,6 +102,8 @@ namespace CarTek.Api.Model
 
         public Client Client { get; set; }
 
+        public string LoadTime { get; set; }
+
         public ReportLoadType ReportLoadType { get; set; }
 
         public ICollection<DriverTask> DriverTasks { get; set; }

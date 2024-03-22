@@ -51,6 +51,8 @@ namespace CarTek.Api.Model.Dto
 
         public bool IsCanceled { get; set; }
 
+        public string TransportAmountMessage { get; set; }
+
         // night/day
         public ShiftType Shift { get; set; }
 

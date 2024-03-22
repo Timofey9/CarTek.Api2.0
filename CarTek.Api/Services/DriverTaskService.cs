@@ -106,7 +106,7 @@ namespace CarTek.Api.Services
         }
 
 
-        public IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate)
+        public IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate, string? searchBy, string? searchString)
         {
             var result = new List<DriverTask>();
 
@@ -121,6 +121,26 @@ namespace CarTek.Api.Services
                         && x.StartDate.AddHours(4).Date <= date2;
 
                 Expression<Func<DriverTask, object>> orderBy = x => x.StartDate;
+
+                if (!string.IsNullOrEmpty(searchBy) && !string.IsNullOrEmpty(searchString))
+                {
+                    switch (searchBy)
+                    {
+                        case "clientName":
+                            filterBy = x => x.Order.ClientName.ToLower().Contains(searchString.ToLower().Trim())
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
+
+                            break;
+                        case "material":
+                            filterBy = x => x.Order.Material.Name.ToLower().Contains(searchString.ToLower().Trim())
+                            && x.StartDate.AddHours(4).Date >= date1
+                            && x.StartDate.AddHours(4).Date <= date2;
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
                 var tresult = _dbContext.DriverTasks
                     .Include(t => t.Car)
@@ -156,6 +176,34 @@ namespace CarTek.Api.Services
                         TaskComment = task.AdminComment,
                         IsCanceled = task.IsCanceled
                     };
+
+                    bool add = false;
+
+                    if (!string.IsNullOrEmpty(searchBy) && !string.IsNullOrEmpty(searchString))
+                    {
+                        switch (searchBy)
+                        {
+                            case "addressA":
+                                if ((!string.IsNullOrEmpty(mappedTask.LocationA) && mappedTask.LocationA.ToLower().Contains(searchString.ToLower())))
+                                {
+                                    mappedResult.Add(mappedTask);
+                                }
+                                break;
+                            case "addressB":
+                                if ((!string.IsNullOrEmpty(mappedTask.LocationB) && mappedTask.LocationA.ToLower().Contains(searchString.ToLower())))
+                                {
+                                    mappedResult.Add(mappedTask);
+                                }
+                                break;
+                            default:
+                                mappedResult.Add(mappedTask);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        mappedResult.Add(mappedTask);
+                    }
 
                     mappedResult.Add(mappedTask);
                 }
@@ -327,6 +375,10 @@ namespace CarTek.Api.Services
                 model.LocationB = locationB;
                 model.Price = price;
                 model.DriverPrice = driverPrice;
+
+                string carPlates = string.Join(", ", model.Order.DriverTasks.Select(p => $"{p.Car.Plate}"));
+
+                model.TransportAmountMessage = $"По заявке назначено {model.Order.DriverTasks.Count} а.м. Гос. номера: {carPlates}";
 
             }
             catch (Exception ex)

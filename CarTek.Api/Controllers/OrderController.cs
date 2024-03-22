@@ -20,18 +20,18 @@ namespace CarTek.Api.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IClientService _clientService;
-        private readonly IAddressService _addressService;
+        private readonly ITnService _tnService;
         private readonly ICarService _carService;
         private readonly IMapper _mapper;
         private readonly IReportGeneratorService _reportGeneratorService;
         private readonly IDriverTaskService _driverTaskService;
 
         public OrderController(IOrderService orderService, IClientService clientService,
-            IAddressService addresSservice, IMapper mapper, IReportGeneratorService reportGeneratorService,
-            IDriverTaskService driverTaskService, ICarService carService)
+            IMapper mapper, IReportGeneratorService reportGeneratorService,
+            IDriverTaskService driverTaskService, ICarService carService, ITnService tnService)
         {
+            _tnService = tnService;
             _orderService = orderService;
-            _addressService = addresSservice;
             _clientService = clientService;
             _mapper = mapper;
             _reportGeneratorService = reportGeneratorService;
@@ -160,11 +160,11 @@ namespace CarTek.Api.Controllers
         }               
         
         [HttpGet("getfulltasksreport")]
-        public IActionResult DownloadFullTasksList(DateTime startDate, DateTime endDate)
+        public IActionResult DownloadFullTasksList(DateTime startDate, DateTime endDate, string? searchBy, string? searchString)
         {
             try
             {
-                var tasks = _driverTaskService.GetDriverTasksBetweenDates(startDate, endDate);
+                var tasks = _driverTaskService.GetDriverTasksBetweenDates(startDate, endDate, searchBy, searchString);
 
                 var fileStream = _reportGeneratorService.GenerateTasksReportFull(startDate, endDate, tasks);
 
@@ -202,13 +202,13 @@ namespace CarTek.Api.Controllers
         }
 
         [HttpGet("gettnxls")]
-        public IActionResult DownloadTNsList(DateTime startDate, DateTime endDate)
+        public IActionResult DownloadTNsList(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var orders = _orderService.GetTNsBetweenDates(startDate, endDate, true);
+                var tns = _tnService.GetAll(searchColumn, search, startDate, endDate);
 
-                var fileStream = _reportGeneratorService.GenerateTnsReport(orders, startDate, endDate);
+                var fileStream = _reportGeneratorService.GenerateTnsReport(tns, startDate, endDate);
 
                 var contentType = "application/octet-stream";
 
@@ -223,11 +223,11 @@ namespace CarTek.Api.Controllers
         }        
         
         [HttpGet("getaccountantreport")]
-        public IActionResult DownloadAccountantReportList(DateTime startDate, DateTime endDate)
+        public IActionResult DownloadAccountantReportList(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var orders = _orderService.GetTNsBetweenDates(startDate, endDate, true);
+                var orders = _tnService.GetAll(searchColumn, search, startDate, endDate);
 
                 var fileStream = _reportGeneratorService.GenerateSalariesReport(orders, startDate, endDate);
 

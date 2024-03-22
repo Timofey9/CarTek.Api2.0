@@ -155,7 +155,8 @@ namespace CarTek.Api.Services
                     ExternalPrice = model.ExternalPrice,
                     DriverPrice = model.DriverPrice,
                     Discount = model.Discount,
-                    ReportLoadType = model.ReportLoadType
+                    ReportLoadType = model.ReportLoadType,
+                    LoadTime = string.IsNullOrEmpty(model.LoadTime) ? "" : model.LoadTime
                 };
 
                 var locationA = _addressService.GetAddress(model.AddressAId);
@@ -544,7 +545,8 @@ namespace CarTek.Api.Services
                         Mileage = order.Mileage,
                         Volume = order?.Volume,
                         DriverTasks = _mapper.Map<List<DriverTaskOrderModel>>(order.DriverTasks),
-                        ReportLoadType = order.ReportLoadType
+                        ReportLoadType = order.ReportLoadType,
+                        LoadTime = order.LoadTime
                     };
 
                     if (order.IsExternal)
@@ -673,19 +675,15 @@ namespace CarTek.Api.Services
             var date2 = endDate.Date;
 
             var tnList = new List<TNModel>();
-            Expression<Func<TN, bool>> filterBy;
+            
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
+            nfi.CurrencyDecimalDigits = 2;
 
-            filterBy = x =>
-                (x.DriverId == driverId || (x.SubTask != null && x.SubTask.DriverTask.DriverId == driverId))
-                && x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
-                && (x.PickUpDepartureDate.Value.Date >= date1
-                && x.DropOffDepartureDate.Value.Date <= date2);
+            var addresses = _dbContext.Addresses.ToList();
+            var clients = _dbContext.Clients.ToList();
 
-
-            Expression<Func<TN, object>> orderBy = x => x.PickUpDepartureDate;
-
-
-            var tresult = _dbContext.TNs
+            var tnQuery = _dbContext.TNs
                 .Include(tn => tn.SubTask)
                     .ThenInclude(st => st.DriverTask.Driver)
                 .Include(tn => tn.SubTask)
@@ -696,92 +694,32 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.DriverTask)
                 .Include(tn => tn.Material)
                 .Include(tn => tn.Order)
-                .Where(filterBy)
-                .OrderBy(orderBy)
-                .ToList();
+                .Where(x =>
+                    (x.DriverId == driverId || (x.SubTask != null && x.SubTask.DriverTask.DriverId == driverId)) &&
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2)
+                    || (x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)));
 
-            NumberFormatInfo nfi = new NumberFormatInfo();
-            nfi.NumberDecimalSeparator = ",";
+            if (completedOnly)
+            {
+                tnQuery = tnQuery.Where(x => x.SubTask.Status == DriverTaskStatus.Done || x.DriverTask.Status == DriverTaskStatus.Done);
+            }
+
+            var tresult = tnQuery.OrderBy(x => x.PickUpDepartureDate).AsQueryable().ToList();
 
             foreach (var tn in tresult)
             {
-                var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
-                var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
-                string driverInfo = "";
-                string carInfo = "";
-                string client = "";
-                double? fixedPrice = null;
-                Client clientObject = null;
-                double driverPercent = 0;
-                bool add = false;
-                Order order = new Order();
-                DriverTaskStatus status = DriverTaskStatus.Assigned;
+                var locationA = addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
+                var locationB = addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
 
-                var gp = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GpId);
-                var go = _dbContext.Clients.FirstOrDefault(t => t.Id == tn.GoId);
+                var gp = clients.FirstOrDefault(t => t.Id == tn.GpId);
+                var go = clients.FirstOrDefault(t => t.Id == tn.GoId);
 
-                if (tn.SubTask != null)
-                {
-                    var parent = tn.SubTask;
-
-                    add = tn.SubTask.Status == DriverTaskStatus.Done;
-
-                    if (parent.DriverTask.Driver != null)
-                    {
-                        driverInfo = parent.DriverTask.Driver.FullName;
-                        driverPercent = parent.DriverTask.Driver.Percentage;
-                    }
-
-                    if (parent.DriverTask.Car != null)
-                    {
-                        carInfo = $"{parent.DriverTask.Car.Plate.ToUpper()} {parent.DriverTask.Car.Brand}";
-                    }
-
-                    if (gp != null && go != null)
-                    {
-                        client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-                        fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-
-                        clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
-                    }
-
-                    order = tn.Order;
-                    status = parent.Status;
-                }
-                else
-                {
-                    if (tn.DriverTask != null)
-                    {
-                        add = tn.DriverTask.Status == DriverTaskStatus.Done;
-
-                        carInfo = $"{tn.DriverTask.Car.Plate} {tn.DriverTask.Car.Brand}";
-                        driverInfo = tn.DriverTask.Driver.FullName;
-                        driverPercent = tn.DriverTask.Driver.Percentage;
-
-                        if (gp != null && go != null)
-                        {
-                            client = tn.Order.Service == ServiceType.Supply ? gp.ClientName : go.ClientName;
-
-                            fixedPrice = tn.Order.Service == ServiceType.Supply ? gp.FixedPrice : go.FixedPrice;
-
-                            clientObject = tn.Order.Service == ServiceType.Supply ? gp : go;
-                        }
-
-                        order = tn.Order;
-
-                        status = tn.DriverTask.Status;
-                    }
-                }
-
+                // Volume Calculation
                 double volume1 = tn.LoadVolume ?? 0;
                 double volume2 = tn.UnloadVolume ?? 0;
 
-                if (order.LoadUnit == Unit.m3)
-                {
-                    volume1 = tn.LoadVolume ?? 0;
-                    volume2 = tn.UnloadVolume ?? 0;
-                }
-                else
+                if (tn.Order.LoadUnit != Unit.m3)
                 {
                     volume1 = tn.LoadVolume2 ?? 0;
                     volume2 = tn.UnloadVolume2 ?? 0;
@@ -789,6 +727,7 @@ namespace CarTek.Api.Services
 
                 var model = new TNModel
                 {
+                    // Construct TNModel
                     IsOriginalReceived = tn.IsOrginalReceived ?? false,
                     IsVerified = tn.IsVerified ?? false,
                     Go = new ClientModel
@@ -797,9 +736,9 @@ namespace CarTek.Api.Services
                         ClientAddress = go?.ClientAddress,
                         Id = go?.Id,
                         Inn = go?.Inn,
-                        FixedPrice = go?.FixedPrice                        
+                        FixedPrice = go?.FixedPrice
                     },
-                    Client = client,
+                    Client = tn.Order.Service == ServiceType.Supply ? gp?.ClientName : go?.ClientName,
                     Gp = new ClientModel
                     {
                         ClientName = gp?.ClientName,
@@ -808,28 +747,33 @@ namespace CarTek.Api.Services
                         Inn = gp?.Inn,
                         FixedPrice = gp?.FixedPrice
                     },
-                    DriverInfo = driverInfo,
+                    DriverInfo = tn.SubTask?.DriverTask?.Driver?.FullName ?? tn.DriverTask?.Driver?.FullName,
                     Transporter = tn.Transporter,
                     Number = tn.Number,
-                    Unit = UnitToString(order?.LoadUnit),
-                    UnloadUnit = UnitToString(order?.LoadUnit),
+                    Unit = UnitToString(tn.Order?.LoadUnit),
+                    UnloadUnit = UnitToString(tn.Order?.LoadUnit),
                     LoadVolume = volume1.ToString(nfi),
                     UnloadVolume = volume2.ToString(nfi),
                     Material = tn.Material?.Name,
-                    CarPlate = carInfo,
+                    CarPlate = tn.SubTask?.DriverTask?.Car?.Plate.ToUpper() ?? tn.DriverTask?.Car?.Plate.ToUpper(),
                     LocationA = locationA?.TextAddress,
                     LocationB = locationB?.TextAddress,
-                    PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}",
-                    DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}",
-                    Order = _mapper.Map<OrderModel>(order),
-                    TaskStatus = status,
-                    DriverPercent = driverPercent,
-                    FixedPrice = fixedPrice
+                    PickUpDepartureTime = tn.PickUpDepartureDate?.ToString("dd.MM.yyyy"),
+                    DropOffDepartureTime = tn.DropOffDepartureDate?.ToString("dd.MM.yyyy"),
+                    Order = _mapper.Map<OrderModel>(tn.Order),
+                    TaskStatus = tn.SubTask?.Status ?? tn.DriverTask?.Status ?? DriverTaskStatus.Assigned,
+                    DriverPercent = tn.SubTask?.DriverTask?.Driver?.Percentage ?? tn.DriverTask?.Driver?.Percentage ?? 0,
+                    FixedPrice = tn.Order.Service == ServiceType.Supply ? gp?.FixedPrice : go?.FixedPrice
                 };
 
-
-                if (add)
+                if (tn.SubTask != null && tn.SubTask.Status == DriverTaskStatus.Done)
+                {
                     tnList.Add(model);
+                }
+                else if (tn.DriverTask != null && tn.DriverTask.Status == DriverTaskStatus.Done)
+                {
+                    tnList.Add(model);
+                }
             }
 
             return tnList;
@@ -959,7 +903,6 @@ namespace CarTek.Api.Services
                     volume2 = tn.UnloadVolume2 ?? 0;
                 }
 
-                //TODO: грузоотправитель
                 var model = new TNModel
                 {
                     IsOriginalReceived = tn.IsOrginalReceived ?? false,

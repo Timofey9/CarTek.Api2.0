@@ -94,126 +94,136 @@ namespace CarTek.Api.Services
 
             foreach (var tn in tns)
             {
-                var row = sheet.CreateRow(rowIndex);
-
-                row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
-                row.GetCell(0).CellStyle = cellStyle;
-                row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
-                row.GetCell(1).CellStyle = cellStyle;
-
-                row.CreateCell(2).SetCellValue(tn.Client);
-                row.GetCell(2).CellStyle = cellStyle;
-
-                //TODO:
-                row.CreateCell(3).SetCellValue(tn.Transporter);
-                row.GetCell(3).CellStyle = cellStyle;
-
-                //TODO:
-                row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
-                row.GetCell(4).CellStyle = cellStyle;
-
-                row.CreateCell(5).SetCellValue(tn.Number);
-                row.GetCell(5).CellStyle = cellStyle;
-
-                row.CreateCell(6).SetCellValue(tn.LocationA);
-                row.GetCell(6).CellStyle = cellStyle;
-
-                row.CreateCell(7).SetCellValue(tn.LocationB);
-                row.GetCell(7).CellStyle = cellStyle;
-
-                row.CreateCell(8).SetCellValue(tn.CarPlate);
-                row.GetCell(8).CellStyle = cellStyle;
-
-                row.CreateCell(9).SetCellValue(tn.DriverInfo);
-                row.GetCell(9).CellStyle = cellStyle;
-
-                row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
-                row.GetCell(10).CellStyle = cellStyle;
-
-                row.CreateCell(11).SetCellValue(tn.Material);
-                row.GetCell(11).CellStyle = cellStyle;
-
-                NumberFormatInfo nfi = new NumberFormatInfo();
-                nfi.NumberDecimalSeparator = ",";
-
-                double volume;
-                if(tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                if (tn.TaskStatus == DriverTaskStatus.Done)
                 {
-                    double.TryParse(tn.LoadVolume, nfi, out volume);
+                    var row = sheet.CreateRow(rowIndex);
+
+                    row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
+                    row.GetCell(0).CellStyle = cellStyle;
+                    row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
+                    row.GetCell(1).CellStyle = cellStyle;
+
+                    row.CreateCell(2).SetCellValue(tn.Customer.ClientName);
+                    row.GetCell(2).CellStyle = cellStyle;
+
+                    //TODO:
+                    row.CreateCell(3).SetCellValue(tn.Transporter);
+                    row.GetCell(3).CellStyle = cellStyle;
+
+                    //TODO:
+                    row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                    row.GetCell(4).CellStyle = cellStyle;
+
+                    row.CreateCell(5).SetCellValue(tn.Number);
+                    row.GetCell(5).CellStyle = cellStyle;
+
+                    row.CreateCell(6).SetCellValue(tn.LocationA);
+                    row.GetCell(6).CellStyle = cellStyle;
+
+                    row.CreateCell(7).SetCellValue(tn.LocationB);
+                    row.GetCell(7).CellStyle = cellStyle;
+
+                    row.CreateCell(8).SetCellValue(tn.CarPlate);
+                    row.GetCell(8).CellStyle = cellStyle;
+
+                    row.CreateCell(9).SetCellValue(tn.DriverInfo);
+                    row.GetCell(9).CellStyle = cellStyle;
+
+                    row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
+                    row.GetCell(10).CellStyle = cellStyle;
+
+                    row.CreateCell(11).SetCellValue(tn.Material);
+                    row.GetCell(11).CellStyle = cellStyle;
+
+                    NumberFormatInfo nfi = new NumberFormatInfo();
+                    nfi.NumberDecimalSeparator = ",";
+
+                    double volume;
+                    if (tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                    {
+                        double.TryParse(tn.LoadVolume, nfi, out volume);
+                    }
+                    else
+                    {
+                        double.TryParse(tn.UnloadVolume, nfi, out volume);
+                    }
+
+                    row.CreateCell(12).SetCellType(CellType.Numeric);
+                    row.GetCell(12).SetCellValue(volume);
+                    row.GetCell(12).CellStyle = numberCellStyle;
+
+                    row.CreateCell(13).SetCellValue(tn.UnloadUnit);
+                    row.GetCell(13).CellStyle = cellStyle;
+
+
+                    row.CreateCell(14).SetCellType(CellType.Numeric);
+                    row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                    row.GetCell(14).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(15).SetCellType(CellType.Numeric);
+                    row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
+                    row.GetCell(15).CellStyle.WrapText = true;
+                    row.GetCell(15).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(16).SetCellType(CellType.Numeric);
+                    row.GetCell(16).SetCellValue(tn.Order.MaterialPrice ?? 0);
+                    row.GetCell(16).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(17).SetCellType(CellType.Numeric);
+                    row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}+O{rowIndex + 1}");
+                    row.GetCell(17).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(18).SetCellType(CellType.Numeric);
+                    row.GetCell(18).SetCellFormula($"M{rowIndex + 1}*R{rowIndex + 1}");
+                    row.GetCell(18).CellStyle = moneyCellStyle;
+
+                    if (tn.Order.IsExternal)
+                    {
+                        row.CreateCell(19).SetCellType(CellType.Numeric);
+                        row.GetCell(19).SetCellValue(tn.Order.ExternalPrice ?? 0);
+                        row.GetCell(19).CellStyle = moneyCellStyle;
+
+                        row.CreateCell(21).SetCellType(CellType.Numeric);
+                        //Добавим формулу, но вообще еще в базе есть значение
+                        //Дисконт
+                        row.GetCell(20).SetCellFormula($"O{rowIndex + 1} - T{rowIndex + 1}");
+                        row.GetCell(20).CellStyle = moneyCellStyle;
+
+                        row.CreateCell(23).SetCellType(CellType.Numeric);
+                        row.GetCell(23).SetCellFormula($"M{rowIndex + 1}*T{rowIndex + 1}");
+                        row.GetCell(23).CellStyle = moneyCellStyle;
+                    }
+                    else
+                    {
+                        row.CreateCell(19).SetCellType(CellType.Numeric);
+                        row.GetCell(19).SetCellValue(0);
+                        row.GetCell(19).CellStyle = moneyCellStyle;
+
+                        row.CreateCell(21).SetCellType(CellType.Numeric);
+                        row.GetCell(21).CellStyle = moneyCellStyle;
+
+                        if (tn.FixedPrice == null)
+                        {
+                            row.GetCell(21).SetCellValue(tn.Order.DriverPrice ?? 0);
+                            row.CreateCell(22).SetCellType(CellType.Numeric);
+                            row.GetCell(22).SetCellFormula($"O{rowIndex + 1} - V{rowIndex + 1}");
+                            row.GetCell(22).CellStyle = moneyCellStyle;
+
+                            row.CreateCell(23).SetCellType(CellType.Numeric);
+                            row.GetCell(23).SetCellFormula($"M{rowIndex + 1}*T{rowIndex + 1}");
+                            row.GetCell(23).CellStyle = moneyCellStyle;
+                        }
+                        else
+                        {
+                            row.GetCell(21).SetCellValue(tn.FixedPrice.Value.ToString(nfi));
+                        }
+                    }
+
+                    row.CreateCell(24).SetCellValue(tn.IsVerified ? "Да" : "Нет");
+                    row.CreateCell(25).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+
+                    rowIndex++;
                 }
-                else
-                {
-                    double.TryParse(tn.UnloadVolume, nfi, out volume);
-                }
-
-                row.CreateCell(12).SetCellType(CellType.Numeric);
-                row.GetCell(12).SetCellValue(volume);
-                row.GetCell(12).CellStyle = numberCellStyle;
-
-                row.CreateCell(13).SetCellValue(tn.UnloadUnit);
-                row.GetCell(13).CellStyle = cellStyle;
-
-
-                row.CreateCell(14).SetCellType(CellType.Numeric);
-                row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
-                row.GetCell(14).CellStyle = moneyCellStyle;
-
-                row.CreateCell(15).SetCellType(CellType.Numeric);
-                row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
-                row.GetCell(15).CellStyle.WrapText = true;
-                row.GetCell(15).CellStyle = moneyCellStyle;
-
-                row.CreateCell(16).SetCellType(CellType.Numeric);
-                row.GetCell(16).SetCellValue(tn.Order.MaterialPrice ?? 0);
-                row.GetCell(16).CellStyle = moneyCellStyle;
-
-                row.CreateCell(17).SetCellType(CellType.Numeric);
-                row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}+O{rowIndex + 1}");
-                row.GetCell(17).CellStyle = moneyCellStyle;
-
-                row.CreateCell(18).SetCellType(CellType.Numeric);
-                row.GetCell(18).SetCellFormula($"M{rowIndex + 1}*R{rowIndex + 1}");
-                row.GetCell(18).CellStyle = moneyCellStyle;
-
-                if (tn.Order.IsExternal)
-                {
-                    row.CreateCell(19).SetCellType(CellType.Numeric);
-                    row.GetCell(19).SetCellValue(tn.Order.ExternalPrice ?? 0);
-                    row.GetCell(19).CellStyle = moneyCellStyle;
-
-                    row.CreateCell(21).SetCellType(CellType.Numeric);
-                    //Добавим формулу, но вообще еще в базе есть значение
-                    //Дисконт
-                    row.GetCell(20).SetCellFormula($"O{rowIndex + 1} - T{rowIndex + 1}");
-                    row.GetCell(20).CellStyle = moneyCellStyle;
-
-                    row.CreateCell(23).SetCellType(CellType.Numeric);
-                    row.GetCell(23).SetCellFormula($"M{rowIndex + 1}*T{rowIndex + 1}");
-                    row.GetCell(23).CellStyle = moneyCellStyle;
-                }
-                else
-                {
-                    row.CreateCell(19).SetCellType(CellType.Numeric);
-                    row.GetCell(19).SetCellValue(0);
-                    row.GetCell(19).CellStyle = moneyCellStyle;
-
-                    row.CreateCell(21).SetCellType(CellType.Numeric);
-                    row.GetCell(21).SetCellValue(tn.Order.DriverPrice ?? 0);
-                    row.GetCell(21).CellStyle = moneyCellStyle;
-
-                    row.CreateCell(22).SetCellType(CellType.Numeric);
-                    row.GetCell(22).SetCellFormula($"O{rowIndex + 1} - V{rowIndex + 1}");
-                    row.GetCell(22).CellStyle = moneyCellStyle;
-
-                    row.CreateCell(23).SetCellType(CellType.Numeric);
-                    row.GetCell(23).SetCellFormula($"M{rowIndex + 1}*T{rowIndex + 1}");
-                    row.GetCell(23).CellStyle = moneyCellStyle;
-                }
-
-                row.CreateCell(24).SetCellValue(tn.IsVerified ? "Да" : "Нет");
-                row.CreateCell(25).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
-
-                rowIndex++;
             }
 
             var stream = new MemoryStream();
@@ -936,92 +946,95 @@ namespace CarTek.Api.Services
 
             foreach (var tn in tns)
             {
-                var row = sheet.CreateRow(rowIndex);
-
-                row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
-                row.GetCell(0).CellStyle = cellStyle;
-                row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
-                row.GetCell(1).CellStyle = cellStyle;
-
-                row.CreateCell(2).SetCellValue(tn.Client);
-                row.GetCell(2).CellStyle = cellStyle;
-
-                //TODO:
-                row.CreateCell(3).SetCellValue("КарТэк");
-                row.GetCell(3).CellStyle = cellStyle;
-
-                //TODO:
-                row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
-                row.GetCell(4).CellStyle = cellStyle;
-
-                row.CreateCell(5).SetCellValue(tn.Number);
-                row.GetCell(5).CellStyle = cellStyle;
-
-                row.CreateCell(6).SetCellValue(tn.LocationA);
-                row.GetCell(6).CellStyle = cellStyle;
-
-                row.CreateCell(7).SetCellValue(tn.LocationB);
-                row.GetCell(7).CellStyle = cellStyle;
-
-                row.CreateCell(8).SetCellValue(tn.CarPlate);
-                row.GetCell(8).CellStyle = cellStyle;
-
-                row.CreateCell(9).SetCellValue(tn.DriverInfo);
-                row.GetCell(9).CellStyle = cellStyle;
-
-                row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
-                row.GetCell(10).CellStyle = cellStyle;
-
-                row.CreateCell(11).SetCellValue(tn.Material);
-                row.GetCell(11).CellStyle = cellStyle;
-
-                double volume;
-                if (tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                if (tn.TaskStatus == DriverTaskStatus.Done)
                 {
-                    double.TryParse(tn.LoadVolume, nfi, out volume);
+                    var row = sheet.CreateRow(rowIndex);
+
+                    row.CreateCell(0).SetCellValue(tn.PickUpDepartureTime);
+                    row.GetCell(0).CellStyle = cellStyle;
+                    row.CreateCell(1).SetCellValue(tn.DropOffDepartureTime);
+                    row.GetCell(1).CellStyle = cellStyle;
+
+                    row.CreateCell(2).SetCellValue(tn.Customer.ClientName);
+                    row.GetCell(2).CellStyle = cellStyle;
+
+                    //TODO:
+                    row.CreateCell(3).SetCellValue("КарТэк");
+                    row.GetCell(3).CellStyle = cellStyle;
+
+                    //TODO:
+                    row.CreateCell(4).SetCellValue(tn.Order.Service == ServiceType.Supply ? "Поставка" : "Перевозка");
+                    row.GetCell(4).CellStyle = cellStyle;
+
+                    row.CreateCell(5).SetCellValue(tn.Number);
+                    row.GetCell(5).CellStyle = cellStyle;
+
+                    row.CreateCell(6).SetCellValue(tn.LocationA);
+                    row.GetCell(6).CellStyle = cellStyle;
+
+                    row.CreateCell(7).SetCellValue(tn.LocationB);
+                    row.GetCell(7).CellStyle = cellStyle;
+
+                    row.CreateCell(8).SetCellValue(tn.CarPlate);
+                    row.GetCell(8).CellStyle = cellStyle;
+
+                    row.CreateCell(9).SetCellValue(tn.DriverInfo);
+                    row.GetCell(9).CellStyle = cellStyle;
+
+                    row.CreateCell(10).SetCellValue(StatusToString(tn.TaskStatus));
+                    row.GetCell(10).CellStyle = cellStyle;
+
+                    row.CreateCell(11).SetCellValue(tn.Material);
+                    row.GetCell(11).CellStyle = cellStyle;
+
+                    double volume;
+                    if (tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+                    {
+                        double.TryParse(tn.LoadVolume, nfi, out volume);
+                    }
+                    else
+                    {
+                        double.TryParse(tn.UnloadVolume, nfi, out volume);
+                    }
+                    row.CreateCell(12).SetCellType(CellType.Numeric);
+                    row.GetCell(12).SetCellValue(volume);
+                    row.GetCell(12).CellStyle = numberCellStyle;
+
+                    row.CreateCell(13).SetCellValue(tn.Unit);
+                    row.GetCell(13).CellStyle = cellStyle;
+
+                    row.CreateCell(14).SetCellType(CellType.Numeric);
+                    //row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
+                    // Считаем по себестоимости водителя 
+                    row.GetCell(14).SetCellValue(tn.Order.DriverPrice ?? 0);
+                    row.GetCell(14).CellStyle = moneyCellStyle;
+
+                    row.CreateCell(16).SetCellType(CellType.Numeric);
+                    row.GetCell(16).SetCellValue(tn.DriverPercent);
+                    row.GetCell(16).CellStyle = numberCellStyle;
+
+                    row.CreateCell(17).SetCellType(CellType.Numeric);
+                    row.GetCell(17).CellStyle = moneyCellStyle;
+
+                    if (tn.FixedPrice == null)
+                    {
+                        row.CreateCell(15).SetCellType(CellType.Numeric);
+                        row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
+                        row.GetCell(15).CellStyle.WrapText = true;
+                        row.GetCell(15).CellStyle = moneyCellStyle;
+
+                        row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");
+                    }
+                    else
+                    {
+                        row.GetCell(17).SetCellValue(tn.FixedPrice.Value.ToString(nfi));
+                    }
+
+                    row.CreateCell(18).SetCellValue(tn.IsVerified ? "Да" : "Нет");
+                    row.CreateCell(19).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
+
+                    rowIndex++;
                 }
-                else
-                {
-                    double.TryParse(tn.UnloadVolume, nfi, out volume);
-                }
-                row.CreateCell(12).SetCellType(CellType.Numeric);
-                row.GetCell(12).SetCellValue(volume);
-                row.GetCell(12).CellStyle = numberCellStyle;
-
-                row.CreateCell(13).SetCellValue(tn.Unit);
-                row.GetCell(13).CellStyle = cellStyle;
-
-                row.CreateCell(14).SetCellType(CellType.Numeric);
-                //row.GetCell(14).SetCellValue(tn.Order.Price ?? 0);
-                // Считаем по себестоимости водителя 
-                row.GetCell(14).SetCellValue(tn.Order.DriverPrice ?? 0);
-                row.GetCell(14).CellStyle = moneyCellStyle;
-
-                row.CreateCell(15).SetCellType(CellType.Numeric);
-                row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
-                row.GetCell(15).CellStyle.WrapText = true;
-                row.GetCell(15).CellStyle = moneyCellStyle;
-
-                row.CreateCell(16).SetCellType(CellType.Numeric);
-                row.GetCell(16).SetCellValue(tn.DriverPercent);
-                row.GetCell(16).CellStyle = numberCellStyle;
-
-                row.CreateCell(17).SetCellType(CellType.Numeric);
-                row.GetCell(17).CellStyle = moneyCellStyle;
-
-                if(tn.FixedPrice == null)
-                {
-                    row.GetCell(17).SetCellFormula($"Q{rowIndex + 1}*P{rowIndex + 1}/100");
-                }
-                else
-                {
-                    row.GetCell(17).SetCellValue(tn.FixedPrice.Value.ToString(nfi));
-                }
-
-                row.CreateCell(18).SetCellValue(tn.IsVerified ? "Да" : "Нет");
-                row.CreateCell(19).SetCellValue(tn.IsOriginalReceived ? "Да" : "Нет");
-
-                rowIndex++;
             }
 
             var stream = new MemoryStream();
@@ -1149,16 +1162,20 @@ namespace CarTek.Api.Services
                 row.CreateCell(6).SetCellValue(tn.Material);
                 row.GetCell(6).CellStyle = cellStyle;
 
+                double volume;
                 if(tn.Order.ReportLoadType == ReportLoadType.UseLoad)
                 {
-                    row.CreateCell(7).SetCellValue(tn.LoadVolume);
-                    row.GetCell(7).CellStyle = cellStyle;
+                    double.TryParse(tn.LoadVolume, nfi, out volume);
                 }
                 else
                 {
-                    row.CreateCell(7).SetCellValue(tn.UnloadVolume);
-                    row.GetCell(7).CellStyle = cellStyle;
+                    double.TryParse(tn.UnloadVolume, nfi, out volume);
                 }
+
+                row.CreateCell(7).SetCellType(CellType.Numeric);
+                row.GetCell(7).SetCellValue(volume);
+                row.GetCell(7).CellStyle = numberCellStyle;
+
 
                 row.CreateCell(8).SetCellValue(tn.Unit);
                 row.GetCell(8).CellStyle = cellStyle;
@@ -1172,20 +1189,16 @@ namespace CarTek.Api.Services
                 //row.GetCell(15).SetCellFormula($"O{rowIndex + 1}*M{rowIndex + 1}");
                 //row.GetCell(15).CellStyle.WrapText = true;
                  
-                double.TryParse(tn.UnloadVolume, nfi, out var unloadVolume);
-
-                var fullAmount = tn.Order.DriverPrice.Value * unloadVolume;
 
                 row.CreateCell(10).SetCellValue(tn.DriverPercent.ToString(nfi));
                 row.GetCell(10).CellStyle = numberCellStyle;
-
 
                 row.CreateCell(11).SetCellType(CellType.Numeric);
 
                 if (tn.FixedPrice == null)
                 {
-                    var taskSalary = fullAmount * tn.DriverPercent / 100;
-                    row.GetCell(11).SetCellValue(taskSalary);                    
+                    row.GetCell(11).SetCellFormula($"H{rowIndex+1}*J{rowIndex+1}*K{rowIndex+1}/100");                    
+                    row.GetCell(11).CellStyle = moneyCellStyle;                    
                 }
                 else
                 {
@@ -1197,6 +1210,16 @@ namespace CarTek.Api.Services
 
                 rowIndex++;
             }
+
+            var newRow = sheet.CreateRow(rowIndex);
+
+            newRow.CreateCell(10).SetCellType(CellType.String);
+            newRow.GetCell(10).SetCellValue("Итог за период: ");
+
+            newRow.CreateCell(11).SetCellType(CellType.Numeric);
+            newRow.GetCell(11).CellStyle = moneyCellStyle;
+            newRow.GetCell(11).SetCellFormula($"SUM(L{5}:L{rowIndex})");
+
 
             var stream = new MemoryStream();
 

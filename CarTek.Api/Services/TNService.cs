@@ -34,9 +34,9 @@ namespace CarTek.Api.Services
             Expression<Func<TN, bool>> filterBy;
 
             filterBy = x =>
-                x.PickUpDepartureDate != null && x.DropOffDepartureDate != null &&
-                 (x.PickUpDepartureDate.Value.Date >= date1
-                && x.DropOffDepartureDate.Value.Date <= date2);
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2));
 
             if (search != null && !string.IsNullOrEmpty(searchColumn))
             {
@@ -44,31 +44,31 @@ namespace CarTek.Api.Services
                 {
                     case "tnNumber":
                         filterBy = x =>
-                        x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
-                        && (x.PickUpDepartureDate.Value.Date >= date1
-                        && x.DropOffDepartureDate.Value.Date <= date2)
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
                         && x.Number != null && x.Number.ToLower().Contains(search.ToLower());
                         break;
                     case "driver":
                         filterBy = x =>
-                            x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
-                            && (x.PickUpDepartureDate.Value.Date >= date1
-                            && x.DropOffDepartureDate.Value.Date <= date2)
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
                             && (x.DriverTask != null && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()) ||
                             x.SubTask != null && x.SubTask.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()));
                         break;
                     case "loadAddress":
                         filterBy = x =>
-                        x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
-                        && (x.PickUpDepartureDate.Value.Date >= date1
-                        && x.DropOffDepartureDate.Value.Date <= date2)
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
                         && x.LocationA != null && x.LocationA.TextAddress.ToLower().Contains(search.ToLower());
                         break;
                     case "unloadAddress":
                         filterBy = x =>
-                        x.PickUpDepartureDate != null && x.DropOffDepartureDate != null
-                        && (x.PickUpDepartureDate.Value.Date >= date1
-                        && x.DropOffDepartureDate.Value.Date <= date2)
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
+                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
                         && x.LocationB != null && x.LocationB.TextAddress.ToLower().Contains(search.ToLower());
                         break;
                 }
@@ -85,6 +85,8 @@ namespace CarTek.Api.Services
                 .Include(tn => tn.DriverTask)
                 .Include(tn => tn.DriverTask)
                     .ThenInclude(dt => dt.Driver)
+                 .Include(tn => tn.DriverTask)
+                    .ThenInclude(dt => dt.Car)
                 .Include(tn => tn.LocationA)
                 .Include (tn => tn.LocationB)
                 .Include(tn => tn.Material)
@@ -104,18 +106,16 @@ namespace CarTek.Api.Services
             foreach (var tn in list)
             {
                 var tnModel = _mapper.Map<TNModel>(tn);
+                double? fixedPrice = null;
 
                 tnModel.OrderName = tn?.Order?.Name;
-
                 tnModel.Material = tn.Material != null ? tn.Material.Name : "";
 
-                //var locationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationAId);
                 if (tn.LocationA != null)
                 {
                     tnModel.LocationA = tn.LocationA.TextAddress;
                 }
 
-                //var locationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == tn.LocationBId);
                 if (tn.LocationB != null)
                 {
                     tnModel.LocationB = tn.LocationB.TextAddress;
@@ -126,14 +126,21 @@ namespace CarTek.Api.Services
                     //TODO: Должно быть из заявки
                     var customerId = tn.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
-
+                    tnModel.FixedPrice = customer?.FixedPrice;
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
                     tnModel.OrderId = tn.OrderId;
                 }
 
+                string carInfo = "";
                 if (tn.DriverTask != null && tn.DriverTask.Driver != null)
                 {
                     tnModel.DriverInfo = tn.DriverTask.Driver.FullName;
+                    tnModel.TaskStatus = tn.DriverTask.Status;
+                    tnModel.DriverPercent = tn.DriverTask.Driver.Percentage;
+                    if (tn.DriverTask.Car != null)
+                    {
+                        carInfo = $"{tn.DriverTask.Car.Plate.ToUpper()} {tn.DriverTask.Car.Brand}";
+                    }
                 }
 
                 if (tn.SubTask != null && tn.Order != null)
@@ -141,17 +148,45 @@ namespace CarTek.Api.Services
                     //TODO: Должно быть из заявки
                     var customerId = tn.Order.Service == ServiceType.Transport ? tn.GoId : tn.GpId;
                     var customer = _dbContext.Clients.FirstOrDefault(t => t.Id == customerId);
+
+                    tnModel.FixedPrice = customer?.FixedPrice;
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
                     tnModel.OrderId = tn.OrderId;
+                    tnModel.TaskStatus = tn.SubTask.Status;
                 }
 
                 if (tn.SubTask != null && tn.SubTask.DriverTask.Driver != null)
                 {
                     tnModel.DriverInfo = tn.SubTask.DriverTask.Driver.FullName;
+                    tnModel.DriverPercent = tn.SubTask.DriverTask.Driver.Percentage;
                 }
 
                 //не нужно дальше
-                tnModel.Order = null;
+                tnModel.Order.DriverTasks = null;
+
+                double volume1 = tn.LoadVolume ?? 0;
+                double volume2 = tn.UnloadVolume ?? 0;
+
+                if (tn?.Order.LoadUnit == Unit.m3)
+                {
+                    volume1 = tn.LoadVolume ?? 0;
+                    volume2 = tn.UnloadVolume ?? 0;
+                }
+                else
+                {
+                    volume1 = tn.LoadVolume2 ?? 0;
+                    volume2 = tn.UnloadVolume2 ?? 0;
+                }
+
+                tnModel.Unit = UnitToString(tnModel.Order?.LoadUnit);
+                tnModel.UnloadUnit = UnitToString(tnModel.Order?.LoadUnit);
+                tnModel.LoadVolume = volume1.ToString(nfi);
+                tnModel.UnloadVolume = volume2.ToString(nfi);
+                tnModel.LoadVolume2 = volume1.ToString(nfi);
+                tnModel.UnloadVolume2 = volume2.ToString(nfi); 
+                tnModel.CarPlate = carInfo;                
+                tnModel.PickUpDepartureTime = $"{tn.PickUpDepartureDate?.ToString("dd.MM.yyyy")}";
+                tnModel.DropOffDepartureTime = $"{tn.DropOffDepartureDate?.ToString("dd.MM.yyyy")}";
 
                 if (searchColumn == "customer" && search != null)
                 {
@@ -173,8 +208,20 @@ namespace CarTek.Api.Services
             }
 
            
-
             return result;
+        }
+
+        private string UnitToString(Unit? unit)
+        {
+            switch (unit)
+            {
+                case Unit.t:
+                    return "тн";
+                case Unit.m3:
+                    return "m3";
+                default:
+                    return "m3";
+            }
         }
     }
 }

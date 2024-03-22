@@ -54,7 +54,7 @@ namespace CarTek.Api.Services.Interfaces
 
         Task<ApiResponse> SubmitDtNote(long taskId, ICollection<IFormFile>? files, string comment);
 
-        IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate);
+        IEnumerable<DriverTaskReportModel> GetDriverTasksBetweenDates(DateTime startDate, DateTime endDate, string? searchBy, string? searchString);
 
         Task<ApiResponse> DeleteImage(DeleteImageRequest request);
 

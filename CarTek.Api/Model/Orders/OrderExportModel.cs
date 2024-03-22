@@ -68,6 +68,8 @@ namespace CarTek.Api.Model.Orders
 
         public int? Mileage { get; set; }
 
+        public string LoadTime { get; set; }
+
         public ServiceType Service { get; set; }
 
         //Услуга
