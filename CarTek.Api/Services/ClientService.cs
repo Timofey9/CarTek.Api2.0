@@ -107,7 +107,7 @@ namespace CarTek.Api.Services
         {
             try
             {
-                var client = _dbContext.Clients.Include(o => o.Orders).FirstOrDefault(c => c.Id == id);
+                var client = _dbContext.Clients.FirstOrDefault(c => c.Id == id);
 
                 if (client != null)
                 {

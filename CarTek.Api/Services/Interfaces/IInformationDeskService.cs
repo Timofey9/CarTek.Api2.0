@@ -5,7 +5,7 @@ namespace CarTek.Api.Services.Interfaces
 {
     public interface IInformationDeskService
     {
-        ApiResponse AddMessage(string message);
+        ApiResponse AddMessage(string message, InformationDeskMessageType type);
 
         ApiResponse DeleteMessage(long id);
 

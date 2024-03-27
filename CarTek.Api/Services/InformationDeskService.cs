@@ -14,11 +14,11 @@ namespace CarTek.Api.Services
             _dbContext = dbContext;
         }
 
-        public ApiResponse AddMessage(string message)
+        public ApiResponse AddMessage(string message, InformationDeskMessageType type)
         {
             try
             {
-                var messageObject = new InformationDeskMessage { Message = message, DateCreated = DateTime.UtcNow };
+                var messageObject = new InformationDeskMessage { Message = message, MessageType = type, DateCreated = DateTime.UtcNow };
                 _dbContext.InformationDeskMessages.Add(messageObject);
 
                 _dbContext.SaveChanges();

@@ -144,7 +144,7 @@ namespace CarTek.Api.Controllers
         [HttpPost("createmessage")]
         public IActionResult CreateMessage([FromBody] CreateInformationMessage model)
         {
-            var res = _informationDeskService.AddMessage(model.Message);
+            var res = _informationDeskService.AddMessage(model.Message, model.MessageType);
 
             if (res.IsSuccess)
             {
