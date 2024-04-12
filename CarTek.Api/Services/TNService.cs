@@ -153,6 +153,11 @@ namespace CarTek.Api.Services
                     tnModel.Customer = _mapper.Map<ClientModel>(customer);
                     tnModel.OrderId = tn.OrderId;
                     tnModel.TaskStatus = tn.SubTask.Status;
+
+                    if (tn.SubTask.DriverTask != null)
+                    {
+                        carInfo = $"{tn.SubTask.DriverTask.Car.Plate.ToUpper()} {tn.SubTask.DriverTask.Car.Brand}";
+                    }
                 }
 
                 if (tn.SubTask != null && tn.SubTask.DriverTask.Driver != null)
