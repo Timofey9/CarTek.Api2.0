@@ -35,13 +35,13 @@ namespace CarTek.Api.Services
 
             filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null 
-                    && x.SubTask.Status != DriverTaskStatus.Canceled
-                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    ((x.SubTask != null && x.SubTask.DriverTask != null
+                    && !x.SubTask.IsCanceled
+                    && !x.SubTask.DriverTask.IsCanceled
                     && x.SubTask.DriverTask.StartDate.Date >= date1 
                     && x.SubTask.DriverTask.StartDate.Date <= date2)
                     || (x.DriverTask != null 
-                    && x.DriverTask.Status != DriverTaskStatus.Canceled 
+                    && !x.DriverTask.IsCanceled 
                     && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2));
 
             if (search != null && !string.IsNullOrEmpty(searchColumn))
@@ -52,12 +52,12 @@ namespace CarTek.Api.Services
                         filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) 
                     && ((x.SubTask != null && x.SubTask.DriverTask != null
-                    && x.SubTask.Status != DriverTaskStatus.Canceled
-                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.SubTask.IsCanceled
+                    && !x.SubTask.DriverTask.IsCanceled
                     && x.SubTask.DriverTask.StartDate.Date >= date1 
                     && x.SubTask.DriverTask.StartDate.Date <= date2)
                     || (x.DriverTask != null
-                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.DriverTask.IsCanceled
                     && x.DriverTask.StartDate.Date >= date1 
                     && x.DriverTask.StartDate.Date <= date2))
                         && x.Number != null && x.Number.ToLower().Contains(search.ToLower());
@@ -66,12 +66,12 @@ namespace CarTek.Api.Services
                         filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) 
                     && ((x.SubTask != null && x.SubTask.DriverTask != null
-                    && x.SubTask.Status != DriverTaskStatus.Canceled
-                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.SubTask.IsCanceled
+                    && !x.SubTask.DriverTask.IsCanceled
                     && x.SubTask.DriverTask.StartDate.Date >= date1 
                     && x.SubTask.DriverTask.StartDate.Date <= date2)
                     || (x.DriverTask != null
-                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.DriverTask.IsCanceled
                     && x.DriverTask.StartDate.Date >= date1 
                     && x.DriverTask.StartDate.Date <= date2))
                     && (x.DriverTask != null 
@@ -82,12 +82,12 @@ namespace CarTek.Api.Services
                         filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) 
                     && ((x.SubTask != null && x.SubTask.DriverTask != null
-                    && x.SubTask.Status != DriverTaskStatus.Canceled
-                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.SubTask.IsCanceled
+                    && !x.SubTask.DriverTask.IsCanceled
                     && x.SubTask.DriverTask.StartDate.Date >= date1 
                     && x.SubTask.DriverTask.StartDate.Date <= date2) 
                     || (x.DriverTask != null
-                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.DriverTask.IsCanceled
                     && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
                     && x.LocationA != null && x.LocationA.TextAddress.ToLower().Contains(search.ToLower());
                         break;
@@ -95,12 +95,12 @@ namespace CarTek.Api.Services
                         filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) 
                     && ((x.SubTask != null && x.SubTask.DriverTask != null
-                    && x.SubTask.Status != DriverTaskStatus.Canceled
-                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.SubTask.IsCanceled
+                    && !x.SubTask.DriverTask.IsCanceled
                     && x.SubTask.DriverTask.StartDate.Date >= date1 
                     && x.SubTask.DriverTask.StartDate.Date <= date2)
                     || (x.DriverTask != null
-                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && !x.DriverTask.IsCanceled
                     && x.DriverTask.StartDate.Date >= date1 
                     && x.DriverTask.StartDate.Date <= date2))                       
                     && x.LocationB != null && x.LocationB.TextAddress.ToLower().Contains(search.ToLower());
