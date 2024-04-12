@@ -35,8 +35,14 @@ namespace CarTek.Api.Services
 
             filterBy = x =>
                     (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
-                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2));
+                    ((x.SubTask != null && x.SubTask.DriverTask != null 
+                    && x.SubTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.StartDate.Date >= date1 
+                    && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null 
+                    && x.DriverTask.Status != DriverTaskStatus.Canceled 
+                    && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2));
 
             if (search != null && !string.IsNullOrEmpty(searchColumn))
             {
@@ -44,32 +50,60 @@ namespace CarTek.Api.Services
                 {
                     case "tnNumber":
                         filterBy = x =>
-                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
-                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) 
+                    && ((x.SubTask != null && x.SubTask.DriverTask != null
+                    && x.SubTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.StartDate.Date >= date1 
+                    && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null
+                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.DriverTask.StartDate.Date >= date1 
+                    && x.DriverTask.StartDate.Date <= date2))
                         && x.Number != null && x.Number.ToLower().Contains(search.ToLower());
                         break;
                     case "driver":
                         filterBy = x =>
-                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
-                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
-                            && (x.DriverTask != null && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()) ||
-                            x.SubTask != null && x.SubTask.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()));
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) 
+                    && ((x.SubTask != null && x.SubTask.DriverTask != null
+                    && x.SubTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.StartDate.Date >= date1 
+                    && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null
+                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.DriverTask.StartDate.Date >= date1 
+                    && x.DriverTask.StartDate.Date <= date2))
+                    && (x.DriverTask != null 
+                    && x.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()) ||
+                    x.SubTask != null && x.SubTask.DriverTask.Driver.LastName.ToLower().Contains(search.ToLower()));
                         break;
                     case "loadAddress":
                         filterBy = x =>
-                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
-                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
-                        && x.LocationA != null && x.LocationA.TextAddress.ToLower().Contains(search.ToLower());
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) 
+                    && ((x.SubTask != null && x.SubTask.DriverTask != null
+                    && x.SubTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.StartDate.Date >= date1 
+                    && x.SubTask.DriverTask.StartDate.Date <= date2) 
+                    || (x.DriverTask != null
+                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
+                    && x.LocationA != null && x.LocationA.TextAddress.ToLower().Contains(search.ToLower());
                         break;
                     case "unloadAddress":
                         filterBy = x =>
-                    (x.DriverTask != null || x.SubTask.DriverTask != null) &&
-                    ((x.SubTask != null && x.SubTask.DriverTask != null && x.SubTask.DriverTask.StartDate.Date >= date1 && x.SubTask.DriverTask.StartDate.Date <= date2)
-                    || (x.DriverTask != null && x.DriverTask.StartDate.Date >= date1 && x.DriverTask.StartDate.Date <= date2))
-                        && x.LocationB != null && x.LocationB.TextAddress.ToLower().Contains(search.ToLower());
+                    (x.DriverTask != null || x.SubTask.DriverTask != null) 
+                    && ((x.SubTask != null && x.SubTask.DriverTask != null
+                    && x.SubTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.SubTask.DriverTask.StartDate.Date >= date1 
+                    && x.SubTask.DriverTask.StartDate.Date <= date2)
+                    || (x.DriverTask != null
+                    && x.DriverTask.Status != DriverTaskStatus.Canceled
+                    && x.DriverTask.StartDate.Date >= date1 
+                    && x.DriverTask.StartDate.Date <= date2))                       
+                    && x.LocationB != null && x.LocationB.TextAddress.ToLower().Contains(search.ToLower());
                         break;
                 }
             }
