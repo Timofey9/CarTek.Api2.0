@@ -22,5 +22,7 @@ namespace CarTek.Api.Services.Interfaces
         public MemoryStream GenerateTasksReportShort(DateTime date, IEnumerable<CarDriverTaskModel> tasks);
 
         public MemoryStream GenerateTn(TNModel model);
+
+        public MemoryStream GenerateDriverSalaryTable(IEnumerable<DriverSalaryTableModel> driversList, DateTime startDate, DateTime endDate);
     }
 }

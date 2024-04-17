@@ -10,5 +10,7 @@ namespace CarTek.Api.Services.Interfaces
         
         //Со страницами + Поиск по номеру
         IEnumerable<TNModel> GetAll(string? searchColumn, string? search, DateTime startDate, DateTime endDate);
+
+        IEnumerable<DriverSalaryTableModel> GetAllGrouped(string? searchColumn, string? search, DateTime startDate, DateTime endDate);
     }
 }

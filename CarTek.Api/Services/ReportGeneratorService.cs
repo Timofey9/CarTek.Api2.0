@@ -5,9 +5,11 @@ using CarTek.Api.Model.Orders;
 using CarTek.Api.Services.Interfaces;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Globalization;
+using System.IO;
 
 namespace CarTek.Api.Services
 {
@@ -1080,6 +1082,78 @@ namespace CarTek.Api.Services
 
                     cell.CellStyle = cellStyle2;
                 }
+            }
+
+            XSSFFormulaEvaluator.EvaluateAllFormulaCells(workbook);
+
+            workbook.Write(stream, true);
+
+            return stream;
+        }
+
+        public MemoryStream GenerateDriverSalaryTable(IEnumerable<DriverSalaryTableModel> driversList, DateTime startDate, DateTime endDate)
+        {
+            IWorkbook workbook;
+
+            using (FileStream fileStream = new FileStream("/data/Templates/driverSalaryReportTable.xlsx", FileMode.Open, FileAccess.ReadWrite))
+            {
+                workbook = new XSSFWorkbook(fileStream);
+            }
+
+            // Получение листа 
+            ISheet sheet = workbook.GetSheetAt(0);
+
+            var dateRow = sheet.GetRow(1);
+            dateRow.GetCell(2).SetCellValue($"{startDate.ToString("dd.MM.yyyy")}-{endDate.ToString("dd.MM.yyyy")}");
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
+            int rowIndex = 4;
+            var cellStyle = workbook.CreateCellStyle();
+            cellStyle.Alignment = HorizontalAlignment.Center;
+            cellStyle.WrapText = true;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = BorderStyle.Thin;
+            cellStyle.BorderTop = BorderStyle.Thin;
+            cellStyle.BorderLeft = BorderStyle.Thin;
+            cellStyle.BorderRight = BorderStyle.Thin;
+
+            var moneyCellStyle = workbook.CreateCellStyle();
+            moneyCellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("# ### ### ### ##0.00");
+            moneyCellStyle.WrapText = true;
+            moneyCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            moneyCellStyle.BorderBottom = BorderStyle.Thin;
+            moneyCellStyle.BorderTop = BorderStyle.Thin;
+            moneyCellStyle.BorderLeft = BorderStyle.Thin;
+            moneyCellStyle.BorderRight = BorderStyle.Thin;
+
+
+            foreach(var driver in driversList)
+            {
+                var row = sheet.CreateRow(rowIndex);
+
+                row.CreateCell(0).SetCellValue(driver.StartDate.ToString("dd.MM.yyyy"));
+                row.GetCell(0).CellStyle = cellStyle;
+                row.CreateCell(1).SetCellValue(driver.EndDate.ToString("dd.MM.yyyy"));
+                row.GetCell(1).CellStyle = cellStyle;
+
+                row.CreateCell(2).SetCellValue(driver.Name);
+                row.GetCell(2).CellStyle = cellStyle;
+
+                row.CreateCell(3).SetCellValue(driver.TasksCount);
+                row.GetCell(3).CellStyle = cellStyle;
+
+                row.CreateCell(4).SetCellType(CellType.Numeric);
+                row.GetCell(4).SetCellValue(driver.TotalSalary);
+                row.GetCell(4).CellStyle = moneyCellStyle;
+
+                rowIndex++;
+            }
+
+            var stream = new MemoryStream();
+
+            for (var i = 0; i < 21; i++)
+            {
+                sheet.SetColumnWidth(i, 255 * 40);
             }
 
             XSSFFormulaEvaluator.EvaluateAllFormulaCells(workbook);

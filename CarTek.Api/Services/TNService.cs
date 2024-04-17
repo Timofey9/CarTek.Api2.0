@@ -25,6 +25,62 @@ namespace CarTek.Api.Services
             return GetAllPagination("", "", 0, 0, searchColumn, search, startDate, endDate);
         }
 
+        public IEnumerable<DriverSalaryTableModel> GetAllGrouped(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
+        {
+            List<DriverSalaryTableModel> result = new List<DriverSalaryTableModel>();
+
+            var grouped = GetAllPagination("", "", 0, 0, searchColumn, search, startDate, endDate).GroupBy(t => t.DriverInfo).ToList();
+
+            foreach (var group in grouped)
+            {
+                double totalSalary = 0;
+
+                foreach (var tn in group)
+                {
+                    totalSalary += GetTnDriverPrice(tn);
+                }
+
+                result.Add(new DriverSalaryTableModel
+                {
+                    Name = group.Key,
+                    StartDate = startDate,
+                    EndDate = endDate,  
+                    TasksCount = group.Count(),
+                    TotalSalary = totalSalary
+                });
+            }
+
+            return result;
+        }
+
+        private double GetTnDriverPrice(TNModel tn)
+        {
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
+
+            double volume;
+            if (tn.Order.ReportLoadType == ReportLoadType.UseLoad)
+            {
+                double.TryParse(tn.LoadVolume, nfi, out volume);
+            }
+            else
+            {
+                double.TryParse(tn.UnloadVolume, nfi, out volume);
+            }
+
+            double totalSalary;
+            if (tn.FixedPrice != null)
+            {
+                totalSalary = tn.FixedPrice.Value;
+            }
+            else
+            {
+                totalSalary = volume * tn.Order.DriverPrice * tn.DriverPercent / 100 ?? 0;
+            }
+
+            return totalSalary;
+        }
+
         public IEnumerable<TNModel> GetAllPagination(string sortColumn, string sortDirection, int pageNumber, int pageSize, string searchColumn, string search, DateTime startDate, DateTime endDate)
         {
             var date1 = startDate.Date;

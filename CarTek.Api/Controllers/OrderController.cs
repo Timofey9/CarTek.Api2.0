@@ -243,6 +243,27 @@ namespace CarTek.Api.Controllers
             }
         }
 
+        [HttpGet("getdriversalariestable")]
+        public IActionResult DownloadDriverSalariesTable(string? searchColumn, string? search, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var orders = _tnService.GetAllGrouped(searchColumn, search, startDate, endDate);
+
+                var fileStream = _reportGeneratorService.GenerateDriverSalaryTable(orders, startDate, endDate);
+
+                var contentType = "application/octet-stream";
+
+                var result = new FileContentResult(fileStream.ToArray(), contentType);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("getdriverreport")]
         public IActionResult DownloadDriverReportList(DateTime startDate, DateTime endDate, long driverId)
         {
