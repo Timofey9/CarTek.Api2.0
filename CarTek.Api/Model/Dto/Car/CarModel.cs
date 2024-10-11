@@ -16,6 +16,10 @@ namespace CarTek.Api.Model.Dto
 
         public int AxelsCount { get; set; }
 
+        ////////////////        
+        public bool IsExternal { get; set; }
+        public long? ExternalTransporterId { get; set; }
+
         //В пути, на базе, в ремонте
         public TransportState State { get; set; }
 

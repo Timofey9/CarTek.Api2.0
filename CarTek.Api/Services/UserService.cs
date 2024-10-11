@@ -5,16 +5,14 @@ using CarTek.Api.Services.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Authentication.OAuth;
 using System.Security.Claims;
 using CarTek.Api.Const;
 using CarTek.Api.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using CarTek.Api.Model.Response;
+using Amazon.Runtime;
 
 namespace CarTek.Api.Services
 {
@@ -24,13 +22,14 @@ namespace CarTek.Api.Services
         private readonly IJwtService _jwtService;
         private readonly ApplicationDbContext _dbContext;
         private readonly IQuestionaryService _questionaryService;
-
-        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IJwtService jwtService)
+        private readonly IReportGeneratorService _reportGeneratorService;
+        public UserService(ILogger<UserService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IJwtService jwtService, IReportGeneratorService reportGeneratorService)
         {
             _logger = logger;
             _jwtService = jwtService;
             _dbContext = dbContext;
             _questionaryService = questionaryService;
+            _reportGeneratorService = reportGeneratorService;
         }
 
         public User DeleteUser(string login)
@@ -50,9 +49,9 @@ namespace CarTek.Api.Services
                 {
                     _questionaryService.DeleteQuestionaryEntity(questionary);
                 }
-               
+
                 _dbContext.Users.Remove(user);
-                
+
                 _dbContext.SaveChanges();
 
                 return user;
@@ -159,8 +158,26 @@ namespace CarTek.Api.Services
             {
                 throw new InvalidPasswordException();
             }
+            return userInstance;        
+        }
 
-            return userInstance;
+
+        private Driver GetDriver(UserAuthModel authModel)
+        {
+            var driverInstance = _dbContext.Drivers
+                .FirstOrDefault(u => u.Login.ToLower() == authModel.Login.Trim().ToLower());
+
+            if (driverInstance == null)
+            {
+                throw new InvalidUsernameException(authModel.Login);
+            }
+
+            if (driverInstance.Password != authModel.Password.Trim())
+            {
+                throw new InvalidPasswordException();
+            }
+
+            return driverInstance;
         }
 
         public string GetHash(string input)
@@ -184,11 +201,11 @@ namespace CarTek.Api.Services
             {
                 var dbUser = _dbContext.Users.FirstOrDefault(t => t.Login.Equals(user.Login));
 
-                if(dbUser != null)
+                if (dbUser != null)
                 {
                     var message = $"Пользователь с логином {user.Login} уже существует";
                     _logger.LogWarning(message);
-                    return new ApiResponse { IsSuccess = false, Message = message};
+                    return new ApiResponse { IsSuccess = false, Message = message };
                 }
 
                 var newUser = new User
@@ -200,6 +217,10 @@ namespace CarTek.Api.Services
                     Login = user.Login,
                     Phone = user.Phone,
                     IsAdmin = user.IsAdmin,
+                    IsDispatcher = user.IsDispatcher,
+                    IsInitialBookkeeper = user.IsInitialBookkeeper,
+                    IsSalaryBookkeeper = user.IsSalaryBookkeeper,
+                    IsLogistManager = user.IsLogistManager,
                     Password = GetHash(user.Password)
                 };
 
@@ -209,15 +230,17 @@ namespace CarTek.Api.Services
 
                 return new ApiResponse { IsSuccess = true, Message = $"Пользователь {user.Login} создан" };
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, $"Не удалось создать пользователя: {ex.Message}");
-                return new ApiResponse {IsSuccess = false, Message = $"Не удалось создать пользователя: {ex.Message}" };
+                return new ApiResponse { IsSuccess = false, Message = $"Не удалось создать пользователя: {ex.Message}" };
             }
         }
 
         public async Task<ApiResponse> UpdateUser(string login, [FromBody] JsonPatchDocument<User> patchDoc)
         {
-            try { 
+            try
+            {
                 var existing = _dbContext.Users
                     .FirstOrDefault(u => u.Login.Equals(login));
 
@@ -232,6 +255,8 @@ namespace CarTek.Api.Services
 
                 patchDoc.ApplyTo(existing);
 
+                existing.RefreshToken = null;
+
                 _dbContext.Users.Update(existing);
 
                 var modifiedEntries = _dbContext.ChangeTracker
@@ -242,9 +267,9 @@ namespace CarTek.Api.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                return new ApiResponse { IsSuccess = true, Message = "Пользователь успешно изменен"};
+                return new ApiResponse { IsSuccess = true, Message = "Пользователь успешно изменен" };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Не удалось изменить пользователя {login}, {ex.Message}");
                 return new ApiResponse { IsSuccess = false, Message = $"Не удалось изменить пользователя {login}" };
@@ -255,23 +280,79 @@ namespace CarTek.Api.Services
         {
             try
             {
-                User userInstance = Get(authModel);
+                Claim[] claims;
+                User userInstance;
+                string token;
+                string refreshToken;
+                bool isExternal = false;
 
-                Claim[] claims = new[]
+                if (authModel.IsDriver == true)
                 {
-                    new Claim(AuthConstants.ClaimTypeLogin, userInstance.Login),
-                    new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString())
-                };
+                    var driver = GetDriver(authModel);
 
-                var token = _jwtService.GenerateToken(claims, 24, 0);
+                    if (driver.IsFired)
+                    {
+                        throw new InvalidPasswordException();
+                    }
+
+                    claims = new[]
+                    {
+                        new Claim(AuthConstants.ClaimTypeLogin, driver.Login),
+                        new Claim(AuthConstants.ClaimTypeIsDriver, "True"),
+                        new Claim(AuthConstants.ClaimTypeId, driver.Id.ToString())
+                    };
+
+                    token = _jwtService.GenerateToken(claims, 0, 1);
+
+                    userInstance = new User
+                    {
+                        Id = driver.Id,
+                        Login = driver.Login,
+                        FirstName = driver.FirstName,
+                        LastName = driver.LastName,
+                        MiddleName = driver.MiddleName                        
+                    };
+
+                    isExternal = driver.IsExternal;
+
+                    refreshToken = _jwtService.GenerateRefreshToken();
+
+                    driver.RefreshToken = refreshToken;
+                    driver.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+
+                    _dbContext.Drivers.Update(driver);
+                }
+                else
+                {
+                    userInstance = Get(authModel);
+                    claims = new[]
+                    {
+                        new Claim(AuthConstants.ClaimTypeLogin, userInstance.Login),
+                        new Claim(AuthConstants.ClaimTypeIsAdmin, userInstance.IsAdmin.ToString()),                                                
+                        new Claim(AuthConstants.ClaimTypeId, userInstance.Id.ToString())
+                    };
+
+                    token = _jwtService.GenerateToken(claims, 0, 1);
+                    refreshToken = _jwtService.GenerateRefreshToken();
+
+                    userInstance.RefreshToken = refreshToken;
+                    userInstance.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+                    _dbContext.Users.Update(userInstance);
+                }
+
+                _dbContext.SaveChanges();
 
                 return new UserAuthResult
                 {
                     Token = token,
-                    Identity = userInstance
+                    Identity = userInstance,
+                    RefreshToken = refreshToken,
+                    IsDriver = authModel.IsDriver ?? false,
+                    IsExternal = isExternal
                 };
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }

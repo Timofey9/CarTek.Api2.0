@@ -24,7 +24,7 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
       "publishAllPorts": true,
       "useSSL": true,
-      "DockerfileRunArguments": "-v \"C:\\ProgramData\\cartek:/data\""
+      "DockerfileRunArguments": "-v \"C:\\ProgramData\\cartek:/data\" -v \"C:\\ProgramData\\AWS\\.aws:/root/.aws\""
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

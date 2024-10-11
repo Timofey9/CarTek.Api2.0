@@ -93,10 +93,10 @@ namespace CarTek.Api.Controllers
         }
 
 
-        [HttpGet("car/{id}")]
-        public IActionResult GetCar(long carId)
+        [HttpGet("getcar/{id}")]
+        public IActionResult GetCar(long id)
         {
-            var car = _carService.GetById(carId);
+            var car = _carService.GetById(id);
 
             if(car == null)
             {
@@ -104,6 +104,19 @@ namespace CarTek.Api.Controllers
             }
 
             return Ok(_mapper.Map<CarModel>(car));
+        }        
+        
+        [HttpGet("getcarswithtasks")]
+        public IActionResult GetCarsWithTasks(DateTime startDate)
+        {
+            var result = _carService.GetCarsWithTasks(startDate);
+
+            if(result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
 
         [HttpDelete("deletetrailer/{trailerId}")]

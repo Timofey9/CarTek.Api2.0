@@ -22,6 +22,27 @@ namespace CarTek.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("CarTek.Api.Model.Address", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Coordinates")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TextAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Addresses");
+                });
+
             modelBuilder.Entity("CarTek.Api.Model.Car", b =>
                 {
                     b.Property<long>("Id")
@@ -37,6 +58,15 @@ namespace CarTek.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long>("CurrentOrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ExternalTransporterId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsExternal")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Model")
                         .IsRequired()
                         .HasColumnType("text");
@@ -50,7 +80,40 @@ namespace CarTek.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExternalTransporterId");
+
                     b.ToTable("cars", (string)null);
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Client", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ClientAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ClientUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<double?>("FixedPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Inn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>
@@ -64,11 +127,24 @@ namespace CarTek.Api.Migrations
                     b.Property<long?>("CarId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ExternalTransporterId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsExternal")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFired")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -79,14 +155,355 @@ namespace CarTek.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<double>("Percentage")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Phone")
                         .HasColumnType("text");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CarId");
 
+                    b.HasIndex("ExternalTransporterId");
+
                     b.ToTable("drivers", (string)null);
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.ExternalTransporter", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExternalTransporters");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.InformationDeskMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MessageType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InformationDeskMessages");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Notification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DateSent")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDriverNotification")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Order", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CarCount")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("ClientId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ClientName")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("Density")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Discount")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("DriverPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double?>("ExternalPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<long?>("ExternalTransporterId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("GpId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsExternal")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LoadTime")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("LoadUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LocationA")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("LocationAId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LocationB")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("LocationBId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("MaterialId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double?>("MaterialPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("Mileage")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ReportLoadType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Service")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Shift")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double?>("Volume")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("ExternalTransporterId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTask", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AdminComment")
+                        .HasColumnType("text");
+
+                    b.Property<long>("CarId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("DriverId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsCanceled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Shift")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SubTasksCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UniqueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Unit")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Volume")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarId");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("DriverTasks");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTaskNote", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("CreatedByDriver")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("DriverTaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("S3Links")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("SubTaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverTaskId");
+
+                    b.HasIndex("SubTaskId");
+
+                    b.ToTable("DriverTaskNotes");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.Material", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Materials");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.SubTask", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DriverTaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsCanceled")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverTaskId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("SubTasks");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Questionary", b =>
@@ -196,6 +613,123 @@ namespace CarTek.Api.Migrations
                     b.ToTable("questionaries", (string)null);
                 });
 
+            modelBuilder.Entity("CarTek.Api.Model.TN", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DriverId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DriverTaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DropOffArrivalDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DropOffArrivalTime")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DropOffDepartureDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DropOffDepartureTime")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("GoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("GpId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool?>("IsOrginalReceived")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<double?>("LoadVolume")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("LoadVolume2")
+                        .HasColumnType("double precision");
+
+                    b.Property<long?>("LocationAId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("LocationBId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("MaterialId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Number")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("PickUpArrivalDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PickUpArrivalTime")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PickUpDepartureDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PickUpDepartureTime")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("SubTaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Transporter")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("TransporterId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Unit")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Unit2")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UnloadUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UnloadUnit2")
+                        .HasColumnType("integer");
+
+                    b.Property<double?>("UnloadVolume")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("UnloadVolume2")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverTaskId")
+                        .IsUnique();
+
+                    b.HasIndex("LocationAId");
+
+                    b.HasIndex("LocationBId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("SubTaskId")
+                        .IsUnique();
+
+                    b.ToTable("TNs");
+                });
+
             modelBuilder.Entity("CarTek.Api.Model.Trailer", b =>
                 {
                     b.Property<long>("Id")
@@ -247,6 +781,18 @@ namespace CarTek.Api.Migrations
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsDispatcher")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsInitialBookkeeper")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsLogistManager")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSalaryBookkeeper")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
@@ -262,9 +808,47 @@ namespace CarTek.Api.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.UserDevice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsDriver")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserDevices");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Car", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.ExternalTransporter", "ExternalTransporter")
+                        .WithMany("Cars")
+                        .HasForeignKey("ExternalTransporterId");
+
+                    b.Navigation("ExternalTransporter");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>
@@ -273,7 +857,91 @@ namespace CarTek.Api.Migrations
                         .WithMany("Drivers")
                         .HasForeignKey("CarId");
 
+                    b.HasOne("CarTek.Api.Model.ExternalTransporter", "ExternalTransporter")
+                        .WithMany("Drivers")
+                        .HasForeignKey("ExternalTransporterId");
+
                     b.Navigation("Car");
+
+                    b.Navigation("ExternalTransporter");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Order", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.Client", "Client")
+                        .WithMany("Orders")
+                        .HasForeignKey("ClientId");
+
+                    b.HasOne("CarTek.Api.Model.ExternalTransporter", "ExternalTransporter")
+                        .WithMany("Orders")
+                        .HasForeignKey("ExternalTransporterId");
+
+                    b.HasOne("CarTek.Api.Model.Orders.Material", "Material")
+                        .WithMany("Orders")
+                        .HasForeignKey("MaterialId");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("ExternalTransporter");
+
+                    b.Navigation("Material");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTask", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.Car", "Car")
+                        .WithMany("DriverTasks")
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CarTek.Api.Model.Driver", "Driver")
+                        .WithMany("DriverTasks")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CarTek.Api.Model.Order", "Order")
+                        .WithMany("DriverTasks")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTaskNote", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.Orders.DriverTask", null)
+                        .WithMany("Notes")
+                        .HasForeignKey("DriverTaskId");
+
+                    b.HasOne("CarTek.Api.Model.Orders.SubTask", null)
+                        .WithMany("Notes")
+                        .HasForeignKey("SubTaskId");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.SubTask", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.Orders.DriverTask", "DriverTask")
+                        .WithMany("SubTasks")
+                        .HasForeignKey("DriverTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CarTek.Api.Model.Order", "Order")
+                        .WithMany("SubTasks")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DriverTask");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.Questionary", b =>
@@ -303,6 +971,45 @@ namespace CarTek.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CarTek.Api.Model.TN", b =>
+                {
+                    b.HasOne("CarTek.Api.Model.Orders.DriverTask", "DriverTask")
+                        .WithOne("TN")
+                        .HasForeignKey("CarTek.Api.Model.TN", "DriverTaskId");
+
+                    b.HasOne("CarTek.Api.Model.Address", "LocationA")
+                        .WithMany("TNLocationA")
+                        .HasForeignKey("LocationAId");
+
+                    b.HasOne("CarTek.Api.Model.Address", "LocationB")
+                        .WithMany("TNLocationB")
+                        .HasForeignKey("LocationBId");
+
+                    b.HasOne("CarTek.Api.Model.Orders.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId");
+
+                    b.HasOne("CarTek.Api.Model.Order", "Order")
+                        .WithMany("TNs")
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("CarTek.Api.Model.Orders.SubTask", "SubTask")
+                        .WithOne("TN")
+                        .HasForeignKey("CarTek.Api.Model.TN", "SubTaskId");
+
+                    b.Navigation("DriverTask");
+
+                    b.Navigation("LocationA");
+
+                    b.Navigation("LocationB");
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("SubTask");
+                });
+
             modelBuilder.Entity("CarTek.Api.Model.Trailer", b =>
                 {
                     b.HasOne("CarTek.Api.Model.Car", "Car")
@@ -312,8 +1019,17 @@ namespace CarTek.Api.Migrations
                     b.Navigation("Car");
                 });
 
+            modelBuilder.Entity("CarTek.Api.Model.Address", b =>
+                {
+                    b.Navigation("TNLocationA");
+
+                    b.Navigation("TNLocationB");
+                });
+
             modelBuilder.Entity("CarTek.Api.Model.Car", b =>
                 {
+                    b.Navigation("DriverTasks");
+
                     b.Navigation("Drivers");
 
                     b.Navigation("Questionaries");
@@ -321,9 +1037,55 @@ namespace CarTek.Api.Migrations
                     b.Navigation("Trailer");
                 });
 
+            modelBuilder.Entity("CarTek.Api.Model.Client", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("CarTek.Api.Model.Driver", b =>
                 {
+                    b.Navigation("DriverTasks");
+
                     b.Navigation("Questionaries");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.ExternalTransporter", b =>
+                {
+                    b.Navigation("Cars");
+
+                    b.Navigation("Drivers");
+
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Order", b =>
+                {
+                    b.Navigation("DriverTasks");
+
+                    b.Navigation("SubTasks");
+
+                    b.Navigation("TNs");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.DriverTask", b =>
+                {
+                    b.Navigation("Notes");
+
+                    b.Navigation("SubTasks");
+
+                    b.Navigation("TN");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.Material", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("CarTek.Api.Model.Orders.SubTask", b =>
+                {
+                    b.Navigation("Notes");
+
+                    b.Navigation("TN");
                 });
 
             modelBuilder.Entity("CarTek.Api.Model.User", b =>

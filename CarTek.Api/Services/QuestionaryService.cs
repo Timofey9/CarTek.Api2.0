@@ -23,13 +23,15 @@ namespace CarTek.Api.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<QuestionaryService> _logger;
+        private readonly IAWSS3Service _awss3Service;
         private readonly IMapper _mapper;
 
-        public QuestionaryService(ApplicationDbContext dbContext, ILogger<QuestionaryService> logger, IMapper mapper)
+        public QuestionaryService(ApplicationDbContext dbContext, ILogger<QuestionaryService> logger, IMapper mapper, IAWSS3Service awss3Service)
         {
             _dbContext = dbContext;
             _logger = logger;
             _mapper = mapper;
+            _awss3Service = awss3Service;
         }
 
         public async Task<ApiResponse> ApproveQuestionary(long driverId, string driverPass, Guid uniqueId, string? acceptanceComment)
@@ -300,16 +302,11 @@ namespace CarTek.Api.Services
             }
         }
 
-        public async Task<string> SaveImage(IFormFile file, string path, string fileNum)
+        public async Task<string> SaveImage(IFormFile file, string path, string fileName)
         {
-            var newFileName = fileNum + Path.GetExtension(file.FileName);
+            var newFileName = fileName + Path.GetExtension(file.FileName);
 
             string fullPath = $"{path}/{newFileName}";
-
-            if(file.Length > 1e+7)
-            {
-                throw new UploadedFileException() { ErrorMessage = "Размер файла очень большой" };
-            }
 
             // сохраняем файл в папку uploads
             using (var fileStream = new FileStream(fullPath, FileMode.Create))

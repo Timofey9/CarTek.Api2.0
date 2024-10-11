@@ -1,5 +1,6 @@
 ﻿using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
 using CarTek.Api.Model.Response;
 using Microsoft.AspNetCore.JsonPatch;
 
@@ -8,6 +9,8 @@ namespace CarTek.Api.Services.Interfaces
     public interface ICarService
     {
         public Car GetByPlate(string plate);
+
+        public IEnumerable<CarDriverTaskModel> GetCarsWithTasks(DateTime date);
 
         public IEnumerable<Car> GetAll();
 
@@ -23,5 +26,7 @@ namespace CarTek.Api.Services.Interfaces
         public ApiResponse DeleteCar(long carId);
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> carModel);
+
+        public ICollection<Car> GetExternalTransporterCars(long transporterId);
     }
 }

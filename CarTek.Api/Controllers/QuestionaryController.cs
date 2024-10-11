@@ -93,7 +93,7 @@ namespace CarTek.Api.Controllers
                 if (res != null)
                     return Ok(res);
                 else
-                    return BadRequest("Ошибка создания опросника. Повторите запрос");
+                    return BadRequest("Ошибка получения опросника. Повторите запрос");
             }
             catch (Exception ex)
             {

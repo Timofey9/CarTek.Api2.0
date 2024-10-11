@@ -10,11 +10,15 @@ namespace CarTek.Api.Model.Dto
 
         public string MiddleName { get; set; }
 
+        public double Percentage { get; set; }
+
         public string LastName { get; set; }
 
         public string Password { get; set; }
 
         public string Phone { get; set; }
+
+        public string Login { get; set; }
 
         public string FullName => $"{LastName} {FirstName} {MiddleName}";
 
@@ -23,5 +27,10 @@ namespace CarTek.Api.Model.Dto
         public long? CarId { get; set; }
 
         public string CarName { get; set; }
+
+        public bool IsFired { get; set; }
+
+        public bool IsExternal { get; set; }
+        public long ExternalTransporterId { get; set; }
     }
 }

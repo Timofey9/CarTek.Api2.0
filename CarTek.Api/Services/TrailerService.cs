@@ -221,11 +221,13 @@ namespace CarTek.Api.Services
 
                 patchDoc.ApplyTo(existing);
 
-                var attachedTrailer = _dbContext.Trailers.FirstOrDefault(t => t.Id == existing.CarId);
+                var attachedTrailer = _dbContext.Trailers.FirstOrDefault(t => t.CarId == existing.CarId);
 
                 if (attachedTrailer != null && attachedTrailer.Id != trailerId)
                 {
                     attachedTrailer.CarId = null;
+
+                    _dbContext.Trailers.Update(attachedTrailer);
                 }
 
                 _dbContext.Trailers.Update(existing);

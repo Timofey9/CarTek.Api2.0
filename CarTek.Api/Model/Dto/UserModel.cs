@@ -17,6 +17,16 @@
 
         public bool IsAdmin { get; set; }
 
+        public bool IsDispatcher { get; set; }
+
+        //Бухгалтер первички
+        public bool IsInitialBookkeeper { get; set; }
+
+        //Бухгалтер ЗП
+        public bool IsSalaryBookkeeper { get; set; }
+
+        public bool IsLogistManager { get; set; }
+
         public string Phone { get; set; }
 
         public string FullName => $"{LastName} {FirstName} {MiddleName}";

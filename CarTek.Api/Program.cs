@@ -17,17 +17,29 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationDbContext")));
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(ModelProfile));
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITnService, TNService>();
 builder.Services.AddScoped<ITrailerService, TrailerService>();
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
-builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IQuestionaryService, QuestionaryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
+builder.Services.AddScoped<IDriverTaskService, DriverTaskService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IInformationDeskService, InformationDeskService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAWSS3ClientFactory, AWSS3ClientFactory>();
+builder.Services.AddScoped<IAWSS3Service, AWSS3Service>();
 
 builder.Services.AddAuthentication(auth =>
 {
@@ -42,8 +54,8 @@ builder.Services.AddAuthentication(auth =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
         ValidateIssuer = false,
-        ValidateAudience = false
-
+        ValidateAudience = false,
+        ValidateLifetime = true,
     };
 });
 
@@ -51,6 +63,7 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthPolicies.ADMIN_ONLY, policy => policy.RequireClaim(AuthConstants.ClaimTypeIsAdmin));
+    options.AddPolicy(AuthPolicies.DRIVER_ONLY, policy => policy.RequireClaim(AuthConstants.ClaimTypeIsDriver));
 });
 
 builder.Services.AddControllers()
@@ -62,8 +75,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "_AllowSpecificOrigins",
         builder =>
         {
-            builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://cartek-app.ru", "http://cartek-app.ru:3000", "http://localhost:3000", "https://localhost:3000" })
-            .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            builder.WithOrigins(new string[] { "http://151.248.113.138:3000", "http://cartek-app.ru", "http://cartek-app.ru:3000", "http://localhost:3000", "https://localhost:3000", 
+                "https://cartek-app.online", "http://localhost:3001", "https://localhost:3001", })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition");
         });
 });
 

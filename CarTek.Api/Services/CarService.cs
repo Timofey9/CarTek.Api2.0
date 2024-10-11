@@ -1,39 +1,101 @@
-﻿using CarTek.Api.DBContext;
+﻿using AutoMapper;
+using CarTek.Api.DBContext;
 using CarTek.Api.Model;
 using CarTek.Api.Model.Dto;
+using CarTek.Api.Model.Dto.Car;
+using CarTek.Api.Model.Dto.Driver;
+using CarTek.Api.Model.Orders;
 using CarTek.Api.Model.Response;
 using CarTek.Api.Services.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
-using NuGet.DependencyResolver;
+using System.Globalization;
 using System.Linq.Expressions;
 
 namespace CarTek.Api.Services
 {
+    public class SemiNumericComparer : IComparer<string>
+    {
+        /// <summary>
+        /// Method to determine if a string is a number
+        /// </summary>
+        /// <param name="value">String to test</param>
+        /// <returns>True if numeric</returns>
+        public static bool IsNumeric(string value)
+        {
+            return int.TryParse(value, out _);
+        }
+
+        /// <inheritdoc />
+        public int Compare(string s1, string s2)
+        {
+            const int S1GreaterThanS2 = 1;
+            const int S2GreaterThanS1 = -1;
+
+            var IsNumeric1 = IsNumeric(s1);
+            var IsNumeric2 = IsNumeric(s2);
+
+            if (IsNumeric1 && IsNumeric2)
+            {
+                var i1 = Convert.ToInt32(s1);
+                var i2 = Convert.ToInt32(s2);
+
+                if (i1 > i2)
+                {
+                    return S1GreaterThanS2;
+                }
+
+                if (i1 < i2)
+                {
+                    return S2GreaterThanS1;
+                }
+
+                return 0;
+            }
+
+            if (IsNumeric1)
+            {
+                return S2GreaterThanS1;
+            }
+
+            if (IsNumeric2)
+            {
+                return S1GreaterThanS2;
+            }
+
+            return string.Compare(s1, s2, true, CultureInfo.InvariantCulture);
+        }
+    }
     public class CarService : ICarService
     {
         private readonly ILogger<CarService> _logger;
         private readonly ApplicationDbContext _dbContext;
         private readonly IQuestionaryService _questionaryService;
+        private readonly IMapper _mapper;
+        private readonly Interfaces.IClientService _clientService;
 
-        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService)
+        public CarService(ILogger<CarService> logger, ApplicationDbContext dbContext, IQuestionaryService questionaryService, IMapper mapper, Interfaces.IClientService clientService)
         {
             _logger = logger;
             _dbContext = dbContext;
             _questionaryService = questionaryService;
+            _mapper = mapper;
+            _clientService = clientService;
         }
 
         public ApiResponse CreateCar(CreateCarModel car)
         {
-            var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.Equals(car.Plate.ToLower()));
+            var carInDb = _dbContext.Cars.FirstOrDefault(t => t.Plate.ToUpper().Equals(car.Plate.ToUpper()));
             
             if(carInDb == null) {
                 var carModel = new Car
                 {
                     Brand = car.Brand,
-                    Plate = car.Plate.ToLower(),
+                    Plate = car.Plate,
                     Model = car.Model,
                     AxelsCount = car.AxelsCount,
+                    IsExternal = car.IsExternal,
+                    ExternalTransporterId = car.ExternalTransporterId,
                 };
 
                 var carEntity = _dbContext.Cars.Add(carModel);
@@ -204,16 +266,120 @@ namespace CarTek.Api.Services
 
         public Car GetByPlate(string plate)
         {
-            var car = _dbContext.Cars
-                .Include(q => q.Questionaries)
-                .Include(t => t.Drivers)
-                .Include(t => t.Trailer)
-                .FirstOrDefault(car => car.Plate.ToLower().Equals(plate.ToLower()));
-           
-            if (car != null)
-                car.Plate = car.Plate.ToUpper();
+            try
+            {
+                var car = _dbContext.Cars
+                    .Include(q => q.Questionaries)
+                    .Include(t => t.Drivers)
+                    .Include(t => t.Trailer)
+                    .FirstOrDefault(car => car.Plate.ToLower() == plate.ToLower());
 
-            return car;
+                if (car != null)
+                    car.Plate = car.Plate.ToUpper();
+
+                return car;
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public IEnumerable<CarDriverTaskModel> GetCarsWithTasks(DateTime date)
+        {
+            var result = new List<CarDriverTaskModel>();
+            try
+            {
+                var date1 = date.Date;
+
+                var tresult = _dbContext.Cars
+                        .Include(c => c.DriverTasks.Where(dt => 
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                            .ThenInclude(dt => dt.Order)                   
+                            .ThenInclude(o => o.Material)                            
+                        .Include(c => c.DriverTasks.Where(dt =>
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                        .ThenInclude(dt => dt.Driver)                                                
+                        .Include(c => c.DriverTasks.Where(dt =>
+                            dt.StartDate.AddHours(4).Date == date1 && dt.Shift == ShiftType.Night
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && dt.Shift == ShiftType.Day
+                         || dt.StartDate.AddHours(4).Date == date1 && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)
+                         || dt.StartDate.AddHours(4).Date == date1.AddDays(1) && (dt.Shift == ShiftType.Fullday || dt.Shift == ShiftType.Unlimited)))
+                        .ThenInclude(dt => dt.Notes)
+                        .ToList();
+
+                var ordered = tresult.OrderBy(t => t.Plate.Substring(1, 3), new SemiNumericComparer());
+
+                foreach (var car in ordered)
+                {
+                    var a = new CarDriverTaskModel
+                    {
+                        Id = car.Id,
+                        Model = car.Model,
+                        Plate = car.Plate.ToUpper(),
+                        Brand = car.Brand,
+                        DriverTasks = car.DriverTasks.Select(dt => new DriverTaskCarModel
+                        {
+                            Id = dt.Id,
+                            Order = _mapper.Map<OrderModel>(dt.Order),
+                            UniqueId = dt.UniqueId,
+                            Driver = _mapper.Map<DriverInfoModel>(dt.Driver),
+                            Shift = dt.Shift,
+                            Status = dt.Status,
+                            StartDate = dt.StartDate,
+                            Volume = dt.Volume,
+                            Unit = dt.Unit,
+                            LocationA = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationAId),
+                            LocationB = _dbContext.Addresses.FirstOrDefault(t => t.Id == dt.Order.LocationBId),
+                            LastNote = dt.Notes != null ? dt.Notes.MaxBy(t => t.DateCreated) : new DriverTaskNote()
+                        }).ToList(),
+                    };
+
+                    foreach (var driverTask in a.DriverTasks)
+                    {
+                        var gp = _clientService.GetClient(driverTask.Order.GpId);
+
+                        driverTask.Order.Gp = _mapper.Map<ClientModel>(gp);
+                    }
+
+                    result.Add(a);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Не удалось получить список авто");
+            }
+
+            return result;
+        }
+
+        public ICollection<Car> GetExternalTransporterCars(long transporterId)
+        {
+            var result = new List<Car>();
+            try
+            {
+                var transporter = _dbContext.ExternalTransporters
+                    .Include(t => t.Cars)
+                    .FirstOrDefault(t => t.Id == transporterId);
+
+                if (transporter == null)
+                    return result;
+
+                result = transporter.Cars.ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка получения вн. авто " + ex.Message);
+                return result;
+            }
         }
 
         public Car UpdateCar(long carId, JsonPatchDocument<Car> patchDoc)

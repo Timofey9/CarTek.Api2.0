@@ -28,10 +28,10 @@ namespace CarTek.Api.DBContext
         {
             var students = new User[]
             {
-                new User{FirstName="Тимофей", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("07Jan1995")},
-                new User{FirstName="Полина", LastName="Щербакова", MiddleName="Вячеславовна", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="polina", Password=GetHash("07Jan1995")},
-                new User{FirstName="Попик", LastName="Попугов", MiddleName="Попугаевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="popugai", Password=GetHash("07Jan1995")},
-                new User{FirstName="Фил", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("07Jan1995")},
+                new User{FirstName="Тимофей", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("123")},
+                new User{FirstName="Полина", LastName="Щербакова", MiddleName="Вячеславовна", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="polina", Password=GetHash("123")},
+                new User{FirstName="Попик", LastName="Попугов", MiddleName="Попугаевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="popugai", Password=GetHash("123")},
+                new User{FirstName="Фил", LastName="Щербаков", MiddleName="Валерьевич", Email="shcherbakov.t@gmail.com", IsAdmin=true, Phone="79110109825", Login="tshcherb", Password=GetHash("123")},
             };
 
             context.Users.AddRange(students);
@@ -43,10 +43,10 @@ namespace CarTek.Api.DBContext
         {
             var drivers = new Driver[]
             {
-                new Driver{FirstName="Тимофей1", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109825", Password="asdas"},
-                new Driver{FirstName="Тимофей2", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109826", Password="test5"},
-                new Driver{FirstName="Тимофей3", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109827", Password = "test4"},
-                new Driver{FirstName="Тимофей4", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109828", Password = "test1"}
+                new Driver{FirstName="Тимофей1", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109825", Password="asdas", Login="timofei1"},
+                new Driver{FirstName="Тимофей2", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109826", Password="test5", Login="timofei2"},
+                new Driver{FirstName="Тимофей3", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109827", Password = "test4", Login="timofei3"},
+                new Driver{FirstName="Тимофей4", LastName="Щербаков", MiddleName="Валерьевич", Phone="79110109828", Password = "test1", Login = "timofei4"}
             };
 
             context.Drivers.AddRange(drivers);
